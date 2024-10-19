@@ -10,7 +10,7 @@ version '1.0.3'
 
 shared_scripts {
     'shared/locale.lua',
-    'locale/en.lua', -- replace with desired language
+    '@lxr-core/server/locale.lua', -- replace with desired language
     'config.lua',
     'shared/main.lua',
     'shared/items.lua',
