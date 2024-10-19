@@ -14,7 +14,7 @@ end
 exports('GetPlayers', GetPlayers)
 
 -- Returns the entire player object
-exports('GetLXPlayers', function()
+exports('GetLXRPlayers', function()
     return LXRCore.Players
 end)
 
