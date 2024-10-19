@@ -7,7 +7,7 @@ description 'LXRCore RedM Edition - Fully converted and maintained by iBoss (htt
 version '1.0.3'
 
 shared_scripts {
-    'config.lua',            -- Remove the locale reference since it's not needed
+    'config.lua',
     'shared/main.lua',
     'shared/items.lua',
     'shared/jobs.lua',
@@ -28,6 +28,7 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'locales/en.lua',       -- Correctly reference your en.lua file
     'server/debug.lua',
     'server/functions.lua',
     'server/player.lua',
