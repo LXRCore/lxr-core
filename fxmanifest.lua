@@ -5,12 +5,8 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 description 'LXRCore RedM Edition - Fully converted and maintained by iBoss (https://github.com/iboss21)'
 version '1.0.3'
 
--- Developer
--- This framework is maintained and developed by iBoss, providing continued support and enhancements to ensure its growth and usability within the RedM community.
-
 shared_scripts {
-    'shared/locale.lua',
-    '@lxr-core/server/locale.lua', -- replace with desired language
+    'shared/locale.lua', -- Ensure that shared scripts are loaded first
     'config.lua',
     'shared/main.lua',
     'shared/items.lua',
@@ -32,6 +28,7 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'server/locales/en.lua', -- Add your language file here
     'server/debug.lua',
     'server/functions.lua',
     'server/player.lua',
