@@ -200,7 +200,7 @@ function IsOptin(source)
     local license = GetIdentifier(src, 'license')
     if not license or not HasPermission(src, 'admin') then return false end
     local Player = GetPlayer(src)
-    return Player.PlayerData.metadata['optin']
+    return Player.PlayerData.metadata.optin
 end
 exports('IsOptin', IsOptin)
 
@@ -209,7 +209,7 @@ function ToggleOptin(source)
     local license = GetIdentifier(src, 'license')
     if not license or not HasPermission(src, 'admin') then return end
     local Player = GetPlayer(src)
-    Player.PlayerData.metadata['optin'] = not Player.PlayerData.metadata['optin']
-    Player.Functions.SetMetaData('optin', Player.PlayerData.metadata['optin'])
+    Player.PlayerData.metadata.optin = not Player.PlayerData.metadata.optin
+    Player.Functions.SetMetaData('optin', Player.PlayerData.metadata.optin)
 end
 exports('ToggleOptin', ToggleOptin)

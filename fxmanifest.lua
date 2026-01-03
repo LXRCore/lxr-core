@@ -21,6 +21,7 @@ shared_scripts {
 
 client_scripts {
     'client/performance.lua',
+    'client/anticheat.lua',
     'client/functions.lua',
     'client/loops.lua',
     'client/events.lua',
@@ -31,11 +32,15 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'server/protection.lua',
+    'server/logs.lua',
+    'server/developertools.lua',
     'server/bridge.lua',
     'server/security.lua',
     'server/performance.lua',
     'server/database.lua',
     'server/antidupe.lua',
+    'server/anticheat.lua',
     'server/tebex.lua',
     'server/debug.lua',
     'server/functions.lua',

@@ -25,8 +25,8 @@ LXRBridge.DetectedFrameworks = {}
 
 -- Framework detection and bridging configuration
 local frameworkBridges = {
-    -- VORP Framework Bridge
-    ['vorp'] = {
+    -- VORP Framework Bridge (Most popular RedM framework)
+    vorp = {
         detection = 'vorp_core',
         events = {
             ['vorp:getCharacter'] = 'LXRCore:Server:GetPlayerData',
@@ -36,13 +36,13 @@ local frameworkBridges = {
             ['vorp_inventory:Server:removeItem'] = 'LXRCore:Server:RemoveItem',
         },
         exports = {
-            ['getUser'] = 'GetPlayer',
-            ['addMoney'] = 'AddMoney',
+            getUser = 'GetPlayer',
+            addMoney = 'AddMoney',
         }
     },
     
     -- RSG-Core Framework Bridge
-    ['rsg'] = {
+    rsg = {
         detection = 'rsg-core',
         events = {
             ['RSGCore:Server:OnPlayerLoaded'] = 'LXRCore:Server:OnPlayerLoaded',
@@ -50,30 +50,89 @@ local frameworkBridges = {
             ['RSGCore:UpdatePlayer'] = 'LXRCore:UpdatePlayer',
         },
         exports = {
-            ['GetPlayer'] = 'GetPlayer',
-            ['GetPlayers'] = 'GetPlayers',
+            GetPlayer = 'GetPlayer',
+            GetPlayers = 'GetPlayers',
         }
     },
     
-    -- RedM-RP Framework Bridge
-    ['redmrp'] = {
+    -- RedM-RP / RedemRP Framework Bridge
+    redmrp = {
         detection = 'redmrp',
         events = {
             ['redemrp:getPlayerFromId'] = 'LXRCore:Server:GetPlayer',
+            ['redemrp:addMoney'] = 'LXRCore:Server:AddMoney',
+            ['redemrp:removeMoney'] = 'LXRCore:Server:RemoveMoney',
         },
         exports = {}
     },
     
-    -- QBR-Core Framework Bridge (parent framework)
-    ['qbr'] = {
+    -- QBR-Core Framework Bridge (QB-Core for RedM)
+    qbr = {
         detection = 'qbr-core',
         events = {
             ['QBRCore:Server:OnPlayerLoaded'] = 'LXRCore:Server:OnPlayerLoaded',
             ['QBRCore:UpdatePlayer'] = 'LXRCore:UpdatePlayer',
+            ['QBRCore:Server:AddMoney'] = 'LXRCore:Server:AddMoney',
         },
         exports = {
-            ['GetPlayer'] = 'GetPlayer',
+            GetPlayer = 'GetPlayer',
         }
+    },
+    
+    -- RedEM:RP Framework Bridge (Popular alternative framework)
+    redemrp = {
+        detection = 'redem_roleplay',
+        events = {
+            ['redemrp:getPlayerFromId'] = 'LXRCore:Server:GetPlayer',
+            ['redem:getPlayerFromId'] = 'LXRCore:Server:GetPlayer',
+        },
+        exports = {}
+    },
+    
+    -- Redemption Framework Bridge
+    redemption = {
+        detection = 'redemption',
+        events = {
+            ['redemption:getPlayer'] = 'LXRCore:Server:GetPlayer',
+            ['redemption:addCash'] = 'LXRCore:Server:AddMoney',
+        },
+        exports = {}
+    },
+    
+    -- WildRP Framework Bridge
+    wildrp = {
+        detection = 'wildrp',
+        events = {
+            ['wildrp:getPlayer'] = 'LXRCore:Server:GetPlayer',
+        },
+        exports = {}
+    },
+    
+    -- FrontierRP Framework Bridge
+    frontierrp = {
+        detection = 'frontierrp',
+        events = {
+            ['frontier:getPlayer'] = 'LXRCore:Server:GetPlayer',
+        },
+        exports = {}
+    },
+    
+    -- OutlawRP Framework Bridge
+    outlawrp = {
+        detection = 'outlawrp',
+        events = {
+            ['outlaw:getPlayer'] = 'LXRCore:Server:GetPlayer',
+        },
+        exports = {}
+    },
+    
+    -- Cowboy Framework Bridge (Legacy)
+    cowboy = {
+        detection = 'cowboy',
+        events = {
+            ['cowboy:getPlayer'] = 'LXRCore:Server:GetPlayer',
+        },
+        exports = {}
     }
 }
 

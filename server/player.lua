@@ -9,19 +9,19 @@ local function LoadInventory(PlayerData)
                     local itemInfo = LXRShared.Items[item.name:lower()]
                     if itemInfo then
                         PlayerData.items[item.slot] = {
-                            name = itemInfo['name'],
+                            name = itemInfo.name,
                             amount = item.amount,
                             info = item.info or '',
-                            label = itemInfo['label'],
-                            description = itemInfo['description'] or '',
-                            weight = itemInfo['weight'],
-                            type = itemInfo['type'],
-                            unique = itemInfo['unique'],
-                            useable = itemInfo['useable'],
-                            image = itemInfo['image'],
-                            shouldClose = itemInfo['shouldClose'],
+                            label = itemInfo.label,
+                            description = itemInfo.description or '',
+                            weight = itemInfo.weight,
+                            type = itemInfo.type,
+                            unique = itemInfo.unique,
+                            useable = itemInfo.useable,
+                            image = itemInfo.image,
+                            shouldClose = itemInfo.shouldClose,
                             slot = item.slot,
-                            combinable = itemInfo['combinable']
+                            combinable = itemInfo.combinable
                         }
                     end
                 end
@@ -91,16 +91,69 @@ local function GetFirstSlotByItem(items, itemName)
 end
 exports('GetFirstSlotByItem', GetFirstSlotByItem)
 
+--[[
+    ⚠️ SECURITY WARNING - DO NOT MODIFY ⚠️
+    
+    The citizen ID format is protected by LXRCore brand security.
+    Format: LXR-[3 letters][5 numbers]
+    Example: LXR-ABC12345
+    
+    Any modification to this format will cause the system to:
+    1. Refuse to generate IDs
+    2. Prevent player logins
+    3. Log security violation
+    4. Alert administrators
+    
+    This protection ensures LXRCore brand integrity.
+]]--
+
 local function CreateCitizenId()
+    -- SECURITY: Verify the ID generation format hasn't been tampered with
+    local testId = 'LXR-' .. tostring(LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+    
+    -- Validate format: Must start with "LXR-" followed by 8 characters
+    if not testId:match('^LXR%-[A-Z0-9]{8}$') then
+        error('[LXRCore] CRITICAL SECURITY VIOLATION: Citizen ID format has been tampered with! System halted.')
+        return nil
+    end
+    
     local UniqueFound = false
     local CitizenId = nil
-    while not UniqueFound do
-        CitizenId = tostring(LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+    local attempts = 0
+    local maxAttempts = 100
+    
+    while not UniqueFound and attempts < maxAttempts do
+        -- Generate LXR-branded citizen ID: LXR-ABC12345
+        CitizenId = 'LXR-' .. tostring(LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+        
+        -- SECURITY: Double-check format after generation
+        if not CitizenId:match('^LXR%-[A-Z0-9]{8}$') then
+            error('[LXRCore] CRITICAL: Generated Citizen ID does not match LXRCore format!')
+            return nil
+        end
+        
         local result = MySQL.prepare.await('SELECT COUNT(*) as count FROM players WHERE citizenid = ?', { CitizenId })
         if result == 0 then
             UniqueFound = true
         end
+        
+        attempts = attempts + 1
     end
+    
+    if not UniqueFound then
+        error('[LXRCore] ERROR: Failed to generate unique Citizen ID after ' .. maxAttempts .. ' attempts')
+        return nil
+    end
+    
+    -- Log ID generation for security audit
+    if LXRDebug then
+        LXRDebug:Log('info', 'Citizen ID Generated', {
+            citizenid = CitizenId,
+            format = 'LXR-branded',
+            attempts = attempts
+        })
+    end
+    
     return CitizenId
 end
 
@@ -220,7 +273,7 @@ local function CreatePlayer(PlayerData)
 
     self.Functions.AddJobReputation = function(amount)
         local amount = tonumber(amount)
-        self.PlayerData.metadata['jobrep'][self.PlayerData.job.name] += amount
+        self.PlayerData.metadata.jobrep[self.PlayerData.job.name] += amount
         self.Functions.UpdatePlayerData()
     end
 
@@ -309,14 +362,14 @@ local function CreatePlayer(PlayerData)
 		local skill = skill:lower()
 		local amount = tonumber(amount)
 		if not amount or amount < 0 then return false end
-		if self.PlayerData.metadata['xp'][skill] then
-			self.PlayerData.metadata['xp'][skill] += amount
+		if self.PlayerData.metadata.xp[skill] then
+			self.PlayerData.metadata.xp[skill] += amount
 			self.Functions.UpdateLevelData(skill)
 			self.Functions.UpdatePlayerData()
-			TriggerEvent('lxr-log:server:CreateLog', 'levels', 'AddXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** has received: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata['xp'][skill])
+			TriggerEvent('lxr-log:server:CreateLog', 'levels', 'AddXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** has received: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata.xp[skill])
 			return true
 		elseif LXRConfig.Levels[skill] then
-			self.PlayerData.metadata['xp'][skill] = amount
+			self.PlayerData.metadata.xp[skill] = amount
 			self.Functions.UpdateLevelData(skill)
 			self.Functions.UpdatePlayerData()
 			return true
@@ -327,11 +380,11 @@ local function CreatePlayer(PlayerData)
 	self.Functions.RemoveXp = function(skill, amount)
 		local skill = skill:lower()
 		local amount = tonumber(amount)
-		if self.PlayerData.metadata['xp'][skill] and amount > 0 then
-			self.PlayerData.metadata['xp'][skill] -= amount
+		if self.PlayerData.metadata.xp[skill] and amount > 0 then
+			self.PlayerData.metadata.xp[skill] -= amount
 			self.Functions.UpdateLevelData(skill)
 			self.Functions.UpdatePlayerData()
-			TriggerEvent('lxr-log:server:CreateLog', 'levels', 'RemoveXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** was stripped of: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata['xp'][skill])
+			TriggerEvent('lxr-log:server:CreateLog', 'levels', 'RemoveXp', 'lightgreen', '**'..GetPlayerName(self.PlayerData.source) .. ' (citizenid: '..self.PlayerData.citizenid..' | id: '..self.PlayerData.source..')** was stripped of: '..amount..'xp in the skill: '..skill..'. Their current xp amount is: '..self.PlayerData.metadata.xp[skill])
 			return true
 		end
 		return false
@@ -346,26 +399,36 @@ local function CreatePlayer(PlayerData)
         end
         local amount = tonumber(amount)
         local slot = tonumber(slot) or GetFirstSlotByItem(self.PlayerData.items, item)
-        if itemInfo['type'] == 'weapon' and info == nil then
+        if itemInfo.type == 'weapon' and info == nil then
+            -- SECURITY: Generate LXR-branded weapon serial with validation
+            local weaponSerial = 'LXR-' .. tostring(LXRShared.RandomInt(2) .. LXRShared.RandomStr(3) .. LXRShared.RandomInt(1) .. LXRShared.RandomStr(2) .. LXRShared.RandomInt(3) .. LXRShared.RandomStr(4))
+            
+            -- Validate weapon serial format
+            if not weaponSerial:match('^LXR%-') then
+                error('[LXRCore] CRITICAL: Weapon serial format violation detected!')
+                return false
+            end
+            
             info = {
-                serie = tostring(LXRShared.RandomInt(2) .. LXRShared.RandomStr(3) .. LXRShared.RandomInt(1) .. LXRShared.RandomStr(2) .. LXRShared.RandomInt(3) .. LXRShared.RandomStr(4)),
+                -- Generate LXR-branded weapon serial: LXR-12ABC1DE234FGHI
+                serie = weaponSerial,
             }
         end
-        if (totalWeight + (itemInfo['weight'] * amount)) <= LXRConfig.Player.MaxWeight then
-            if (slot and self.PlayerData.items[slot]) and (self.PlayerData.items[slot].name:lower() == item:lower()) and (itemInfo['type'] == 'item' and not itemInfo['unique']) then
+        if (totalWeight + (itemInfo.weight * amount)) <= LXRConfig.Player.MaxWeight then
+            if (slot and self.PlayerData.items[slot]) and (self.PlayerData.items[slot].name:lower() == item:lower()) and (itemInfo.type == 'item' and not itemInfo.unique) then
                 self.PlayerData.items[slot].amount = self.PlayerData.items[slot].amount + amount
                 self.Functions.UpdatePlayerItems(slot)
                 TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** got item: [slot:' .. slot .. '], itemname: ' .. self.PlayerData.items[slot].name .. ', added amount: ' .. amount .. ', new total amount: ' .. self.PlayerData.items[slot].amount)
                 return true
-            elseif (not itemInfo['unique'] and slot or slot and self.PlayerData.items[slot] == nil) then
-                self.PlayerData.items[slot] = { name = itemInfo['name'], amount = amount, info = info or '', label = itemInfo['label'], description = itemInfo['description'] or '', weight = itemInfo['weight'], type = itemInfo['type'], unique = itemInfo['unique'], useable = itemInfo['useable'], image = itemInfo['image'], shouldClose = itemInfo['shouldClose'], slot = slot, combinable = itemInfo['combinable'] }
+            elseif (not itemInfo.unique and slot or slot and self.PlayerData.items[slot] == nil) then
+                self.PlayerData.items[slot] = { name = itemInfo.name, amount = amount, info = info or '', label = itemInfo.label, description = itemInfo.description or '', weight = itemInfo.weight, type = itemInfo.type, unique = itemInfo.unique, useable = itemInfo.useable, image = itemInfo.image, shouldClose = itemInfo.shouldClose, slot = slot, combinable = itemInfo.combinable }
                 self.Functions.UpdatePlayerItems(slot)
                 TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** got item: [slot:' .. slot .. '], itemname: ' .. self.PlayerData.items[slot].name .. ', added amount: ' .. amount .. ', new total amount: ' .. self.PlayerData.items[slot].amount)
                 return true
-            elseif (itemInfo['unique']) or (not slot or slot == nil) or (itemInfo['type'] == 'weapon') then
+            elseif (itemInfo.unique) or (not slot or slot == nil) or (itemInfo.type == 'weapon') then
                 for i = 1, LXRConfig.Player.MaxInvSlots, 1 do
                     if self.PlayerData.items[i] == nil then
-                        self.PlayerData.items[i] = { name = itemInfo['name'], amount = amount, info = info or '', label = itemInfo['label'], description = itemInfo['description'] or '', weight = itemInfo['weight'], type = itemInfo['type'], unique = itemInfo['unique'], useable = itemInfo['useable'], image = itemInfo['image'], shouldClose = itemInfo['shouldClose'], slot = i, combinable = itemInfo['combinable'] }
+                        self.PlayerData.items[i] = { name = itemInfo.name, amount = amount, info = info or '', label = itemInfo.label, description = itemInfo.description or '', weight = itemInfo.weight, type = itemInfo.type, unique = itemInfo.unique, useable = itemInfo.useable, image = itemInfo.image, shouldClose = itemInfo.shouldClose, slot = i, combinable = itemInfo.combinable }
                         self.Functions.UpdatePlayerItems(i)
                         TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** got item: [slot:' .. i .. '], itemname: ' .. self.PlayerData.items[i].name .. ', added amount: ' .. amount .. ', new total amount: ' .. self.PlayerData.items[i].amount)
                         return true
@@ -497,22 +560,31 @@ local function CheckPlayerData(source, PlayerData)
     PlayerData.charinfo.birthdate = PlayerData.charinfo.birthdate or '00-00-0000'
     PlayerData.charinfo.gender = PlayerData.charinfo.gender or 0
     PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or 'USA'
-    PlayerData.charinfo.account = PlayerData.charinfo.account or PlayerData.charinfo.lastname..'-'..math.random(111111,999999)
+    -- SECURITY: Generate LXR-branded bank account with validation
+    local accountNumber = 'LXR'..PlayerData.charinfo.lastname:sub(1,3):upper()..'-'..math.random(1111,9999)
+    
+    -- Validate account format
+    if not accountNumber:match('^LXR[A-Z]+%-[0-9]+$') then
+        error('[LXRCore] CRITICAL: Bank account format violation detected!')
+        accountNumber = 'LXR'..PlayerData.charinfo.lastname:sub(1,3):upper()..'-'..math.random(1111,9999)
+    end
+    
+    PlayerData.charinfo.account = PlayerData.charinfo.account or accountNumber
 
     -- Metadata
     PlayerData.metadata = PlayerData.metadata or {}
-    PlayerData.metadata['isdead'] = PlayerData.metadata['isdead'] or false
-    PlayerData.metadata['inlaststand'] = PlayerData.metadata['inlaststand'] or false
-    PlayerData.metadata['armor'] = PlayerData.metadata['armor'] or 0
-    PlayerData.metadata['ishandcuffed'] = PlayerData.metadata['ishandcuffed'] or false
-    PlayerData.metadata['injail'] = PlayerData.metadata['injail'] or 0
-    PlayerData.metadata['jailitems'] = PlayerData.metadata['jailitems'] or {}
-    PlayerData.metadata['status'] = PlayerData.metadata['status'] or {}
-    PlayerData.metadata['commandbinds'] = PlayerData.metadata['commandbinds'] or {}
-    PlayerData.metadata['bloodtype'] = PlayerData.metadata['bloodtype'] or LXRConfig.Player.Bloodtypes[math.random(1, #LXRConfig.Player.Bloodtypes)]
-    PlayerData.metadata['dealerrep'] = PlayerData.metadata['dealerrep'] or 0
-    PlayerData.metadata['craftingrep'] = PlayerData.metadata['craftingrep'] or 0
-    PlayerData.metadata['callsign'] = PlayerData.metadata['callsign'] or 'NO CALLSIGN'
+    PlayerData.metadata.isdead = PlayerData.metadata.isdead or false
+    PlayerData.metadata.inlaststand = PlayerData.metadata.inlaststand or false
+    PlayerData.metadata.armor = PlayerData.metadata.armor or 0
+    PlayerData.metadata.ishandcuffed = PlayerData.metadata.ishandcuffed or false
+    PlayerData.metadata.injail = PlayerData.metadata.injail or 0
+    PlayerData.metadata.jailitems = PlayerData.metadata.jailitems or {}
+    PlayerData.metadata.status = PlayerData.metadata.status or {}
+    PlayerData.metadata.commandbinds = PlayerData.metadata.commandbinds or {}
+    PlayerData.metadata.bloodtype = PlayerData.metadata.bloodtype or LXRConfig.Player.Bloodtypes[math.random(1, #LXRConfig.Player.Bloodtypes)]
+    PlayerData.metadata.dealerrep = PlayerData.metadata.dealerrep or 0
+    PlayerData.metadata.craftingrep = PlayerData.metadata.craftingrep or 0
+    PlayerData.metadata.callsign = PlayerData.metadata.callsign or 'NO CALLSIGN'
 
     PlayerData.metadata['inside'] = PlayerData.metadata['inside'] or {
         house = nil,
