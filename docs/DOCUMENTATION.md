@@ -6,7 +6,7 @@
 
 **Complete Setup & Configuration Guide**
 
-[🏠 Home](README.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
+[🏠 Home](../README.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
 
 **Launched on [The Land of Wolves RP](https://www.wolves.land)**  
 **Official Website: [www.lxrcore.com](https://www.lxrcore.com)**

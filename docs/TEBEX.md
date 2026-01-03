@@ -6,7 +6,7 @@
 
 **Complete Tebex Integration for Gold Currency & Premium Tokens**
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 

@@ -6,7 +6,7 @@
 
 **Military-Grade Security for RedM Servers**
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 

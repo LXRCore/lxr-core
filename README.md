@@ -13,7 +13,7 @@ Here is a comprehensive version of the `README.md` file:
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![RedM](https://img.shields.io/badge/RedM-Compatible-red.svg)](https://redm.net)
 
-[Website](https://www.lxrcore.com) • [Documentation](DOCUMENTATION.md) • [Performance](PERFORMANCE.md) • [Security](SECURITY.md)
+[Website](https://www.lxrcore.com) • [Documentation](docs/DOCUMENTATION.md) • [Performance](docs/PERFORMANCE.md) • [Security](docs/SECURITY.md)
 
 **Proudly Launched on [The Land of Wolves RP](https://www.wolves.land)**
 
@@ -78,7 +78,7 @@ LXRCore is the **most advanced, optimized, and secure** framework for RedM rolep
 
 2. **Import the database**
    ```bash
-   mysql -u username -p database_name < lxrcore.sql
+   mysql -u username -p database_name < database/lxrcore.sql
    ```
 
 3. **Configure your server.cfg**
@@ -101,10 +101,10 @@ LXRCore is the **most advanced, optimized, and secure** framework for RedM rolep
 
 ## 📚 Documentation
 
-- **[Complete Documentation](DOCUMENTATION.md)** - Full setup and configuration guide
-- **[Performance Guide](PERFORMANCE.md)** - Optimization tips and metrics
-- **[Security Guide](SECURITY.md)** - Security features and best practices
-- **[API Reference](API.md)** - Developer API documentation
+- **[Complete Documentation](docs/DOCUMENTATION.md)** - Full setup and configuration guide
+- **[Performance Guide](docs/PERFORMANCE.md)** - Optimization tips and metrics
+- **[Security Guide](docs/SECURITY.md)** - Security features and best practices
+- **[API Reference](docs/API.md)** - Developer API documentation
 
 ---
 
@@ -229,7 +229,7 @@ Licensed under GNU GPLv3
 
 Need help? We've got you covered:
 
-- 📖 [Read the Documentation](DOCUMENTATION.md)
+- 📖 [Read the Documentation](docs/DOCUMENTATION.md)
 - 💬 [Join our Discord](https://discord.gg/lxrcore)
 - 🐛 [Report Issues](https://github.com/LXRCore/lxr-core/issues)
 - 🌐 [Visit our Website](https://www.lxrcore.com)

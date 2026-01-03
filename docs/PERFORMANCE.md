@@ -6,7 +6,7 @@
 
 **Supreme Performance for RedM Servers**
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md) • [🔒 Security](SECURITY.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [🔒 Security](SECURITY.md)
 
 **Proudly powering [The Land of Wolves RP](https://www.wolves.land)**
 

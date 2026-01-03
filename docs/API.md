@@ -6,7 +6,7 @@
 
 **Complete Developer API Documentation**
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 
