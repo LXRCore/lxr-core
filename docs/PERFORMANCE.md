@@ -4,11 +4,11 @@
 
 **⚡ Supreme Performance for RedM Servers ⚡**
 
-[![Performance](https://img.shields.io/badge/Performance-Optimized-brightgreen?style=for-the-badge)](PERFORMANCE.md)
-[![CPU](https://img.shields.io/badge/CPU-70%25_Faster-green?style=for-the-badge)](PERFORMANCE.md)
-[![FPS](https://img.shields.io/badge/FPS-87%25_Better-blue?style=for-the-badge)](PERFORMANCE.md)
-[![Memory](https://img.shields.io/badge/Memory-28%25_Less-orange?style=for-the-badge)](PERFORMANCE.md)
-[![Database](https://img.shields.io/badge/DB_Queries-60--80%25_Reduced-red?style=for-the-badge)](PERFORMANCE.md)
+[![Performance](https://img.shields.io/badge/Performance-Optimized-brightgreen?style=for-the-badge)](#-performance-enhancements)
+[![CPU](https://img.shields.io/badge/CPU-70%25_Faster-green?style=for-the-badge)](#2-server-side-optimizations)
+[![FPS](https://img.shields.io/badge/FPS-87%25_Better-blue?style=for-the-badge)](#1-optimized-client-side-loops)
+[![Memory](https://img.shields.io/badge/Memory-28%25_Less-orange?style=for-the-badge)](#3-database-performance-layer-serverdatabaselua)
+[![Database](https://img.shields.io/badge/DB_Queries-60--80%25_Reduced-red?style=for-the-badge)](#3-database-performance-layer-serverdatabaselua)
 
 [🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [🔒 Security](SECURITY.md)
 

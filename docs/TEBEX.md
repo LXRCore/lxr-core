@@ -4,10 +4,10 @@
 
 **💰 Complete Tebex Integration for Gold Currency & Premium Tokens 💰**
 
-[![Tebex](https://img.shields.io/badge/Tebex-Integration-16c784?style=for-the-badge)](TEBEX.md)
-[![Gold Currency](https://img.shields.io/badge/Gold-Currency-gold?style=for-the-badge)](TEBEX.md)
-[![Premium Tokens](https://img.shields.io/badge/Premium-Tokens-purple?style=for-the-badge)](TEBEX.md)
-[![Webhook](https://img.shields.io/badge/Webhook-Supported-blue?style=for-the-badge)](TEBEX.md)
+[![Tebex](https://img.shields.io/badge/Tebex-Integration-16c784?style=for-the-badge)](#-overview)
+[![Gold Currency](https://img.shields.io/badge/Gold-Currency-gold?style=for-the-badge)](#-features)
+[![Premium Tokens](https://img.shields.io/badge/Premium-Tokens-purple?style=for-the-badge)](#-features)
+[![Webhook](https://img.shields.io/badge/Webhook-Supported-blue?style=for-the-badge)](#step-4-set-up-webhook)
 
 [🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md)
 
