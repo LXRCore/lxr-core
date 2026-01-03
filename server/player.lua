@@ -109,7 +109,7 @@ exports('GetFirstSlotByItem', GetFirstSlotByItem)
 
 local function CreateCitizenId()
     -- SECURITY: Verify the ID generation format hasn't been tampered with
-    local testId = 'LXR-' .. tostring(LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+    local testId = 'LXR-' .. (LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
     
     -- Validate format: Must start with "LXR-" followed by 8 characters
     if not testId:match('^LXR%-[A-Z0-9]{8}$') then
@@ -124,7 +124,7 @@ local function CreateCitizenId()
     
     while not UniqueFound and attempts < maxAttempts do
         -- Generate LXR-branded citizen ID: LXR-ABC12345
-        CitizenId = 'LXR-' .. tostring(LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+        CitizenId = 'LXR-' .. (LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
         
         -- SECURITY: Double-check format after generation
         if not CitizenId:match('^LXR%-[A-Z0-9]{8}$') then
@@ -401,7 +401,7 @@ local function CreatePlayer(PlayerData)
         local slot = tonumber(slot) or GetFirstSlotByItem(self.PlayerData.items, item)
         if itemInfo.type == 'weapon' and info == nil then
             -- SECURITY: Generate LXR-branded weapon serial with validation
-            local weaponSerial = 'LXR-' .. tostring(LXRShared.RandomInt(2) .. LXRShared.RandomStr(3) .. LXRShared.RandomInt(1) .. LXRShared.RandomStr(2) .. LXRShared.RandomInt(3) .. LXRShared.RandomStr(4))
+            local weaponSerial = 'LXR-' .. tostring(LXRShared.RandomInt(2)) .. LXRShared.RandomStr(3) .. tostring(LXRShared.RandomInt(1)) .. LXRShared.RandomStr(2) .. tostring(LXRShared.RandomInt(3)) .. LXRShared.RandomStr(4)
             
             -- Validate weapon serial format
             if not weaponSerial:match('^LXR%-') then
@@ -586,7 +586,7 @@ local function CheckPlayerData(source, PlayerData)
     PlayerData.metadata.craftingrep = PlayerData.metadata.craftingrep or 0
     PlayerData.metadata.callsign = PlayerData.metadata.callsign or 'NO CALLSIGN'
 
-    PlayerData.metadata['inside'] = PlayerData.metadata['inside'] or {
+    PlayerData.metadata.inside = PlayerData.metadata.inside or {
         house = nil,
         apartment = {
             apartmentType = nil,

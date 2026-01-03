@@ -18,7 +18,7 @@
 -- ============================================
 
 local AUTHORIZED_FOLDER_NAME = 'lxr-core'
-local currentResourceName = GetCurrentResourceName()
+local CURRENT_RESOURCE_NAME = GetCurrentResourceName()
 
 --[[
     Server Owner Note:
@@ -35,13 +35,13 @@ local currentResourceName = GetCurrentResourceName()
 ]]--
 
 local function ValidateFolderName()
-    if currentResourceName ~= AUTHORIZED_FOLDER_NAME then
+    if CURRENT_RESOURCE_NAME ~= AUTHORIZED_FOLDER_NAME then
         print('^1========================================^7')
         print('^1   LXRCore BRAND PROTECTION TRIGGERED^7')
         print('^1========================================^7')
         print('^1[LXRCore] CRITICAL ERROR: Unauthorized folder name detected!^7')
         print('^1[LXRCore] Expected: ' .. AUTHORIZED_FOLDER_NAME .. '^7')
-        print('^1[LXRCore] Found: ' .. currentResourceName .. '^7')
+        print('^1[LXRCore] Found: ' .. CURRENT_RESOURCE_NAME .. '^7')
         print('^1[LXRCore] This is a violation of LXRCore brand protection.^7')
         print('^1========================================^7')
         print('^1   INITIATING SELF-DESTRUCT SEQUENCE^7')
@@ -75,7 +75,7 @@ local function SelfDestruct()
     -- Phase 3: Stop resource
     print('^1[LXRCore] Phase 3: Stopping resource...^7')
     Wait(1000)
-    StopResource(currentResourceName)
+    StopResource(CURRENT_RESOURCE_NAME)
     
     print('^1[LXRCore] Self-destruct complete.^7')
     print('^3[LXRCore] To restore: Rename folder to "lxr-core" and restore database from backup.^7')
@@ -98,7 +98,7 @@ CreateThread(function()
     end
     
     print('^2[LXRCore] Brand protection verified ✓^7')
-    print('^2[LXRCore] Resource name: ' .. currentResourceName .. '^7')
+    print('^2[LXRCore] Resource name: ' .. CURRENT_RESOURCE_NAME .. '^7')
 end)
 
 -- Continuous monitoring (check every minute)
