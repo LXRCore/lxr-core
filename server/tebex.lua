@@ -38,6 +38,7 @@ local config = {
 
 -- Package ID to reward mapping
 local packageRewards = {}
+local packageCount = 0
 
 -- ============================================
 -- INITIALIZATION
@@ -59,11 +60,12 @@ CreateThread(function()
     if LXRConfig.Tebex and LXRConfig.Tebex.Packages then
         for packageId, reward in pairs(LXRConfig.Tebex.Packages) do
             packageRewards[tonumber(packageId)] = reward
+            packageCount = packageCount + 1
         end
     end
     
     print('^2[LXRCore] [Tebex]^7 Integration initialized')
-    print('^2[LXRCore] [Tebex]^7 Loaded ' .. #packageRewards .. ' package rewards')
+    print('^2[LXRCore] [Tebex]^7 Loaded ' .. packageCount .. ' package rewards')
     print('^2[LXRCore] [Tebex]^7 Webhook: ' .. config.webhookEndpoint)
 end)
 
@@ -113,10 +115,15 @@ end)
 function LXRTebex.VerifySignature(body, signature)
     if not signature then return false end
     
-    -- Tebex uses HMAC-SHA256
-    -- For production, implement proper HMAC verification
-    -- This is a simplified version
-    return true -- TODO: Implement proper HMAC verification
+    -- TODO: Implement HMAC-SHA256 verification
+    -- For now, basic validation that signature exists
+    -- In production, use proper crypto library for HMAC verification
+    
+    if #signature < 32 then
+        return false -- Signature too short
+    end
+    
+    return true
 end
 
 -- ============================================
@@ -291,6 +298,7 @@ end
 -- ============================================
 
 local offlineQueue = {}
+local offlineQueueSize = 0
 
 function LXRTebex.QueueOfflineDelivery(uuid, packages, transactionId)
     if not offlineQueue[uuid] then
@@ -302,6 +310,8 @@ function LXRTebex.QueueOfflineDelivery(uuid, packages, transactionId)
         transaction = transactionId,
         timestamp = os.time()
     })
+    
+    offlineQueueSize = offlineQueueSize + 1
     
     -- Save to database
     MySQL.insert('INSERT INTO tebex_queue (uuid, packages, transaction_id, created_at) VALUES (?, ?, ?, NOW())',
@@ -331,7 +341,7 @@ function LXRTebex.CheckOfflineQueue(playerId)
 end
 
 -- Check queue when player joins
-AddEventHandler('playerJoining', function()
+AddEventHandler('LXRCore:Server:OnPlayerLoaded', function()
     local playerId = source
     SetTimeout(5000, function() -- Wait 5 seconds for player to load
         LXRTebex.CheckOfflineQueue(playerId)
@@ -358,9 +368,9 @@ RegisterCommand('tebex:status', function(source, args)
         'Tebex Integration Status:',
         ('Enabled: %s'):format(config.enabled and 'Yes' or 'No'),
         ('Secret Key: %s'):format(config.secretKey ~= '' and 'Configured' or 'NOT SET'),
-        ('Packages: %d'):format(#packageRewards),
+        ('Packages: %d'):format(packageCount),
         ('Webhook: %s'):format(config.webhookEndpoint),
-        ('Queue: %d pending'):format(#offlineQueue)
+        ('Queue: %d pending'):format(offlineQueueSize)
     }
     
     if source == 0 then
@@ -416,8 +426,8 @@ end)
 exports('GetTebexStats', function()
     return {
         enabled = config.enabled,
-        packages = #packageRewards,
-        queueSize = #offlineQueue
+        packages = packageCount,
+        queueSize = offlineQueueSize
     }
 end)
 

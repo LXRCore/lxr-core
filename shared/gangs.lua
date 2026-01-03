@@ -16,7 +16,7 @@ LXRShared.Gangs = {
     none = {
         label = 'No Gang Affiliation',
         grades = {
-            ['0'] = { name = 'Unaffiliated' }
+            [0] = { name = 'Unaffiliated' }
         }
     },
     
@@ -26,91 +26,91 @@ LXRShared.Gangs = {
     vanderlinde = {
         label = 'Van der Linde Gang',
         grades = {
-            ['0'] = { name = 'Associate' },
-            ['1'] = { name = 'Member' },
-            ['2'] = { name = 'Trusted' },
-            ['3'] = { name = 'Lieutenant' },
-            ['4'] = { name = 'Leader', isboss = true }
+            [0] = { name = 'Associate' },
+            [1] = { name = 'Member' },
+            [2] = { name = 'Trusted' },
+            [3] = { name = 'Lieutenant' },
+            [4] = { name = 'Leader', isboss = true }
         }
     },
     
     odriscoll = {
         label = "O'Driscoll Boys",
         grades = {
-            ['0'] = { name = 'Recruit' },
-            ['1'] = { name = 'Thug' },
-            ['2'] = { name = 'Enforcer' },
-            ['3'] = { name = 'Shot Caller' },
-            ['4'] = { name = 'Boss', isboss = true }
+            [0] = { name = 'Recruit' },
+            [1] = { name = 'Thug' },
+            [2] = { name = 'Enforcer' },
+            [3] = { name = 'Shot Caller' },
+            [4] = { name = 'Boss', isboss = true }
         }
     },
     
     lemoyne = {
         label = 'Lemoyne Raiders',
         grades = {
-            ['0'] = { name = 'Private' },
-            ['1'] = { name = 'Corporal' },
-            ['2'] = { name = 'Sergeant' },
-            ['3'] = { name = 'Captain' },
-            ['4'] = { name = 'Colonel', isboss = true }
+            [0] = { name = 'Private' },
+            [1] = { name = 'Corporal' },
+            [2] = { name = 'Sergeant' },
+            [3] = { name = 'Captain' },
+            [4] = { name = 'Colonel', isboss = true }
         }
     },
     
     murfree = {
         label = 'Murfree Brood',
         grades = {
-            ['0'] = { name = 'Savage' },
-            ['1'] = { name = 'Bruiser' },
-            ['2'] = { name = 'Terrorizer' },
-            ['3'] = { name = 'Patriarch', isboss = true }
+            [0] = { name = 'Savage' },
+            [1] = { name = 'Bruiser' },
+            [2] = { name = 'Terrorizer' },
+            [3] = { name = 'Patriarch', isboss = true }
         }
     },
     
     skinner = {
         label = 'Skinner Brothers',
         grades = {
-            ['0'] = { name = 'Skinner' },
-            ['1'] = { name = 'Hunter' },
-            ['2'] = { name = 'Executioner' },
-            ['3'] = { name = 'Chief', isboss = true }
+            [0] = { name = 'Skinner' },
+            [1] = { name = 'Hunter' },
+            [2] = { name = 'Executioner' },
+            [3] = { name = 'Chief', isboss = true }
         }
     },
     
     laramie = {
         label = 'Laramie Gang',
         grades = {
-            ['0'] = { name = 'Rustler' },
-            ['1'] = { name = 'Gunhand' },
-            ['2'] = { name = 'Lieutenant' },
-            ['3'] = { name = 'Leader', isboss = true }
+            [0] = { name = 'Rustler' },
+            [1] = { name = 'Gunhand' },
+            [2] = { name = 'Lieutenant' },
+            [3] = { name = 'Leader', isboss = true }
         }
     },
     
     dellobo = {
         label = 'Del Lobo Gang',
         grades = {
-            ['0'] = { name = 'Bandito' },
-            ['1'] = { name = 'Pistolero' },
-            ['2'] = { name = 'Teniente' },
-            ['3'] = { name = 'Jefe', isboss = true }
+            [0] = { name = 'Bandito' },
+            [1] = { name = 'Pistolero' },
+            [2] = { name = 'Teniente' },
+            [3] = { name = 'Jefe', isboss = true }
         }
     },
     
     nightfolk = {
         label = 'Night Folk',
         grades = {
-            ['0'] = { name = 'Shadow' },
-            ['1'] = { name = 'Stalker' },
-            ['2'] = { name = 'Elder', isboss = true }
+            [0] = { name = 'Shadow' },
+            [1] = { name = 'Stalker' },
+            [2] = { name = 'Elder', isboss = true }
         }
     },
     
     foreman = {
         label = 'Foreman Brothers',
         grades = {
-            ['0'] = { name = 'Recruit' },
-            ['1'] = { name = 'Bruiser' },
-            ['2'] = { name = 'Foreman', isboss = true }
+            [0] = { name = 'Recruit' },
+            [1] = { name = 'Bruiser' },
+            [2] = { name = 'Foreman', isboss = true }
         }
     },
     
@@ -120,10 +120,10 @@ LXRShared.Gangs = {
     wapiti = {
         label = 'Wapiti Indians',
         grades = {
-            ['0'] = { name = 'Warrior' },
-            ['1'] = { name = 'Brave' },
-            ['2'] = { name = 'War Chief' },
-            ['3'] = { name = 'Chief', isboss = true }
+            [0] = { name = 'Warrior' },
+            [1] = { name = 'Brave' },
+            [2] = { name = 'War Chief' },
+            [3] = { name = 'Chief', isboss = true }
         }
     },
     
@@ -135,30 +135,30 @@ LXRShared.Gangs = {
     dalton = {
         label = 'Dalton Gang',
         grades = {
-            ['0'] = { name = 'Rider' },
-            ['1'] = { name = 'Gunslinger' },
-            ['2'] = { name = 'Lieutenant' },
-            ['3'] = { name = 'Dalton Brother', isboss = true }
+            [0] = { name = 'Rider' },
+            [1] = { name = 'Gunslinger' },
+            [2] = { name = 'Lieutenant' },
+            [3] = { name = 'Dalton Brother', isboss = true }
         }
     },
     
     doolin = {
         label = 'Doolin-Dalton Gang',
         grades = {
-            ['0'] = { name = 'Outlaw' },
-            ['1'] = { name = 'Gunman' },
-            ['2'] = { name = 'Wild Bunch' },
-            ['3'] = { name = 'Boss', isboss = true }
+            [0] = { name = 'Outlaw' },
+            [1] = { name = 'Gunman' },
+            [2] = { name = 'Wild Bunch' },
+            [3] = { name = 'Boss', isboss = true }
         }
     },
     
     wilderbunch = {
         label = 'Wild Bunch',
         grades = {
-            ['0'] = { name = 'Rustler' },
-            ['1'] = { name = 'Bank Robber' },
-            ['2'] = { name = 'Train Robber' },
-            ['3'] = { name = 'Butch & Sundance', isboss = true }
+            [0] = { name = 'Rustler' },
+            [1] = { name = 'Bank Robber' },
+            [2] = { name = 'Train Robber' },
+            [3] = { name = 'Butch & Sundance', isboss = true }
         }
     },
     
@@ -166,19 +166,19 @@ LXRShared.Gangs = {
     revolucion = {
         label = 'Revolución',
         grades = {
-            ['0'] = { name = 'Soldado' },
-            ['1'] = { name = 'Guerrero' },
-            ['2'] = { name = 'Capitán' },
-            ['3'] = { name = 'General', isboss = true }
+            [0] = { name = 'Soldado' },
+            [1] = { name = 'Guerrero' },
+            [2] = { name = 'Capitán' },
+            [3] = { name = 'General', isboss = true }
         }
     },
     
     bandidos = {
         label = 'Los Bandidos',
         grades = {
-            ['0'] = { name = 'Bandido' },
-            ['1'] = { name = 'Vaquero' },
-            ['2'] = { name = 'Líder', isboss = true }
+            [0] = { name = 'Bandido' },
+            [1] = { name = 'Vaquero' },
+            [2] = { name = 'Líder', isboss = true }
         }
     },
     
@@ -186,9 +186,9 @@ LXRShared.Gangs = {
     cattlerustlers = {
         label = 'Cattle Rustlers',
         grades = {
-            ['0'] = { name = 'Rustler' },
-            ['1'] = { name = 'Wrangler' },
-            ['2'] = { name = 'Boss Rustler', isboss = true }
+            [0] = { name = 'Rustler' },
+            [1] = { name = 'Wrangler' },
+            [2] = { name = 'Boss Rustler', isboss = true }
         }
     },
     
@@ -196,10 +196,10 @@ LXRShared.Gangs = {
     trainrobbers = {
         label = 'Train Robbers',
         grades = {
-            ['0'] = { name = 'Lookout' },
-            ['1'] = { name = 'Gunman' },
-            ['2'] = { name = 'Dynamiter' },
-            ['3'] = { name = 'Mastermind', isboss = true }
+            [0] = { name = 'Lookout' },
+            [1] = { name = 'Gunman' },
+            [2] = { name = 'Dynamiter' },
+            [3] = { name = 'Mastermind', isboss = true }
         }
     },
     
@@ -207,18 +207,18 @@ LXRShared.Gangs = {
     moonshiners = {
         label = 'Moonshine Runners',
         grades = {
-            ['0'] = { name = 'Runner' },
-            ['1'] = { name = 'Distiller' },
-            ['2'] = { name = 'Moonshine Boss', isboss = true }
+            [0] = { name = 'Runner' },
+            [1] = { name = 'Distiller' },
+            [2] = { name = 'Moonshine Boss', isboss = true }
         }
     },
     
     smugglers = {
         label = 'Smuggling Ring',
         grades = {
-            ['0'] = { name = 'Mule' },
-            ['1'] = { name = 'Smuggler' },
-            ['2'] = { name = 'Kingpin', isboss = true }
+            [0] = { name = 'Mule' },
+            [1] = { name = 'Smuggler' },
+            [2] = { name = 'Kingpin', isboss = true }
         }
     },
     
@@ -226,9 +226,9 @@ LXRShared.Gangs = {
     bountyhunters = {
         label = 'Rogue Bounty Hunters',
         grades = {
-            ['0'] = { name = 'Tracker' },
-            ['1'] = { name = 'Hunter' },
-            ['2'] = { name = 'Master Hunter', isboss = true }
+            [0] = { name = 'Tracker' },
+            [1] = { name = 'Hunter' },
+            [2] = { name = 'Master Hunter', isboss = true }
         }
     },
     
@@ -236,18 +236,18 @@ LXRShared.Gangs = {
     riverpirates = {
         label = 'River Pirates',
         grades = {
-            ['0'] = { name = 'Deckhand' },
-            ['1'] = { name = 'Pirate' },
-            ['2'] = { name = 'Captain', isboss = true }
+            [0] = { name = 'Deckhand' },
+            [1] = { name = 'Pirate' },
+            [2] = { name = 'Captain', isboss = true }
         }
     },
     
     bayougang = {
         label = 'Bayou Gang',
         grades = {
-            ['0'] = { name = 'Swamper' },
-            ['1'] = { name = 'Gator' },
-            ['2'] = { name = 'Swamp King', isboss = true }
+            [0] = { name = 'Swamper' },
+            [1] = { name = 'Gator' },
+            [2] = { name = 'Swamp King', isboss = true }
         }
     },
     
@@ -255,18 +255,18 @@ LXRShared.Gangs = {
     mountainmen = {
         label = 'Mountain Men',
         grades = {
-            ['0'] = { name = 'Trapper' },
-            ['1'] = { name = 'Mountain Man' },
-            ['2'] = { name = 'Mountain King', isboss = true }
+            [0] = { name = 'Trapper' },
+            [1] = { name = 'Mountain Man' },
+            [2] = { name = 'Mountain King', isboss = true }
         }
     },
     
     grizzlies = {
         label = 'Grizzlies Gang',
         grades = {
-            ['0'] = { name = 'Survivor' },
-            ['1'] = { name = 'Raider' },
-            ['2'] = { name = 'Warlord', isboss = true }
+            [0] = { name = 'Survivor' },
+            [1] = { name = 'Raider' },
+            [2] = { name = 'Warlord', isboss = true }
         }
     },
     
@@ -274,19 +274,19 @@ LXRShared.Gangs = {
     saintdenismob = {
         label = 'Saint Denis Mob',
         grades = {
-            ['0'] = { name = 'Thug' },
-            ['1'] = { name = 'Made Man' },
-            ['2'] = { name = 'Underboss' },
-            ['3'] = { name = 'Don', isboss = true }
+            [0] = { name = 'Thug' },
+            [1] = { name = 'Made Man' },
+            [2] = { name = 'Underboss' },
+            [3] = { name = 'Don', isboss = true }
         }
     },
     
     blackwater = {
         label = 'Blackwater Crew',
         grades = {
-            ['0'] = { name = 'Muscle' },
-            ['1'] = { name = 'Enforcer' },
-            ['2'] = { name = 'Boss', isboss = true }
+            [0] = { name = 'Muscle' },
+            [1] = { name = 'Enforcer' },
+            [2] = { name = 'Boss', isboss = true }
         }
     },
     
@@ -294,9 +294,9 @@ LXRShared.Gangs = {
     pelttraders = {
         label = 'Illegal Pelt Traders',
         grades = {
-            ['0'] = { name = 'Poacher' },
-            ['1'] = { name = 'Trader' },
-            ['2'] = { name = 'Pelt Baron', isboss = true }
+            [0] = { name = 'Poacher' },
+            [1] = { name = 'Trader' },
+            [2] = { name = 'Pelt Baron', isboss = true }
         }
     },
     
@@ -304,9 +304,9 @@ LXRShared.Gangs = {
     horsethieves = {
         label = 'Horse Thieves',
         grades = {
-            ['0'] = { name = 'Rustler' },
-            ['1'] = { name = 'Horse Thief' },
-            ['2'] = { name = 'Stable Master', isboss = true }
+            [0] = { name = 'Rustler' },
+            [1] = { name = 'Horse Thief' },
+            [2] = { name = 'Stable Master', isboss = true }
         }
     },
     
@@ -314,9 +314,9 @@ LXRShared.Gangs = {
     claimjumpers = {
         label = 'Claim Jumpers',
         grades = {
-            ['0'] = { name = 'Jumper' },
-            ['1'] = { name = 'Claim Thief' },
-            ['2'] = { name = 'Mining Boss', isboss = true }
+            [0] = { name = 'Jumper' },
+            [1] = { name = 'Claim Thief' },
+            [2] = { name = 'Mining Boss', isboss = true }
         }
     },
     
@@ -324,9 +324,9 @@ LXRShared.Gangs = {
     highwaymen = {
         label = 'Highwaymen',
         grades = {
-            ['0'] = { name = 'Footpad' },
-            ['1'] = { name = 'Highwayman' },
-            ['2'] = { name = 'Road Agent', isboss = true }
+            [0] = { name = 'Footpad' },
+            [1] = { name = 'Highwayman' },
+            [2] = { name = 'Road Agent', isboss = true }
         }
     },
     
@@ -334,9 +334,9 @@ LXRShared.Gangs = {
     counterfeiters = {
         label = 'Counterfeit Ring',
         grades = {
-            ['0'] = { name = 'Runner' },
-            ['1'] = { name = 'Forger' },
-            ['2'] = { name = 'Mastermind', isboss = true }
+            [0] = { name = 'Runner' },
+            [1] = { name = 'Forger' },
+            [2] = { name = 'Mastermind', isboss = true }
         }
     },
     
@@ -344,9 +344,9 @@ LXRShared.Gangs = {
     graverobbers = {
         label = 'Grave Robbers',
         grades = {
-            ['0'] = { name = 'Digger' },
-            ['1'] = { name = 'Robber' },
-            ['2'] = { name = 'Resurrectionist', isboss = true }
+            [0] = { name = 'Digger' },
+            [1] = { name = 'Robber' },
+            [2] = { name = 'Resurrectionist', isboss = true }
         }
     },
     
@@ -354,9 +354,9 @@ LXRShared.Gangs = {
     opiumden = {
         label = 'Opium Ring',
         grades = {
-            ['0'] = { name = 'Runner' },
-            ['1'] = { name = 'Dealer' },
-            ['2'] = { name = 'Opium Lord', isboss = true }
+            [0] = { name = 'Runner' },
+            [1] = { name = 'Dealer' },
+            [2] = { name = 'Opium Lord', isboss = true }
         }
     },
     
@@ -364,9 +364,9 @@ LXRShared.Gangs = {
     fightclub = {
         label = 'Fight Club',
         grades = {
-            ['0'] = { name = 'Brawler' },
-            ['1'] = { name = 'Promoter' },
-            ['2'] = { name = 'Fight Boss', isboss = true }
+            [0] = { name = 'Brawler' },
+            [1] = { name = 'Promoter' },
+            [2] = { name = 'Fight Boss', isboss = true }
         }
     },
     
@@ -374,9 +374,9 @@ LXRShared.Gangs = {
     gamblers = {
         label = 'Gambling Ring',
         grades = {
-            ['0'] = { name = 'Card Sharp' },
-            ['1'] = { name = 'High Roller' },
-            ['2'] = { name = 'House', isboss = true }
+            [0] = { name = 'Card Sharp' },
+            [1] = { name = 'High Roller' },
+            [2] = { name = 'House', isboss = true }
         }
     },
     
@@ -384,9 +384,9 @@ LXRShared.Gangs = {
     protection = {
         label = 'Protection Racket',
         grades = {
-            ['0'] = { name = 'Collector' },
-            ['1'] = { name = 'Enforcer' },
-            ['2'] = { name = 'Boss', isboss = true }
+            [0] = { name = 'Collector' },
+            [1] = { name = 'Enforcer' },
+            [2] = { name = 'Boss', isboss = true }
         }
     },
     
@@ -394,9 +394,9 @@ LXRShared.Gangs = {
     gunslingers = {
         label = 'Guns for Hire',
         grades = {
-            ['0'] = { name = 'Gunhand' },
-            ['1'] = { name = 'Gunslinger' },
-            ['2'] = { name = 'Legendary Gunslinger', isboss = true }
+            [0] = { name = 'Gunhand' },
+            [1] = { name = 'Gunslinger' },
+            [2] = { name = 'Legendary Gunslinger', isboss = true }
         }
     },
     
@@ -404,9 +404,9 @@ LXRShared.Gangs = {
     vigilantes = {
         label = 'Vigilantes',
         grades = {
-            ['0'] = { name = 'Watchman' },
-            ['1'] = { name = 'Vigilante' },
-            ['2'] = { name = 'Regulator', isboss = true }
+            [0] = { name = 'Watchman' },
+            [1] = { name = 'Vigilante' },
+            [2] = { name = 'Regulator', isboss = true }
         }
     },
 }

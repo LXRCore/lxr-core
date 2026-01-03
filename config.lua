@@ -47,7 +47,7 @@ LXRConfig.UseConnectQueue = true
 
 -- Permission groups (add as many as needed)
 -- Players are assigned to these groups via ACE permissions
-LXRConfig.Permissions = {'god', 'admin', 'mod', 'support'}
+LXRConfig.Permissions = {god, admin, mod, support}
 
 -- ============================================
 -- CURRENCY & MONEY SYSTEM (Supreme Edition)
@@ -186,7 +186,7 @@ LXRConfig.Money.MoneyTypes = {
         hidden = false,
         valueInDollars = 2,         -- 1 marshal coin = $2
         restricted = {
-            jobs = {'police', 'marshal', 'ranger'},
+            jobs = {police, marshal, ranger},
             description = 'Law enforcement only'
         }
     },
@@ -346,7 +346,7 @@ end
 -- Paycheck Configuration
 LXRConfig.Money.PayCheckTimeOut = 30           -- Minutes between paychecks
 LXRConfig.Money.PayCheckSociety = false        -- Paychecks from society account (requires lxr-bossmenu)
-LXRConfig.Money.PayCheckTypes = {'cash', 'bank'} -- Which currencies can be used for paychecks
+LXRConfig.Money.PayCheckTypes = {cash, bank}   -- Which currencies can be used for paychecks
 
 -- Currency Exchange Rates (for conversion between types)
 -- Updated for 1899 economy standards
@@ -418,7 +418,7 @@ LXRConfig.Tebex = {
             tokens = 300,
             cash = 50,
             items = {
-                ['weapon_revolver_cattleman'] = 1,
+                weapon_revolver_cattleman = 1,
             }
         },
         
@@ -428,8 +428,8 @@ LXRConfig.Tebex = {
             tokens = 750,
             cash = 100,
             items = {
-                ['weapon_revolver_schofield'] = 1,
-                ['horse_arabian'] = 1,
+                weapon_revolver_schofield = 1,
+                horse_arabian = 1,
             }
         },
         
@@ -557,7 +557,7 @@ LXRConfig.Player.Wallet = {
     dropOnDeath = {
         enabled = true,
         percentage = 0.5,       -- Drop 50% of tangible money on death
-        excludeTypes = {'bank', 'goldcurrency', 'tokens'} -- Never drop these
+        excludeTypes = {bank, goldcurrency, tokens} -- Never drop these
     }
 }
 
@@ -568,28 +568,28 @@ LXRConfig.Player.Wallet = {
 -- Left side is level, right side xp needed
 -- You can add as many skills as you want here
 LXRConfig.Levels = {
-    ["main"] = {
+    main = {
         [0] = 0, [1] = 50, [2] = 100, [3] = 150, [4] = 200,
         [5] = 250, [6] = 300, [7] = 350, [8] = 400, [9] = 450,
         [10] = 500, [11] = 550, [12] = 600, [13] = 650, [14] = 700,
         [15] = 750, [16] = 800, [17] = 850, [18] = 900, [19] = 950,
         [20] = 1000
     },
-    ["mining"] = {
+    mining = {
         [0] = 0, [1] = 50, [2] = 100, [3] = 150, [4] = 200,
         [5] = 250, [6] = 300, [7] = 350, [8] = 400, [9] = 450,
         [10] = 500, [11] = 550, [12] = 600, [13] = 650, [14] = 700,
         [15] = 750, [16] = 800, [17] = 850, [18] = 900, [19] = 950,
         [20] = 1000
     },
-    ["herbalism"] = {
+    herbalism = {
         [0] = 0, [1] = 50, [2] = 100, [3] = 150, [4] = 200,
         [5] = 250, [6] = 300, [7] = 350, [8] = 400, [9] = 450,
         [10] = 500, [11] = 550, [12] = 600, [13] = 650, [14] = 700,
         [15] = 750, [16] = 800, [17] = 850, [18] = 900, [19] = 950,
         [20] = 1000
     },
-    ["hunting"] = {
+    hunting = {
         [0] = 0, [1] = 50, [2] = 100, [3] = 150, [4] = 200,
         [5] = 250, [6] = 300, [7] = 350, [8] = 400, [9] = 450,
         [10] = 500, [11] = 550, [12] = 600, [13] = 650, [14] = 700,
