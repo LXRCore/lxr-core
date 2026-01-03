@@ -1,6 +1,3 @@
-Here is a comprehensive version of the `README.md` file:
-
-```markdown
 # LXRCore Framework
 
 <div align="center">
