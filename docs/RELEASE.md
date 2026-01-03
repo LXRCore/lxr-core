@@ -2,13 +2,16 @@
 
 <div align="center">
 
-![LXRCore](https://via.placeholder.com/800x200/1a1a2e/16c784?text=LXRCore+v2.0.0+-+Supreme+Release)
+**🎉 The Most Advanced RedM Framework for 1899 Era Roleplay 🎉**
 
-**The Most Advanced RedM Framework for 1899 Era Roleplay**
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=for-the-badge)](https://github.com/LXRCore/lxr-core)
+[![Release](https://img.shields.io/badge/Release-Supreme-16c784?style=for-the-badge)](#-whats-new-in-v200)
+[![Framework Bridge](https://img.shields.io/badge/Framework-Bridge_System-purple?style=for-the-badge)](#-framework-bridge-system)
+[![Anti-Dupe](https://img.shields.io/badge/Anti--Dupe-Protection-red?style=for-the-badge)](#️-anti-dupe-protection)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 
-**Launched on [The Land of Wolves RP](https://www.wolves.land)**
+**🐺 Launched on [The Land of Wolves RP](https://www.wolves.land) 🐺**
 
 </div>
 
@@ -279,7 +282,7 @@
 
 ### From Scratch
 1. Follow installation in DOCUMENTATION.md
-2. Import lxrcore.sql
+2. Import database/lxrcore.sql
 3. Configure config.lua
 4. Start server
 5. Done!
@@ -362,7 +365,7 @@
 git clone https://github.com/LXRCore/lxr-core.git
 
 # Import database
-mysql -u username -p database < lxrcore.sql
+mysql -u username -p database < database/lxrcore.sql
 
 # Add to server.cfg
 ensure lxr-core

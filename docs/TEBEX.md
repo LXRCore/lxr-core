@@ -2,11 +2,14 @@
 
 <div align="center">
 
-![LXRCore Tebex](https://via.placeholder.com/600x100/1a1a2e/16c784?text=LXRCore+Tebex+Integration)
+**💰 Complete Tebex Integration for Gold Currency & Premium Tokens 💰**
 
-**Complete Tebex Integration for Gold Currency & Premium Tokens**
+[![Tebex](https://img.shields.io/badge/Tebex-Integration-16c784?style=for-the-badge)](#-overview)
+[![Gold Currency](https://img.shields.io/badge/Gold-Currency-gold?style=for-the-badge)](#-features)
+[![Premium Tokens](https://img.shields.io/badge/Premium-Tokens-purple?style=for-the-badge)](#-features)
+[![Webhook](https://img.shields.io/badge/Webhook-Supported-blue?style=for-the-badge)](#step-4-set-up-webhook)
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 
@@ -65,7 +68,7 @@ LXRConfig.Tebex = {
 Run the SQL file:
 
 ```bash
-mysql -u your_username -p your_database < tebex_tables.sql
+mysql -u your_username -p your_database < database/tebex_tables.sql
 ```
 
 Or manually execute in your database tool (HeidiSQL, phpMyAdmin, etc.)

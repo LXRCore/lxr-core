@@ -2,15 +2,19 @@
 
 <div align="center">
 
-![LXRCore Security](https://via.placeholder.com/600x100/1a1a2e/ff4444?text=LXRCore+Security+Guide)
+**🔒 Military-Grade Security for RedM Servers 🔒**
 
-**Military-Grade Security for RedM Servers**
+[![Security](https://img.shields.io/badge/Security-Military_Grade-red?style=for-the-badge)](#️-built-in-security-features)
+[![Anti-Cheat](https://img.shields.io/badge/Anti--Cheat-Built--in-darkred?style=for-the-badge)](#3-anti-cheat-system)
+[![Rate Limiting](https://img.shields.io/badge/Rate_Limiting-Enabled-orange?style=for-the-badge)](#1-rate-limiting-system)
+[![Validation](https://img.shields.io/badge/Input_Validation-Complete-green?style=for-the-badge)](#2-input-validation)
+[![Audit](https://img.shields.io/badge/Audit_Logging-Full-blue?style=for-the-badge)](#-security-best-practices)
 
-[🏠 Home](README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md)
+[🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md)
 
 **Made by iBoss • LXRCore - www.lxrcore.com**
 
-**Launched on [The Land of Wolves RP](https://www.wolves.land)**
+**🐺 Launched on [The Land of Wolves RP](https://www.wolves.land) 🐺**
 
 </div>
 
