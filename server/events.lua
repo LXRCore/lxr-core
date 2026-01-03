@@ -97,7 +97,14 @@ end)
 -- Items
 
 RegisterNetEvent('LXRCore:Server:UseItem', function(item)
+    -- Security: Validate source and rate limit
+    if not exports['lxr-core']:ValidateSource(source) then return end
+    if not exports['lxr-core']:CheckRateLimit(source, 'UseItem', 5) then return end
+    
     if item and item.amount > 0 then
+        -- Security: Validate item data
+        if type(item.name) ~= 'string' or #item.name == 0 then return end
+        
         if LXRCore.UseableItems[item.name] then
             LXRCore.UseableItems[item.name](source, item)
         end
@@ -105,12 +112,31 @@ RegisterNetEvent('LXRCore:Server:UseItem', function(item)
 end)
 
 RegisterNetEvent('LXRCore:Server:RemoveItem', function(itemName, amount, slot)
+    -- Security: Validate source and rate limit
+    if not exports['lxr-core']:ValidateSource(source) then return end
+    if not exports['lxr-core']:CheckRateLimit(source, 'RemoveItem', 20) then return end
+    
+    -- Security: Validate item data
+    if not exports['lxr-core']:ValidateItemData(itemName, amount, slot) then return end
+    
     local Player = GetPlayer(source)
+    if not Player then return end
     Player.Functions.RemoveItem(itemName, amount, slot)
 end)
 
 RegisterNetEvent('LXRCore:Server:AddItem', function(itemName, amount, slot, info)
+    -- Security: Validate source and rate limit
+    if not exports['lxr-core']:ValidateSource(source) then return end
+    if not exports['lxr-core']:CheckRateLimit(source, 'AddItem', 20) then return end
+    
+    -- Security: Validate item data
+    if not exports['lxr-core']:ValidateItemData(itemName, amount, slot) then return end
+    
+    -- Security: Check for suspicious rapid item adding
+    if not exports['lxr-core']:CheckSuspiciousActivity(source, 'rapidItems', amount) then return end
+    
     local Player = GetPlayer(source)
+    if not Player then return end
     Player.Functions.AddItem(itemName, amount, slot, info)
 end)
 
@@ -147,6 +173,13 @@ RegisterNetEvent('LXRCore:Player:RemoveXp', function(source, skill, amount) -- r
 end)
 
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
+    -- Security: Validate source and rate limit
+    if not exports['lxr-core']:ValidateSource(source) then return end
+    if not exports['lxr-core']:CheckRateLimit(source, 'TriggerCallback', 30) then return end
+    
+    -- Security: Validate callback name
+    if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
+    
     local src = source
     TriggerCallback(name, src, function(...)
         TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)

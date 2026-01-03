@@ -4,6 +4,9 @@ LXRCore.Players = {}
 LXRCore.UseableItems = {}
 LXRCore.ServerCallbacks = {}
 
+-- Performance: Cache player count for faster access
+local playerCountCache = 0
+
 function GetPlayers()
     local sources = {}
     for k, v in pairs(LXRCore.Players) do
@@ -64,13 +67,14 @@ exports('GetPlayersOnDuty', function(job)
 end)
 
 -- Returns only the amount of players on duty for the specified job
+-- Performance: Optimized with safe navigation
 exports('GetDutyCount', function(job)
+    if not job then return 0 end
+    
     local count = 0
     for k, v in pairs(LXRCore.Players) do
-        if v.PlayerData.job.name == job then
-            if v.PlayerData.job.onduty then
-                count = count + 1
-            end
+        if v.PlayerData and v.PlayerData.job and v.PlayerData.job.name == job and v.PlayerData.job.onduty then
+            count = count + 1
         end
     end
     return count
@@ -196,7 +200,7 @@ function IsOptin(source)
     local license = GetIdentifier(src, 'license')
     if not license or not HasPermission(src, 'admin') then return false end
     local Player = GetPlayer(src)
-    return Player.PlayerData.metadata['optin']
+    return Player.PlayerData.metadata.optin
 end
 exports('IsOptin', IsOptin)
 
@@ -205,7 +209,7 @@ function ToggleOptin(source)
     local license = GetIdentifier(src, 'license')
     if not license or not HasPermission(src, 'admin') then return end
     local Player = GetPlayer(src)
-    Player.PlayerData.metadata['optin'] = not Player.PlayerData.metadata['optin']
-    Player.Functions.SetMetaData('optin', Player.PlayerData.metadata['optin'])
+    Player.PlayerData.metadata.optin = not Player.PlayerData.metadata.optin
+    Player.Functions.SetMetaData('optin', Player.PlayerData.metadata.optin)
 end
 exports('ToggleOptin', ToggleOptin)

@@ -1,5 +1,6 @@
 LXRShared = {}
 
+-- Performance: Pre-build character sets at module load time
 local StringCharset = {}
 local NumberCharset = {}
 
@@ -7,15 +8,29 @@ for i = 48,  57 do NumberCharset[#NumberCharset+1] = string.char(i) end
 for i = 65,  90 do StringCharset[#StringCharset+1] = string.char(i) end
 for i = 97, 122 do StringCharset[#StringCharset+1] = string.char(i) end
 
+-- Cache charset lengths for performance (calculated after population)
+local stringCharsetLen = #StringCharset
+local numberCharsetLen = #NumberCharset
+
+-- Performance: Optimized random string generation using table concat
 LXRShared.RandomStr = function(length)
     if length <= 0 then return '' end
-    return LXRShared.RandomStr(length - 1) .. StringCharset[math.random(1, #StringCharset)]
+    local result = {}
+    for i = 1, length do
+        result[i] = StringCharset[math.random(1, stringCharsetLen)]
+    end
+    return table.concat(result)
 end
 exports('RandomStr', LXRShared.RandomStr)
 
+-- Performance: Optimized random int generation using table concat
 LXRShared.RandomInt = function(length)
     if length <= 0 then return '' end
-    return LXRShared.RandomInt(length - 1) .. NumberCharset[math.random(1, #NumberCharset)]
+    local result = {}
+    for i = 1, length do
+        result[i] = NumberCharset[math.random(1, numberCharsetLen)]
+    end
+    return table.concat(result)
 end
 exports('RandomInt', LXRShared.RandomInt)
 
