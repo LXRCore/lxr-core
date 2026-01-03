@@ -2,14 +2,17 @@
 
 <div align="center">
 
-![LXRCore](https://via.placeholder.com/600x100/1a1a2e/16c784?text=LXRCore+Documentation)
+**📖 Complete Setup & Configuration Guide 📖**
 
-**Complete Setup & Configuration Guide**
+[![Documentation](https://img.shields.io/badge/Documentation-Complete-16c784?style=for-the-badge)](DOCUMENTATION.md)
+[![Installation](https://img.shields.io/badge/Installation-Guide-blue?style=for-the-badge)](DOCUMENTATION.md#installation)
+[![Configuration](https://img.shields.io/badge/Configuration-Guide-green?style=for-the-badge)](DOCUMENTATION.md#configuration)
+[![MySQL](https://img.shields.io/badge/Database-MySQL-orange?style=for-the-badge&logo=mysql)](../database/)
 
 [🏠 Home](../README.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
 
-**Launched on [The Land of Wolves RP](https://www.wolves.land)**  
-**Official Website: [www.lxrcore.com](https://www.lxrcore.com)**
+**🐺 Launched on [The Land of Wolves RP](https://www.wolves.land) 🐺**  
+**🌐 Official Website: [www.lxrcore.com](https://www.lxrcore.com) 🌐**
 
 </div>
 

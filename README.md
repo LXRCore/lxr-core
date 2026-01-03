@@ -5,17 +5,26 @@ Here is a comprehensive version of the `README.md` file:
 
 <div align="center">
 
-![LXRCore Banner](https://via.placeholder.com/800x200/1a1a2e/16c784?text=LXRCore+Framework)
+**🎮 The Supreme RedM Roleplay Framework 🎮**
 
-**The Supreme RedM Roleplay Framework**
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=for-the-badge)](https://github.com/LXRCore/lxr-core)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![RedM](https://img.shields.io/badge/RedM-Compatible-red.svg?style=for-the-badge)](https://redm.net)
+[![Lua](https://img.shields.io/badge/Lua-5.3+-blue.svg?style=for-the-badge&logo=lua)](https://www.lua.org/)
 
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/LXRCore/lxr-core)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![RedM](https://img.shields.io/badge/RedM-Compatible-red.svg)](https://redm.net)
+[![Stars](https://img.shields.io/github/stars/LXRCore/lxr-core?style=for-the-badge&logo=github)](https://github.com/LXRCore/lxr-core/stargazers)
+[![Issues](https://img.shields.io/github/issues/LXRCore/lxr-core?style=for-the-badge&logo=github)](https://github.com/LXRCore/lxr-core/issues)
+[![Forks](https://img.shields.io/github/forks/LXRCore/lxr-core?style=for-the-badge&logo=github)](https://github.com/LXRCore/lxr-core/network)
+[![Contributors](https://img.shields.io/github/contributors/LXRCore/lxr-core?style=for-the-badge&logo=github)](https://github.com/LXRCore/lxr-core/graphs/contributors)
 
-[Website](https://www.lxrcore.com) • [Documentation](docs/DOCUMENTATION.md) • [Performance](docs/PERFORMANCE.md) • [Security](docs/SECURITY.md)
+[![Performance](https://img.shields.io/badge/Performance-⚡_Optimized-brightgreen?style=for-the-badge)](docs/PERFORMANCE.md)
+[![Security](https://img.shields.io/badge/Security-🔒_Military_Grade-red?style=for-the-badge)](docs/SECURITY.md)
+[![Database](https://img.shields.io/badge/Database-MySQL-orange?style=for-the-badge&logo=mysql)](database/)
+[![Framework](https://img.shields.io/badge/Framework-Bridge_System-purple?style=for-the-badge)](docs/DOCUMENTATION.md)
 
-**Proudly Launched on [The Land of Wolves RP](https://www.wolves.land)**
+[🌐 Website](https://www.lxrcore.com) • [📚 Documentation](docs/DOCUMENTATION.md) • [⚡ Performance](docs/PERFORMANCE.md) • [🔒 Security](docs/SECURITY.md)
+
+**🐺 Proudly Launched on [The Land of Wolves RP](https://www.wolves.land) 🐺**
 
 </div>
 

@@ -2,13 +2,17 @@
 
 <div align="center">
 
-![LXRCore](https://via.placeholder.com/600x100/1a1a2e/16c784?text=LXRCore+Performance+Guide)
+**⚡ Supreme Performance for RedM Servers ⚡**
 
-**Supreme Performance for RedM Servers**
+[![Performance](https://img.shields.io/badge/Performance-Optimized-brightgreen?style=for-the-badge)](PERFORMANCE.md)
+[![CPU](https://img.shields.io/badge/CPU-70%25_Faster-green?style=for-the-badge)](PERFORMANCE.md)
+[![FPS](https://img.shields.io/badge/FPS-87%25_Better-blue?style=for-the-badge)](PERFORMANCE.md)
+[![Memory](https://img.shields.io/badge/Memory-28%25_Less-orange?style=for-the-badge)](PERFORMANCE.md)
+[![Database](https://img.shields.io/badge/DB_Queries-60--80%25_Reduced-red?style=for-the-badge)](PERFORMANCE.md)
 
 [🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [🔒 Security](SECURITY.md)
 
-**Proudly powering [The Land of Wolves RP](https://www.wolves.land)**
+**🐺 Proudly powering [The Land of Wolves RP](https://www.wolves.land) 🐺**
 
 </div>
 

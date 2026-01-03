@@ -2,9 +2,12 @@
 
 <div align="center">
 
-![LXRCore API](https://via.placeholder.com/600x100/1a1a2e/00d4ff?text=LXRCore+API+Reference)
+**📚 Complete Developer API Documentation 📚**
 
-**Complete Developer API Documentation**
+[![API Reference](https://img.shields.io/badge/API-Reference-00d4ff?style=for-the-badge)](API.md)
+[![Server Exports](https://img.shields.io/badge/Server-Exports-blue?style=for-the-badge)](API.md#server-exports)
+[![Client Exports](https://img.shields.io/badge/Client-Exports-green?style=for-the-badge)](API.md#client-exports)
+[![Lua](https://img.shields.io/badge/Lua-5.3+-blue.svg?style=for-the-badge&logo=lua)](https://www.lua.org/)
 
 [🏠 Home](../README.md) • [📚 Documentation](DOCUMENTATION.md) • [⚡ Performance](PERFORMANCE.md) • [🔒 Security](SECURITY.md)
 
