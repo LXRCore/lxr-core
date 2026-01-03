@@ -104,8 +104,22 @@ end
 exports('FetchSingleCached', LXRDatabase.FetchSingleCached)
 
 -- Performance: Batch insert optimization
-function LXRDatabase.BatchInsert(table, columns, values)
+function LXRDatabase.BatchInsert(tableName, columns, values)
     if not values or #values == 0 then return false end
+    
+    -- Whitelist of allowed table names for security
+    local allowedTables = {
+        players = true,
+        player_items = true,
+        player_vehicles = true,
+        transactions = true,
+        logs = true
+    }
+    
+    if not allowedTables[tableName] then
+        print('[LXRCore] [Database] Invalid table name for batch insert: ' .. tostring(tableName))
+        return false
+    end
     
     local columnStr = table.concat(columns, ', ')
     local valuePlaceholders = '(' .. string.rep('?, ', #columns - 1) .. '?)'
@@ -119,8 +133,7 @@ function LXRDatabase.BatchInsert(table, columns, values)
         end
     end
     
-    local query = string.format('INSERT INTO %s (%s) VALUES %s', 
-        table, columnStr, table.concat(allPlaceholders, ', '))
+    local query = 'INSERT INTO ' .. tableName .. ' (' .. columnStr .. ') VALUES ' .. table.concat(allPlaceholders, ', ')
     
     local startTime = GetGameTimer()
     local result = MySQL.insert.await(query, allParams)

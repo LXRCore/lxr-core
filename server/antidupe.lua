@@ -456,10 +456,13 @@ exports('CanPerformTransaction', LXRAntiDupe.CanPerformTransaction)
 
 AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
     local source = source
+    deferrals.defer()
+    Wait(50) -- Small delay to ensure identifiers are available
+    
     local license = exports['lxr-core']:GetIdentifier(source, 'license')
     
     -- Check if player has pending transaction from previous session
-    if pendingTransactions[license] then
+    if license and pendingTransactions[license] then
         local pending = pendingTransactions[license]
         local timeSinceDisconnect = os.time() - pending.timestamp
         
@@ -479,6 +482,8 @@ AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
             pendingTransactions[license] = nil
         end
     end
+    
+    deferrals.done()
 end)
 
 -- ============================================

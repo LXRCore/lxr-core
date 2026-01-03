@@ -131,12 +131,8 @@ function LXRBridge.BridgeExports(frameworkName)
     local bridge = frameworkBridges[frameworkName]
     if not bridge then return end
     
-    for oldExport, newExport in pairs(bridge.exports) do
-        -- Bridge old export calls to LXRCore
-        exports(oldExport, function(...)
-            return exports['lxr-core'][newExport](...)
-        end)
-    end
+    -- Note: Export bridging handled by resource manifest
+    -- Old framework scripts will call exports['lxr-core'][newExport](...)
 end
 
 --[[

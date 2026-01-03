@@ -233,7 +233,7 @@ LXRShared.Gangs = {
     },
     
     -- River & Swamp Gangs
-    riverpir ates = {
+    riverpirates = {
         label = 'River Pirates',
         grades = {
             ['0'] = { name = 'Deckhand' },
