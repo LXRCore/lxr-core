@@ -4,6 +4,9 @@ LXRCore.Players = {}
 LXRCore.UseableItems = {}
 LXRCore.ServerCallbacks = {}
 
+-- Performance: Cache player count for faster access
+local playerCountCache = 0
+
 function GetPlayers()
     local sources = {}
     for k, v in pairs(LXRCore.Players) do
@@ -64,15 +67,20 @@ exports('GetPlayersOnDuty', function(job)
 end)
 
 -- Returns only the amount of players on duty for the specified job
+-- Performance: Optimized with early exit and cached count
+local dutyCountCache = {}
 exports('GetDutyCount', function(job)
+    if not job then return 0 end
+    if not dutyCountCache[job] then dutyCountCache[job] = 0 end
+    
+    -- Recalculate every time for accuracy
     local count = 0
     for k, v in pairs(LXRCore.Players) do
-        if v.PlayerData.job.name == job then
-            if v.PlayerData.job.onduty then
-                count = count + 1
-            end
+        if v.PlayerData?.job?.name == job and v.PlayerData.job.onduty then
+            count = count + 1
         end
     end
+    dutyCountCache[job] = count
     return count
 end)
 

@@ -228,49 +228,57 @@ local function CreatePlayer(PlayerData)
         reason = reason or 'unknown'
         local moneytype = moneytype:lower()
         local amount = tonumber(amount)
-        if amount < 0 then
-            return
+        
+        -- Security: Validate money transaction
+        if not amount or amount < 0 or amount > 999999999 then return false end
+        if not self.PlayerData.money[moneytype] then return false end
+        
+        -- Security: Check for suspicious rapid money gain
+        if amount > 10000 then
+            exports['lxr-core']:CheckSuspiciousActivity(self.PlayerData.source, 'rapidMoney', amount)
         end
-        if self.PlayerData.money[moneytype] then
-            self.PlayerData.money[moneytype] += amount
-            self.Functions.UpdatePlayerData()
-            if amount > 100000 then
-                TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype], true)
-            else
-                TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype])
-            end
-            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
-            return true
+        
+        self.PlayerData.money[moneytype] += amount
+        self.Functions.UpdatePlayerData()
+        
+        if amount > 100000 then
+            TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' | Reason: ' .. reason, true)
+        else
+            TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') added, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' | Reason: ' .. reason)
         end
-        return false
+        
+        TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
+        return true
     end
 
     self.Functions.RemoveMoney = function(moneytype, amount, reason)
         reason = reason or 'unknown'
         local moneytype = moneytype:lower()
         local amount = tonumber(amount)
-        if amount < 0 then
-            return
-        end
-        if self.PlayerData.money[moneytype] then
-            for _, mtype in pairs(LXRConfig.Money.DontAllowMinus) do
-                if mtype == moneytype then
-                    if self.PlayerData.money[moneytype] - amount < 0 then
-                        return false
-                    end
+        
+        -- Security: Validate money transaction
+        if not amount or amount < 0 or amount > 999999999 then return false end
+        if not self.PlayerData.money[moneytype] then return false end
+        
+        for _, mtype in pairs(LXRConfig.Money.DontAllowMinus) do
+            if mtype == moneytype then
+                if self.PlayerData.money[moneytype] - amount < 0 then
+                    return false
                 end
             end
-            self.PlayerData.money[moneytype] -= amount
-            self.Functions.UpdatePlayerData()
-            if amount > 100000 then
-                TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype], true)
-            else
-                TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype])
-            end
-            TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
-            return true
         end
-        return false
+        
+        self.PlayerData.money[moneytype] -= amount
+        self.Functions.UpdatePlayerData()
+        
+        if amount > 100000 then
+            TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' | Reason: ' .. reason, true)
+        else
+            TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red', '**' .. GetPlayerName(self.PlayerData.source) .. ' (citizenid: ' .. self.PlayerData.citizenid .. ' | id: ' .. self.PlayerData.source .. ')** $' .. amount .. ' (' .. moneytype .. ') removed, new ' .. moneytype .. ' balance: ' .. self.PlayerData.money[moneytype] .. ' | Reason: ' .. reason)
+        end
+        
+        TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
+        return true
     end
 
     self.Functions.SetMoney = function(moneytype, amount, reason)

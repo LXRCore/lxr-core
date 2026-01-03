@@ -3,8 +3,8 @@ game 'rdr3'
 
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
-description 'LXRCore RedM Edition - Fully converted and maintained by iBoss (https://github.com/iboss21)'
-version '1.0.3'
+description 'LXRCore RedM Edition - Fully converted and maintained by iBoss (https://github.com/iboss21) - Enhanced with Supreme Performance & Security'
+version '2.0.0'
 
 shared_scripts {
     'shared/locale.lua',
@@ -20,6 +20,7 @@ shared_scripts {
 }
 
 client_scripts {
+    'client/performance.lua',
     'client/functions.lua',
     'client/loops.lua',
     'client/events.lua',
@@ -30,6 +31,9 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'server/security.lua',
+    'server/performance.lua',
+    'server/database.lua',
     'server/debug.lua',
     'server/functions.lua',
     'server/player.lua',
