@@ -68,7 +68,7 @@ LXRConfig.Tebex = {
 Run the SQL file:
 
 ```bash
-mysql -u your_username -p your_database < tebex_tables.sql
+mysql -u your_username -p your_database < database/tebex_tables.sql
 ```
 
 Or manually execute in your database tool (HeidiSQL, phpMyAdmin, etc.)

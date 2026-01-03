@@ -72,7 +72,7 @@ git clone https://github.com/LXRCore/lxr-core.git
 
 #### Step 2: Import Database
 ```bash
-mysql -u your_username -p your_database < lxr-core/lxrcore.sql
+mysql -u your_username -p your_database < database/lxrcore.sql
 ```
 
 #### Step 3: Configure server.cfg

@@ -282,7 +282,7 @@
 
 ### From Scratch
 1. Follow installation in DOCUMENTATION.md
-2. Import lxrcore.sql
+2. Import database/lxrcore.sql
 3. Configure config.lua
 4. Start server
 5. Done!
@@ -365,7 +365,7 @@
 git clone https://github.com/LXRCore/lxr-core.git
 
 # Import database
-mysql -u username -p database < lxrcore.sql
+mysql -u username -p database < database/lxrcore.sql
 
 # Add to server.cfg
 ensure lxr-core
