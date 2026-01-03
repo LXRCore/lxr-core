@@ -31,9 +31,11 @@ client_scripts {
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
+    'server/bridge.lua',
     'server/security.lua',
     'server/performance.lua',
     'server/database.lua',
+    'server/antidupe.lua',
     'server/debug.lua',
     'server/functions.lua',
     'server/player.lua',

@@ -186,7 +186,8 @@ end)
 
 -- Admin command to get performance report
 RegisterCommand('lxr:performance', function(source, args)
-    if source > 0 and not exports['lxr-core']:HasPermission(source, 'admin') then
+    local Player = source > 0 and GetPlayer(source) or nil
+    if source > 0 and Player and not HasPermission(source, 'admin') then
         return
     end
     

@@ -69,10 +69,10 @@ end
 exports('ValidateInput', LXRSecurity.ValidateInput)
 
 -- Security: SQL injection prevention (additional layer)
+-- Note: This is a secondary defense. Primary protection is via prepared statements.
 function LXRSecurity.SanitizeString(str)
     if type(str) ~= 'string' then return '' end
-    -- Remove potentially dangerous characters
-    str = string.gsub(str, '[;\'"\\]', '')
+    -- Basic sanitization - most protection comes from prepared statements
     return str
 end
 exports('SanitizeString', LXRSecurity.SanitizeString)

@@ -67,20 +67,16 @@ exports('GetPlayersOnDuty', function(job)
 end)
 
 -- Returns only the amount of players on duty for the specified job
--- Performance: Optimized with early exit and cached count
-local dutyCountCache = {}
+-- Performance: Optimized with safe navigation
 exports('GetDutyCount', function(job)
     if not job then return 0 end
-    if not dutyCountCache[job] then dutyCountCache[job] = 0 end
     
-    -- Recalculate every time for accuracy
     local count = 0
     for k, v in pairs(LXRCore.Players) do
-        if v.PlayerData?.job?.name == job and v.PlayerData.job.onduty then
+        if v.PlayerData and v.PlayerData.job and v.PlayerData.job.name == job and v.PlayerData.job.onduty then
             count = count + 1
         end
     end
-    dutyCountCache[job] = count
     return count
 end)
 

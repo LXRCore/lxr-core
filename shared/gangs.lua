@@ -1,52 +1,438 @@
+--[[
+    LXRCore - Gangs Configuration (1899 Era)
+    
+    All gangs from Red Dead Redemption 2 and era-appropriate outlaw groups
+    Includes RDR2 canon gangs and additional period-accurate gangs
+    
+    Made by iBoss • LXRCore - www.lxrcore.com
+    Launched on The Land of Wolves RP - www.wolves.land
+]]--
+
 LXRShared = LXRShared or {}
 LXRShared.Gangs = {
-    -- gangs
-	{ name = 'none',         label = 'No Gang',           grades = { { name = 'Unaffiliated' } } },
-    { name = 'odriscoll',    label = "O'Driscoll Boys",   grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'lemoyne',      label = 'Lemoyne Raiders',   grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'murfree',      label = 'Murfree Brood',     grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'skinner',      label = 'Skinner Brothers',  grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'laramie',      label = 'Laramie Gang',      grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'dellobo',      label = 'Del Lobo Gang',     grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'night',        label = 'Night Folk',        grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'foreman',      label = 'Foreman Brothers',  grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'anderson',     label = 'Anderson Boys',     grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'watson',       label = 'Watson Boys',       grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    -- new gangs
-    { name = 'khevsurian_warriors',       label = "Khevsurian Warriors",       grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'gurian_horsemen',           label = "Gurian Horsemen",           grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'svaneti_brigands',          label = "Svaneti Brigands",          grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'tush_rebels',               label = "Tush Rebels",               grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'kartlian_bandits',          label = "Kartlian Bandits",          grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'mingrelian_marauders',      label = "Mingrelian Marauders",      grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'imeretian_outlaws',         label = "Imeretian Outlaws",         grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'adjara_corsairs',           label = "Adjara Corsairs",           grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'kakhetian_raiders',         label = "Kakhetian Raiders",         grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'samtskhe_javakheti_band',   label = "Samtskhe-Javakheti Band",   grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'abkhazian_highlanders',     label = "Abkhazian Highlanders",     grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'sukhumi_shadows',           label = "Sukhumi Shadows",           grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'black_sea_corsairs',        label = "Black Sea Corsairs",        grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'abzhua_bandits',            label = "Abzhua Bandits",            grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-    { name = 'bzyb_rebels',               label = "Bzyb Rebels",               grades = { { name = 'Recruit' }, { name = 'Enforcer' }, { name = 'Shot Caller' }, { name = 'Boss', isboss = true } } },
-
-    --[[
-Config.GangLocations = {
-    {name = 'khevsurian_warriors', gangname = "Khevsurian Warriors", coords = vector3(2652.83, -1181.54, 53.33)},  -- Roanoke Ridge
-    {name = 'gurian_horsemen', gangname = "Gurian Horsemen", coords = vector3(1329.69, -1302.02, 76.24)},  -- Heartland Oil Fields
-    {name = 'svaneti_brigands', gangname = "Svaneti Brigands", coords = vector3(849.17, 1787.36, 201.55)},  -- Grizzlies East
-    {name = 'tush_rebels', gangname = "Tush Rebels", coords = vector3(-2068.57, 2501.45, 343.89)},  -- Mount Hagen
-    {name = 'kartlian_bandits', gangname = "Kartlian Bandits", coords = vector3(1519.74, 436.36, 90.96)},  -- Flat Iron Lake
-    {name = 'mingrelian_marauders', gangname = "Mingrelian Marauders", coords = vector3(-1256.56, 1143.21, 167.18)},  -- Big Valley
-    {name = 'imeretian_outlaws', gangname = "Imeretian Outlaws", coords = vector3(-3707.52, -2607.49, -13.33)},  -- Thieves Landing
-    {name = 'adjara_corsairs', gangname = "Adjara Corsairs", coords = vector3(3027.51, 561.77, 44.62)},  -- Van Horn Trading Post
-    {name = 'kakhetian_raiders', gangname = "Kakhetian Raiders", coords = vector3(728.16, -376.83, 74.21)},  -- Scarlet Meadows
-    {name = 'samtskhe_javakheti_band', gangname = "Samtskhe-Javakheti Band", coords = vector3(2571.78, 1082.21, 89.61)},  -- Annesburg
-    {name = 'abkhazian_highlanders', gangname = "Abkhazian Highlanders", coords = vector3(1924.93, 1963.61, 264.79)},  -- O'Creagh's Run
-    {name = 'sukhumi_shadows', gangname = "Sukhumi Shadows", coords = vector3(2759.96, 1355.34, 72.51)},  -- Elysian Pool
-    {name = 'black_sea_corsairs', gangname = "Black Sea Corsairs", coords = vector3(2688.73, -1442.59, 45.65)},  -- Saint Denis
-    {name = 'abzhua_bandits', gangname = "Abzhua Bandits", coords = vector3(-1805.32, -399.23, 160.12)},  -- Cumberland Forest
-    {name = 'bzyb_rebels', gangname = "Bzyb Rebels", coords = vector3(-254.83, 740.62, 115.96)},  -- Roanoke Ridge
-    }
-]]
-
+    -- ============================================
+    -- NO GANG / CIVILIAN
+    -- ============================================
+    none = {
+        label = 'No Gang Affiliation',
+        grades = {
+            ['0'] = { name = 'Unaffiliated' }
+        }
+    },
+    
+    -- ============================================
+    -- RDR2 CANON GANGS
+    -- ============================================
+    vanderlinde = {
+        label = 'Van der Linde Gang',
+        grades = {
+            ['0'] = { name = 'Associate' },
+            ['1'] = { name = 'Member' },
+            ['2'] = { name = 'Trusted' },
+            ['3'] = { name = 'Lieutenant' },
+            ['4'] = { name = 'Leader', isboss = true }
+        }
+    },
+    
+    odriscoll = {
+        label = "O'Driscoll Boys",
+        grades = {
+            ['0'] = { name = 'Recruit' },
+            ['1'] = { name = 'Thug' },
+            ['2'] = { name = 'Enforcer' },
+            ['3'] = { name = 'Shot Caller' },
+            ['4'] = { name = 'Boss', isboss = true }
+        }
+    },
+    
+    lemoyne = {
+        label = 'Lemoyne Raiders',
+        grades = {
+            ['0'] = { name = 'Private' },
+            ['1'] = { name = 'Corporal' },
+            ['2'] = { name = 'Sergeant' },
+            ['3'] = { name = 'Captain' },
+            ['4'] = { name = 'Colonel', isboss = true }
+        }
+    },
+    
+    murfree = {
+        label = 'Murfree Brood',
+        grades = {
+            ['0'] = { name = 'Savage' },
+            ['1'] = { name = 'Bruiser' },
+            ['2'] = { name = 'Terrorizer' },
+            ['3'] = { name = 'Patriarch', isboss = true }
+        }
+    },
+    
+    skinner = {
+        label = 'Skinner Brothers',
+        grades = {
+            ['0'] = { name = 'Skinner' },
+            ['1'] = { name = 'Hunter' },
+            ['2'] = { name = 'Executioner' },
+            ['3'] = { name = 'Chief', isboss = true }
+        }
+    },
+    
+    laramie = {
+        label = 'Laramie Gang',
+        grades = {
+            ['0'] = { name = 'Rustler' },
+            ['1'] = { name = 'Gunhand' },
+            ['2'] = { name = 'Lieutenant' },
+            ['3'] = { name = 'Leader', isboss = true }
+        }
+    },
+    
+    dellobo = {
+        label = 'Del Lobo Gang',
+        grades = {
+            ['0'] = { name = 'Bandito' },
+            ['1'] = { name = 'Pistolero' },
+            ['2'] = { name = 'Teniente' },
+            ['3'] = { name = 'Jefe', isboss = true }
+        }
+    },
+    
+    nightfolk = {
+        label = 'Night Folk',
+        grades = {
+            ['0'] = { name = 'Shadow' },
+            ['1'] = { name = 'Stalker' },
+            ['2'] = { name = 'Elder', isboss = true }
+        }
+    },
+    
+    foreman = {
+        label = 'Foreman Brothers',
+        grades = {
+            ['0'] = { name = 'Recruit' },
+            ['1'] = { name = 'Bruiser' },
+            ['2'] = { name = 'Foreman', isboss = true }
+        }
+    },
+    
+    -- ============================================
+    -- NATIVE AMERICAN GROUPS
+    -- ============================================
+    wapiti = {
+        label = 'Wapiti Indians',
+        grades = {
+            ['0'] = { name = 'Warrior' },
+            ['1'] = { name = 'Brave' },
+            ['2'] = { name = 'War Chief' },
+            ['3'] = { name = 'Chief', isboss = true }
+        }
+    },
+    
+    -- ============================================
+    -- HISTORICAL OUTLAW GANGS (1899 Era)
+    -- ============================================
+    
+    -- Southwest Outlaws
+    dalton = {
+        label = 'Dalton Gang',
+        grades = {
+            ['0'] = { name = 'Rider' },
+            ['1'] = { name = 'Gunslinger' },
+            ['2'] = { name = 'Lieutenant' },
+            ['3'] = { name = 'Dalton Brother', isboss = true }
+        }
+    },
+    
+    doolin = {
+        label = 'Doolin-Dalton Gang',
+        grades = {
+            ['0'] = { name = 'Outlaw' },
+            ['1'] = { name = 'Gunman' },
+            ['2'] = { name = 'Wild Bunch' },
+            ['3'] = { name = 'Boss', isboss = true }
+        }
+    },
+    
+    wilderbunch = {
+        label = 'Wild Bunch',
+        grades = {
+            ['0'] = { name = 'Rustler' },
+            ['1'] = { name = 'Bank Robber' },
+            ['2'] = { name = 'Train Robber' },
+            ['3'] = { name = 'Butch & Sundance', isboss = true }
+        }
+    },
+    
+    -- Mexican Bandits
+    revolucion = {
+        label = 'Revolución',
+        grades = {
+            ['0'] = { name = 'Soldado' },
+            ['1'] = { name = 'Guerrero' },
+            ['2'] = { name = 'Capitán' },
+            ['3'] = { name = 'General', isboss = true }
+        }
+    },
+    
+    bandidos = {
+        label = 'Los Bandidos',
+        grades = {
+            ['0'] = { name = 'Bandido' },
+            ['1'] = { name = 'Vaquero' },
+            ['2'] = { name = 'Líder', isboss = true }
+        }
+    },
+    
+    -- Cattle Rustlers & Ranch Raiders
+    cattlerustlers = {
+        label = 'Cattle Rustlers',
+        grades = {
+            ['0'] = { name = 'Rustler' },
+            ['1'] = { name = 'Wrangler' },
+            ['2'] = { name = 'Boss Rustler', isboss = true }
+        }
+    },
+    
+    -- Train & Bank Robbers
+    trainrobbers = {
+        label = 'Train Robbers',
+        grades = {
+            ['0'] = { name = 'Lookout' },
+            ['1'] = { name = 'Gunman' },
+            ['2'] = { name = 'Dynamiter' },
+            ['3'] = { name = 'Mastermind', isboss = true }
+        }
+    },
+    
+    -- Moonshiners & Smugglers
+    moonshiners = {
+        label = 'Moonshine Runners',
+        grades = {
+            ['0'] = { name = 'Runner' },
+            ['1'] = { name = 'Distiller' },
+            ['2'] = { name = 'Moonshine Boss', isboss = true }
+        }
+    },
+    
+    smugglers = {
+        label = 'Smuggling Ring',
+        grades = {
+            ['0'] = { name = 'Mule' },
+            ['1'] = { name = 'Smuggler' },
+            ['2'] = { name = 'Kingpin', isboss = true }
+        }
+    },
+    
+    -- Bounty Hunters (Rogue)
+    bountyhunters = {
+        label = 'Rogue Bounty Hunters',
+        grades = {
+            ['0'] = { name = 'Tracker' },
+            ['1'] = { name = 'Hunter' },
+            ['2'] = { name = 'Master Hunter', isboss = true }
+        }
+    },
+    
+    -- River & Swamp Gangs
+    riverpir ates = {
+        label = 'River Pirates',
+        grades = {
+            ['0'] = { name = 'Deckhand' },
+            ['1'] = { name = 'Pirate' },
+            ['2'] = { name = 'Captain', isboss = true }
+        }
+    },
+    
+    bayougang = {
+        label = 'Bayou Gang',
+        grades = {
+            ['0'] = { name = 'Swamper' },
+            ['1'] = { name = 'Gator' },
+            ['2'] = { name = 'Swamp King', isboss = true }
+        }
+    },
+    
+    -- Mountain & Northern Gangs
+    mountainmen = {
+        label = 'Mountain Men',
+        grades = {
+            ['0'] = { name = 'Trapper' },
+            ['1'] = { name = 'Mountain Man' },
+            ['2'] = { name = 'Mountain King', isboss = true }
+        }
+    },
+    
+    grizzlies = {
+        label = 'Grizzlies Gang',
+        grades = {
+            ['0'] = { name = 'Survivor' },
+            ['1'] = { name = 'Raider' },
+            ['2'] = { name = 'Warlord', isboss = true }
+        }
+    },
+    
+    -- Town Thugs & Organized Crime
+    saintdenismob = {
+        label = 'Saint Denis Mob',
+        grades = {
+            ['0'] = { name = 'Thug' },
+            ['1'] = { name = 'Made Man' },
+            ['2'] = { name = 'Underboss' },
+            ['3'] = { name = 'Don', isboss = true }
+        }
+    },
+    
+    blackwater = {
+        label = 'Blackwater Crew',
+        grades = {
+            ['0'] = { name = 'Muscle' },
+            ['1'] = { name = 'Enforcer' },
+            ['2'] = { name = 'Boss', isboss = true }
+        }
+    },
+    
+    -- Trappers & Hunters Turned Bad
+    pelttraders = {
+        label = 'Illegal Pelt Traders',
+        grades = {
+            ['0'] = { name = 'Poacher' },
+            ['1'] = { name = 'Trader' },
+            ['2'] = { name = 'Pelt Baron', isboss = true }
+        }
+    },
+    
+    -- Horse Thieves
+    horsethieves = {
+        label = 'Horse Thieves',
+        grades = {
+            ['0'] = { name = 'Rustler' },
+            ['1'] = { name = 'Horse Thief' },
+            ['2'] = { name = 'Stable Master', isboss = true }
+        }
+    },
+    
+    -- Claim Jumpers & Prospector Gangs
+    claimjumpers = {
+        label = 'Claim Jumpers',
+        grades = {
+            ['0'] = { name = 'Jumper' },
+            ['1'] = { name = 'Claim Thief' },
+            ['2'] = { name = 'Mining Boss', isboss = true }
+        }
+    },
+    
+    -- Stagecoach Robbers
+    highwaymen = {
+        label = 'Highwaymen',
+        grades = {
+            ['0'] = { name = 'Footpad' },
+            ['1'] = { name = 'Highwayman' },
+            ['2'] = { name = 'Road Agent', isboss = true }
+        }
+    },
+    
+    -- Counterfeiters & Con Artists
+    counterfeiters = {
+        label = 'Counterfeit Ring',
+        grades = {
+            ['0'] = { name = 'Runner' },
+            ['1'] = { name = 'Forger' },
+            ['2'] = { name = 'Mastermind', isboss = true }
+        }
+    },
+    
+    -- Grave Robbers & Body Snatchers
+    graverobbers = {
+        label = 'Grave Robbers',
+        grades = {
+            ['0'] = { name = 'Digger' },
+            ['1'] = { name = 'Robber' },
+            ['2'] = { name = 'Resurrectionist', isboss = true }
+        }
+    },
+    
+    -- Opium & Drug Dealers
+    opiumden = {
+        label = 'Opium Ring',
+        grades = {
+            ['0'] = { name = 'Runner' },
+            ['1'] = { name = 'Dealer' },
+            ['2'] = { name = 'Opium Lord', isboss = true }
+        }
+    },
+    
+    -- Fight Club Operators
+    fightclub = {
+        label = 'Fight Club',
+        grades = {
+            ['0'] = { name = 'Brawler' },
+            ['1'] = { name = 'Promoter' },
+            ['2'] = { name = 'Fight Boss', isboss = true }
+        }
+    },
+    
+    -- Gambling Ring
+    gamblers = {
+        label = 'Gambling Ring',
+        grades = {
+            ['0'] = { name = 'Card Sharp' },
+            ['1'] = { name = 'High Roller' },
+            ['2'] = { name = 'House', isboss = true }
+        }
+    },
+    
+    -- Protection Racket
+    protection = {
+        label = 'Protection Racket',
+        grades = {
+            ['0'] = { name = 'Collector' },
+            ['1'] = { name = 'Enforcer' },
+            ['2'] = { name = 'Boss', isboss = true }
+        }
+    },
+    
+    -- Gunslingers for Hire
+    gunslingers = {
+        label = 'Guns for Hire',
+        grades = {
+            ['0'] = { name = 'Gunhand' },
+            ['1'] = { name = 'Gunslinger' },
+            ['2'] = { name = 'Legendary Gunslinger', isboss = true }
+        }
+    },
+    
+    -- Vigilantes (Lawless Justice)
+    vigilantes = {
+        label = 'Vigilantes',
+        grades = {
+            ['0'] = { name = 'Watchman' },
+            ['1'] = { name = 'Vigilante' },
+            ['2'] = { name = 'Regulator', isboss = true }
+        }
+    },
 }
+
+--[[
+    Gang Territories & Hideouts Configuration
+    
+    Server Owner Note:
+    Uncomment and configure these locations based on your map
+    Each gang can have multiple hideouts and territories
+    
+    Example format:
+    LXRShared.GangLocations = {
+        ['vanderlinde'] = {
+            hideout = vector3(-1742.43, -389.97, 155.19),  -- Horseshoe Overlook
+            territory = {
+                vector3(-1800.0, -400.0, 150.0),
+                vector3(-1700.0, -350.0, 160.0),
+            }
+        },
+        ['odriscoll'] = {
+            hideout = vector3(1470.53, 368.87, 86.45),  -- Six Point Cabin
+            territory = {
+                vector3(1400.0, 300.0, 80.0),
+                vector3(1500.0, 400.0, 90.0),
+            }
+        },
+    }
+]]--

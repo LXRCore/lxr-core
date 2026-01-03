@@ -8,7 +8,7 @@ for i = 48,  57 do NumberCharset[#NumberCharset+1] = string.char(i) end
 for i = 65,  90 do StringCharset[#StringCharset+1] = string.char(i) end
 for i = 97, 122 do StringCharset[#StringCharset+1] = string.char(i) end
 
--- Cache charset lengths for performance
+-- Cache charset lengths for performance (calculated after population)
 local stringCharsetLen = #StringCharset
 local numberCharsetLen = #NumberCharset
 

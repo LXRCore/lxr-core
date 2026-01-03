@@ -158,12 +158,18 @@ function LXRDatabase.GetCacheStats()
     local totalRequests = queryCache.hits + queryCache.misses
     local hitRate = totalRequests > 0 and (queryCache.hits / totalRequests * 100) or 0
     
+    -- Count cached queries
+    local cachedCount = 0
+    for _ in pairs(queryCache.data) do
+        cachedCount = cachedCount + 1
+    end
+    
     return {
         enabled = queryCache.enabled,
         hits = queryCache.hits,
         misses = queryCache.misses,
         hitRate = string.format('%.2f%%', hitRate),
-        cachedQueries = 0
+        cachedQueries = cachedCount
     }
 end
 exports('GetCacheStats', LXRDatabase.GetCacheStats)
@@ -200,14 +206,15 @@ exports('SetCacheEnabled', LXRDatabase.SetCacheEnabled)
 
 -- Admin command to view cache stats
 RegisterCommand('lxr:cachestats', function(source, args)
-    if source > 0 and not exports['lxr-core']:HasPermission(source, 'admin') then
+    local Player = source > 0 and GetPlayer(source) or nil
+    if source > 0 and Player and not HasPermission(source, 'admin') then
         return
     end
     
     local stats = LXRDatabase.GetCacheStats()
     local message = string.format(
-        'Cache Stats:\nEnabled: %s\nHits: %d\nMisses: %d\nHit Rate: %s',
-        tostring(stats.enabled), stats.hits, stats.misses, stats.hitRate
+        'Cache Stats:\nEnabled: %s\nHits: %d\nMisses: %d\nHit Rate: %s\nCached Queries: %d',
+        tostring(stats.enabled), stats.hits, stats.misses, stats.hitRate, stats.cachedQueries
     )
     
     if source == 0 then

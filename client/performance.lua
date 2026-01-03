@@ -217,11 +217,22 @@ function LXRClientPerformance.GetStats()
     end
     avgFrametime = #fpsHistory > 0 and (avgFrametime / #fpsHistory) or 0
     
+    -- Count cached entries
+    local cachedDistCount = 0
+    for _ in pairs(distanceCache) do
+        cachedDistCount = cachedDistCount + 1
+    end
+    
+    local throttledCount = 0
+    for _ in pairs(throttledFunctions) do
+        throttledCount = throttledCount + 1
+    end
+    
     return {
         averageFrametime = string.format('%.2fms', avgFrametime),
         entityPoolInterval = entityPools.updateInterval,
-        cachedDistances = 0,
-        throttledFunctions = 0
+        cachedDistances = cachedDistCount,
+        throttledFunctions = throttledCount
     }
 end
 exports('GetStats', LXRClientPerformance.GetStats)
