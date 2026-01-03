@@ -36,6 +36,7 @@ server_scripts {
     'server/performance.lua',
     'server/database.lua',
     'server/antidupe.lua',
+    'server/tebex.lua',
     'server/debug.lua',
     'server/functions.lua',
     'server/player.lua',

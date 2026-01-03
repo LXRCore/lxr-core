@@ -59,6 +59,13 @@ LXRConfig.Permissions = {'god', 'admin', 'mod', 'support'}
     - tangible = false: Account-based money (cannot be stolen directly)
     - hidden = true: Hidden from standard displays (for admin/special currencies)
     - canMinus = false: Cannot go negative (like cash in hand)
+    
+    1899 Economy Standards:
+    - Average worker: $0.50-1.50 per day
+    - Skilled worker: $2-3 per day  
+    - Professional: $4-6 per day
+    - Gold: $20 per ounce (historical)
+    - Most items: $0.05-0.50
 ]]--
 
 LXRConfig.Money = {}
@@ -66,48 +73,48 @@ LXRConfig.Money = {}
 -- Main Currency Types
 LXRConfig.Money.MoneyTypes = {
     -- ============ Standard Currencies ============
-    ['cash'] = {
+    cash = {
         label = 'Cash Dollars',
-        startAmount = 50,           -- Starting amount for new players
+        startAmount = 2,            -- Start with $2 (2 day's wages)
         tangible = true,            -- Physical item (can be stolen)
         canMinus = false,           -- Cannot go negative
         icon = 'dollar',            -- Icon name for UI
         weight = 0,                 -- Weight per unit (grams)
-        maxCarry = 50000,           -- Maximum amount player can carry
+        maxCarry = 5000,            -- Max $5000 cash (very heavy)
         description = 'Paper money used for everyday transactions',
         paycheck = true,            -- Can receive paycheck in this currency
         hidden = false              -- Show in standard UI
     },
     
-    ['bank'] = {
+    bank = {
         label = 'Bank Account',
-        startAmount = 250,
+        startAmount = 5,            -- Start with $5 in bank
         tangible = false,           -- Account-based (cannot be stolen directly)
         canMinus = false,
         icon = 'bank',
         weight = 0,
-        maxCarry = 999999999,       -- Virtually unlimited
+        maxCarry = 999999,          -- Virtually unlimited
         description = 'Money stored safely in the bank',
         paycheck = true,
         hidden = false
     },
     
     -- ============ Precious Metals ============
-    ['gold'] = {
+    gold = {
         label = 'Gold Bars',
         startAmount = 0,
         tangible = true,            -- Physical gold bars
         canMinus = false,
         icon = 'gold_bar',
         weight = 1000,              -- 1kg per gold bar
-        maxCarry = 100,             -- Max 100 gold bars (heavy!)
+        maxCarry = 50,              -- Max 50 gold bars (very heavy!)
         description = 'Pure gold bars - highly valuable and heavy',
         paycheck = false,
         hidden = false,
-        valueInDollars = 250        -- Each gold bar worth $250
+        valueInDollars = 25         -- Each gold bar worth $25 (1oz = $20 historical)
     },
     
-    ['goldcurrency'] = {
+    goldcurrency = {
         label = 'Gold Currency',
         startAmount = 0,
         tangible = false,           -- Account-based gold like VORP
@@ -115,75 +122,76 @@ LXRConfig.Money.MoneyTypes = {
         icon = 'gold_coin',
         weight = 0,
         maxCarry = 999999,
-        description = 'Gold-backed currency used for premium transactions',
+        description = 'Gold-backed premium currency - purchased with real money',
         paycheck = false,
         hidden = false,
-        valueInDollars = 100        -- 1 gold currency = $100
+        valueInDollars = 0,         -- Premium currency - not directly convertible
+        tebexPurchasable = true     -- Can be bought via Tebex
     },
     
     -- ============ Coins System ============
-    ['coins'] = {
+    coins = {
         label = 'Coins',
-        startAmount = 25,
+        startAmount = 50,           -- Start with 50 cents
         tangible = true,
         canMinus = false,
         icon = 'coins',
-        weight = 0.1,               -- Very light
+        weight = 0.01,              -- Very light (1 gram per 100 coins)
         maxCarry = 10000,
         description = 'Small denomination coins for minor purchases',
         paycheck = true,
         hidden = false,
-        valueInDollars = 0.1        -- 10 coins = $1
+        valueInDollars = 0.01       -- 100 coins = $1
     },
     
-    ['goldcoins'] = {
+    goldcoins = {
         label = 'Gold Coins',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'gold_coin',
-        weight = 50,                -- Heavy coins
-        maxCarry = 500,
-        description = 'Rare gold coins used for high-value transactions',
+        weight = 25,                -- Heavy coins
+        maxCarry = 200,
+        description = 'Rare gold coins used for valuable transactions',
         paycheck = false,
         hidden = false,
-        valueInDollars = 50         -- 1 gold coin = $50
+        valueInDollars = 5          -- 1 gold coin = $5 (quarter ounce)
     },
     
-    ['silvercoins'] = {
+    silvercoins = {
         label = 'Silver Coins',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'silver_coin',
-        weight = 25,
-        maxCarry = 1000,
+        weight = 10,
+        maxCarry = 500,
         description = 'Silver coins used for medium-value transactions',
         paycheck = false,
         hidden = false,
-        valueInDollars = 10         -- 1 silver coin = $10
+        valueInDollars = 1          -- 1 silver coin = $1 (silver dollar)
     },
     
     -- ============ Special Faction Coins ============
-    ['marshalcoins'] = {
+    marshalcoins = {
         label = 'Marshal Coins',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'marshal_badge',
-        weight = 10,
+        weight = 5,
         maxCarry = 100,
         description = 'Special currency earned by law enforcement',
         paycheck = false,
         hidden = false,
-        valueInDollars = 25,
+        valueInDollars = 2,         -- 1 marshal coin = $2
         restricted = {
-            jobs = {'police', 'marshal'},  -- Only these jobs can earn
+            jobs = {'police', 'marshal', 'ranger'},
             description = 'Law enforcement only'
         }
     },
     
-    ['trustcoins'] = {
+    trustcoins = {
         label = 'Trust Coins',
         startAmount = 0,
         tangible = false,           -- Reputation-based currency
@@ -203,56 +211,56 @@ LXRConfig.Money.MoneyTypes = {
     },
     
     -- ============ Precious Gems ============
-    ['diamonds'] = {
+    diamonds = {
         label = 'Diamonds',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'diamond',
-        weight = 50,
-        maxCarry = 100,
+        weight = 10,
+        maxCarry = 50,
         description = 'Extremely rare and valuable diamonds',
         paycheck = false,
         hidden = false,
-        valueInDollars = 500        -- 1 diamond = $500
+        valueInDollars = 50         -- 1 diamond = $50 (very rare)
     },
     
     -- ============ Blood Money System ============
-    ['bloodmoney'] = {
+    bloodmoney = {
         label = 'Blood Money',
         startAmount = 0,
         tangible = true,            -- Dirty cash that must be laundered
         canMinus = false,
         icon = 'blood_dollar',
         weight = 0,
-        maxCarry = 25000,
+        maxCarry = 2500,
         description = 'Illegally obtained cash - must be laundered to use',
         paycheck = false,
         hidden = false,
         needsLaundering = true,     -- Must be converted to clean money
-        launderRate = 0.7,          -- 70% conversion rate (30% lost to laundering)
-        detectRisk = 0.3            -- 30% chance of detection per transaction
+        launderRate = 0.6,          -- 60% conversion rate (40% lost to laundering)
+        detectRisk = 0.35           -- 35% chance of detection per transaction
     },
     
-    ['bloodcoins'] = {
+    bloodcoins = {
         label = 'Blood Coins',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'blood_coin',
-        weight = 0.5,
+        weight = 0.2,
         maxCarry = 1000,
         description = 'Illegally obtained coins - highly suspicious',
         paycheck = false,
         hidden = false,
         needsLaundering = true,
-        launderRate = 0.6,          -- 60% conversion rate
-        detectRisk = 0.4,           -- 40% detection risk
-        valueInDollars = 5
+        launderRate = 0.5,          -- 50% conversion rate
+        detectRisk = 0.45,          -- 45% detection risk
+        valueInDollars = 0.5
     },
     
     -- ============ Tokens System ============
-    ['tokens'] = {
+    tokens = {
         label = 'Premium Tokens',
         startAmount = 0,
         tangible = false,           -- Premium currency (donation/reward)
@@ -260,18 +268,24 @@ LXRConfig.Money.MoneyTypes = {
         icon = 'token',
         weight = 0,
         maxCarry = 99999,
-        description = 'Premium tokens used in special shops',
+        description = 'Premium tokens used in special shops - purchased with real money',
         paycheck = false,
         hidden = false,
         valueInDollars = 0,         -- Cannot buy with regular money
+        tebexPurchasable = true,    -- Can be bought via Tebex
         earnMethods = {
             donation = true,        -- Can be purchased with real money
             events = true,          -- Can be earned in events
-            daily = 1               -- 1 free token per day
+            daily = 1,              -- 1 free token per day
+            playtime = {
+                enabled = true,
+                hours = 24,         -- Every 24 hours of playtime
+                amount = 5          -- Earn 5 tokens
+            }
         }
     },
     
-    ['rewardtokens'] = {
+    rewardtokens = {
         label = 'Reward Tokens',
         startAmount = 0,
         tangible = false,
@@ -286,26 +300,26 @@ LXRConfig.Money.MoneyTypes = {
     },
     
     -- ============ Promissory Notes ============
-    ['promisarynotes'] = {
+    promisarynotes = {
         label = 'Promissory Notes',
         startAmount = 0,
         tangible = true,
         canMinus = false,
         icon = 'promissory_note',
         weight = 1,
-        maxCarry = 100,
+        maxCarry = 50,
         description = 'Legal promise to pay - can be traded or cashed at bank',
         paycheck = false,
         hidden = false,
         cashable = true,            -- Can be cashed at bank
         tradeable = true,           -- Can be traded between players
         expiryDays = 30,            -- Expires after 30 days
-        valueInDollars = 100,       -- Each note worth $100
+        valueInDollars = 10,        -- Each note worth $10
         requiresSignature = true    -- Needs issuer's signature
     },
     
     -- ============ Admin/Hidden Currencies ============
-    ['adminmoney'] = {
+    adminmoney = {
         label = 'Admin Currency',
         startAmount = 0,
         tangible = false,
@@ -335,16 +349,18 @@ LXRConfig.Money.PayCheckSociety = false        -- Paychecks from society account
 LXRConfig.Money.PayCheckTypes = {'cash', 'bank'} -- Which currencies can be used for paychecks
 
 -- Currency Exchange Rates (for conversion between types)
+-- Updated for 1899 economy standards
 LXRConfig.Money.ExchangeRates = {
     enabled = true,
-    commission = 0.05,          -- 5% commission on exchanges
+    commission = 0.10,          -- 10% commission on exchanges (banks take bigger cut in 1899)
     rates = {
-        ['coins_to_cash'] = 0.1,        -- 10 coins = 1 dollar
-        ['goldcoins_to_cash'] = 50,     -- 1 gold coin = 50 dollars
-        ['silvercoins_to_cash'] = 10,   -- 1 silver coin = 10 dollars
-        ['gold_to_cash'] = 250,         -- 1 gold bar = 250 dollars
-        ['diamonds_to_cash'] = 500,     -- 1 diamond = 500 dollars
-        ['promisarynotes_to_bank'] = 100, -- 1 note = 100 bank dollars
+        coins_to_cash = 0.01,           -- 100 coins = 1 dollar
+        goldcoins_to_cash = 5,          -- 1 gold coin = 5 dollars
+        silvercoins_to_cash = 1,        -- 1 silver coin = 1 dollar
+        gold_to_cash = 25,              -- 1 gold bar = 25 dollars
+        diamonds_to_cash = 50,          -- 1 diamond = 50 dollars
+        promisarynotes_to_bank = 10,    -- 1 note = 10 bank dollars
+        marshalcoins_to_cash = 2,       -- 1 marshal coin = 2 dollars
     }
 }
 
@@ -357,6 +373,160 @@ LXRConfig.Money.Laundering = {
     cooldown = 300,             -- 5 minutes between laundering attempts
     policeAlert = true,         -- Alert police when laundering
     minPoliceRequired = 2,      -- Minimum police online for laundering
+}
+
+-- ============================================
+-- TEBEX INTEGRATION (Premium Currency)
+-- ============================================
+
+--[[
+    Server Owner Setup:
+    1. Create account at tebex.io
+    2. Get your secret key from Tebex panel
+    3. Set up webhook: https://your-server-ip:30120/tebex/webhook
+    4. Configure packages below
+    5. Set Enabled = true
+]]--
+
+LXRConfig.Tebex = {
+    Enabled = false,            -- Set to true when configured
+    SecretKey = '',             -- Your Tebex secret key from tebex.io
+    
+    -- Package ID to reward mapping
+    -- Get package IDs from your Tebex panel
+    Packages = {
+        -- Example packages (replace with your actual package IDs)
+        
+        -- Starter Packs
+        [1001] = {
+            name = 'Starter Pack',
+            goldcurrency = 100,     -- 100 gold currency
+            tokens = 50,            -- 50 premium tokens
+            cash = 10,              -- $10 cash
+        },
+        
+        [1002] = {
+            name = 'Basic Pack',
+            goldcurrency = 250,
+            tokens = 125,
+            cash = 25,
+        },
+        
+        [1003] = {
+            name = 'Premium Pack',
+            goldcurrency = 600,
+            tokens = 300,
+            cash = 50,
+            items = {
+                ['weapon_revolver_cattleman'] = 1,
+            }
+        },
+        
+        [1004] = {
+            name = 'Ultimate Pack',
+            goldcurrency = 1500,
+            tokens = 750,
+            cash = 100,
+            items = {
+                ['weapon_revolver_schofield'] = 1,
+                ['horse_arabian'] = 1,
+            }
+        },
+        
+        -- Gold Currency Only Packs
+        [2001] = {
+            name = '100 Gold',
+            goldcurrency = 100,
+        },
+        
+        [2002] = {
+            name = '250 Gold',
+            goldcurrency = 250,
+        },
+        
+        [2003] = {
+            name = '500 Gold',
+            goldcurrency = 500,
+        },
+        
+        [2004] = {
+            name = '1000 Gold',
+            goldcurrency = 1000,
+        },
+        
+        [2005] = {
+            name = '2500 Gold',
+            goldcurrency = 2500,
+        },
+        
+        -- Token Only Packs
+        [3001] = {
+            name = '100 Tokens',
+            tokens = 100,
+        },
+        
+        [3002] = {
+            name = '250 Tokens',
+            tokens = 250,
+        },
+        
+        [3003] = {
+            name = '500 Tokens',
+            tokens = 500,
+        },
+        
+        [3004] = {
+            name = '1000 Tokens',
+            tokens = 1000,
+        },
+        
+        -- VIP Packs (use command to set VIP status)
+        [4001] = {
+            name = 'VIP 30 Days',
+            goldcurrency = 300,
+            tokens = 150,
+            command = 'setvip %s 30'  -- %s will be replaced with player ID
+        },
+        
+        [4002] = {
+            name = 'VIP 90 Days',
+            goldcurrency = 800,
+            tokens = 400,
+            command = 'setvip %s 90'
+        },
+        
+        [4003] = {
+            name = 'VIP Lifetime',
+            goldcurrency = 2000,
+            tokens = 1000,
+            command = 'setvip %s -1'  -- -1 = lifetime
+        },
+    },
+    
+    -- Exchange rates for gold currency and tokens
+    -- How much gold/tokens can buy in-game
+    GoldShop = {
+        enabled = true,
+        items = {
+            -- Format: itemName = goldCost
+            weapon_revolver_schofield = 50,
+            weapon_rifle_springfield = 75,
+            horse_arabian = 200,
+            horse_turkoman = 150,
+            saddle_special_01 = 100,
+        }
+    },
+    
+    TokenShop = {
+        enabled = true,
+        items = {
+            -- Format: itemName = tokenCost
+            cosmetic_hat_01 = 25,
+            cosmetic_outfit_01 = 50,
+            emote_dance_01 = 10,
+            vehicle_skin_01 = 75,
+        }
+    }
 }
 
 -- ============================================
@@ -383,7 +553,7 @@ LXRConfig.Player.Bloodtypes = {
 -- Wallet settings for physical money
 LXRConfig.Player.Wallet = {
     enabled = true,
-    maxCash = 5000,             -- Max cash in wallet before needing deposit
+    maxCash = 500,              -- Max $500 cash in wallet (1899 economy - that's a lot!)
     dropOnDeath = {
         enabled = true,
         percentage = 0.5,       -- Drop 50% of tangible money on death
