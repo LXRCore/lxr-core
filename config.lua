@@ -1081,7 +1081,7 @@ CreateThread(function()
         moneyTypeCount = moneyTypeCount + 1
     end
     
-    local skillCount = LXRConfig.Progression.Skills and #LXRConfig.Progression.Skills.skills or 0
+    local skillCount = (LXRConfig.Progression and LXRConfig.Progression.Skills and #LXRConfig.Progression.Skills.skills) or 0
     
     print([[
         
