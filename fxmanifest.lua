@@ -80,6 +80,7 @@ shared_scripts {
     'shared/locale.lua',            -- Localization system
     'locale/en.lua',                -- Language file (change to desired language)
     'config.lua',                   -- Main configuration file
+    'shared/framework.lua',         -- Multi-framework adapter (NEW)
     'shared/main.lua',              -- Core shared functions
     'shared/items.lua',             -- Item definitions
     'shared/jobs.lua',              -- Job system configuration
