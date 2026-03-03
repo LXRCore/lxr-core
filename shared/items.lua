@@ -1,3 +1,23 @@
+--[[
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Items Data
+    
+    All item definitions for the LXR Core framework including weapons, consumables,
+    crafting materials, valuables, and special items.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION  |  Developer: iBoss21 / The Lux Empire
+    Website: https://www.wolves.land  |  Store: https://theluxempire.tebex.io
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+    ═══════════════════════════════════════════════════════════════════════════════
+]]
+
 LXRShared                              = LXRShared or {}
 LXRShared.Items                        = {
     --Items 

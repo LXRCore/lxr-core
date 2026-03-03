@@ -1,43 +1,38 @@
 --[[
-    LXRCore - Supreme Webhook & Logging System
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Supreme Webhook & Logging System
     
-    Comprehensive logging and Discord webhook integration
-    Real-time event tracking, audit trails, and notifications
+    Comprehensive logging and Discord webhook integration with real-time
+    event tracking, audit trails, and notifications across all server events.
     
-    Features:
-    1. Discord webhook integration (50+ event types)
-    2. Database logging with search/filter
-    3. Real-time notifications
-    4. Player action tracking
-    5. Admin action logging
-    6. Economy transaction logs
-    7. Inventory change tracking
-    8. Security event alerts
-    9. Server performance logs
-    10. Custom event logging
-    11. Log rotation and archival
-    12. Advanced filtering and search
-    13. Export logs to JSON/CSV
-    14. Webhook queue system
-    15. Retry mechanism for failed webhooks
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    For Server Owners:
-    - Configure webhooks in config.lua
-    - Set log retention periods
-    - Choose which events to log
-    - Discord notifications for critical events
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
     
-    For Developers:
-    - Use LXRLog:Log() for custom events
-    - Create custom webhook formats
-    - Query logs programmatically
-    - Export data for analysis
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
     
-    Made by iBoss • LXRCore - www.lxrcore.com
-    Launched on The Land of Wolves RP - www.wolves.land
+    ═══════════════════════════════════════════════════════════════════════════════
     
     Version: 2.0.0
-]]--
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRLog = {}
 LXRLog.WebhookQueue = {}

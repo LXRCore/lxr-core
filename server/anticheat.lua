@@ -1,42 +1,38 @@
 --[[
-    LXRCore - Supreme Anti-Cheat System
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Supreme Anti-Cheat System (Server)
     
-    Advanced multi-layer anti-cheat protection for RedM servers
-    Based on industry best practices and research from top frameworks
+    Advanced multi-layer anti-cheat protection for RedM servers with
+    military-grade detection algorithms and automatic enforcement.
     
-    Protection Categories:
-    1. God Mode Detection
-    2. Speed Hack Detection
-    3. Teleportation Detection
-    4. Damage Modifier Detection
-    5. Resource Injection Detection
-    6. Aimbot Detection
-    7. ESP/Wallhack Detection
-    8. No Clip Detection
-    9. Super Jump Detection
-    10. Invisible Detection
-    11. Weapon/Item Spawning Detection
-    12. Entity Spawning Detection
-    13. Explosion Detection
-    14. Money/Stat Manipulation Detection
-    15. AI Manipulation Detection
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    For Server Owners:
-    - Configure thresholds in config.lua
-    - Set ban/kick preferences
-    - Enable/disable specific checks
-    - Review logs regularly
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
     
-    For Developers:
-    - All detection events trigger LXRCore:AntiCheat:Detection
-    - Integration with ban system
-    - Spectator mode for admins
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
     
-    Made by iBoss • LXRCore - www.lxrcore.com
-    Launched on The Land of Wolves RP - www.wolves.land
+    ═══════════════════════════════════════════════════════════════════════════════
     
     Version: 2.0.0
-]]--
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRAntiCheat = {}
 LXRAntiCheat.ActiveChecks = {}

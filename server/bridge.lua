@@ -1,24 +1,39 @@
 --[[
-    LXRCore - Framework Bridge System
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Framework Bridge System
     
-    This module allows LXRCore to work as a standalone framework or alongside other frameworks.
-    It automatically detects and bridges with existing frameworks like VORP, RSG-Core, RedM-RP, etc.
+    This module allows LXR Core to work as a standalone framework or alongside other
+    frameworks. It automatically detects and bridges with existing frameworks like
+    VORP Core, RSG-Core, RedEM:RP, QBR-Core, QR-Core, and more.
     
-    For Server Owners:
-    - Simply install LXRCore and it will work with your existing scripts
-    - No need to convert existing resources
-    - Automatic event translation and compatibility
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    For Developers:
-    - All LXRCore events are prefixed with 'LXRCore:'
-    - Bridge handles automatic translation to/from other frameworks
-    - Use LXRCore native functions for best performance
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
     
-    Website: https://www.lxrcore.com
-    Launched on: The Land of Wolves RP (https://www.wolves.land)
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
+    
+    ═══════════════════════════════════════════════════════════════════════════════
     
     Version: 2.0.0
-]]--
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRBridge = {}
 LXRBridge.DetectedFrameworks = {}

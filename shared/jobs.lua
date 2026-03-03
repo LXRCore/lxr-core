@@ -1,19 +1,32 @@
 --[[
-    LXRCore - Jobs Configuration (1899 Era)
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Jobs Configuration (1899 Era)
     
-    Historically accurate jobs for Red Dead Redemption 2 era
-    All payments reflect 1899 economy (below medium wage)
+    Historically accurate jobs for the Red Dead Redemption 2 era.
+    All payments reflect 1899 economy standards.
     
-    Historical Context:
-    - Average worker earned $1-3 per day in 1899
-    - Skilled workers earned $3-5 per day
-    - Professional jobs earned $5-10 per day
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    Payment rates are in dollars per paycheck cycle (30 min default)
+    Server:      The Land of Wolves 🐺
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    Store:       https://theluxempire.tebex.io
     
-    Made by iBoss • LXRCore - www.lxrcore.com
-    Launched on The Land of Wolves RP - www.wolves.land
-]]--
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Version: 2.0.0
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRShared = LXRShared or {}
 LXRShared.ForceJobDefaultDutyAtLogin = true
