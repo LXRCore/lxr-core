@@ -1,4 +1,38 @@
-local sid, isLoggedIn = GetPlayerServerId(PlayerId())
+--[[
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Client Loops
+    
+    FPS-aware client-side loops for continuous state tracking, health
+    monitoring, and periodic client-server synchronization.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Server:      The Land of Wolves 🐺
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    Store:       https://theluxempire.tebex.io
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Version: 2.0.0
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🐺 LXR CORE - CLIENT LOOPS
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+
 
 AddStateBagChangeHandler('isLoggedIn', ('player:%s'):format(sid), function(_, _, value)
     isLoggedIn = value

@@ -1,27 +1,38 @@
 --[[
-    LXRCore - Anti-Dupe & Disconnection Exploit Protection
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Anti-Dupe & Disconnection Exploit Protection
     
-    This module prevents players from duplicating items/money by:
-    - Disconnecting during transactions
-    - Timing out during trades
-    - Network manipulation
-    - Inventory system exploits
+    Prevents players from duplicating items/money through disconnects,
+    timing exploits, network manipulation, and inventory system exploits.
     
-    For Server Owners:
-    - Automatic protection enabled by default
-    - Configurable in config.lua
-    - Logs all suspicious disconnections
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    For Developers:
-    - Use transaction locking system
-    - Always wrap trades in SafeTransaction
-    - Check player lock status before operations
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
     
-    Website: https://www.lxrcore.com
-    Launched on: The Land of Wolves RP (https://www.wolves.land)
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
+    
+    ═══════════════════════════════════════════════════════════════════════════════
     
     Version: 2.0.0
-]]--
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRAntiDupe = {}
 

@@ -1,3 +1,23 @@
+--[[
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Vehicles Data
+    
+    All vehicle and mount definitions for the LXR Core framework including
+    wagons, carts, and other period-appropriate transportation.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION  |  Developer: iBoss21 / The Lux Empire
+    Website: https://www.wolves.land  |  Store: https://theluxempire.tebex.io
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+    ═══════════════════════════════════════════════════════════════════════════════
+]]
+
 LXRShared = LXRShared or {}
 LXRShared.Vehicles = {
 	{ model = 'CART01', name = 'Wooden Cart 1', brand = '?', price = 10, category = 'carts', hash = -824257932, shop = 'cart' },

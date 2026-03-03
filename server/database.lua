@@ -1,5 +1,36 @@
--- LXRCore Database Optimization Layer
--- Provides optimized database operations with query caching and performance tracking
+--[[
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Database Optimization Layer
+    
+    Optimized database operations with query caching, performance tracking,
+    and connection pooling for maximum throughput and minimal latency.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Server:      The Land of Wolves 🐺
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    Store:       https://theluxempire.tebex.io
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Version: 2.0.0
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🐺 LXR CORE - DATABASE OPTIMIZATION LAYER
+-- ═══════════════════════════════════════════════════════════════════════════════
 
 LXRDatabase = {}
 

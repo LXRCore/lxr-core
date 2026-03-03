@@ -170,6 +170,42 @@ LXRConfig.FrameworkSettings = {
             client = 'vorp:%s',
             callback = 'vorp:callback:%s'
         }
+    },
+    ['redem_roleplay'] = {
+        resource = 'redem_roleplay',
+        notifications = 'redem',
+        inventory = 'redem_inventory',
+        target = 'redem_target',
+        events = {
+            server = 'redem:%s:server',
+            client = 'redem:%s:client'
+        }
+    },
+    ['qbr-core'] = {
+        resource = 'qbr-core',
+        notifications = 'ox_lib',
+        inventory = 'qbr-inventory',
+        target = 'ox_target',
+        events = {
+            server = 'QBR:Server:%s',
+            client = 'QBR:Client:%s'
+        }
+    },
+    ['qr-core'] = {
+        resource = 'qr-core',
+        notifications = 'ox_lib',
+        inventory = 'qr-inventory',
+        target = 'ox_target',
+        events = {
+            server = 'QR:Server:%s',
+            client = 'QR:Client:%s'
+        }
+    },
+    ['standalone'] = {
+        -- Minimal functionality without framework dependency
+        notifications = 'print',
+        inventory = 'none',
+        target = 'none'
     }
 }
 

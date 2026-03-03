@@ -1,12 +1,32 @@
 --[[
-    LXRCore - Gangs Configuration (1899 Era)
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Gangs Configuration (1899 Era)
     
-    All gangs from Red Dead Redemption 2 and era-appropriate outlaw groups
-    Includes RDR2 canon gangs and additional period-accurate gangs
+    All gangs from Red Dead Redemption 2 and era-appropriate outlaw groups.
+    Includes RDR2 canon gangs and additional period-accurate gangs.
     
-    Made by iBoss • LXRCore - www.lxrcore.com
-    Launched on The Land of Wolves RP - www.wolves.land
-]]--
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Server:      The Land of Wolves 🐺
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    Store:       https://theluxempire.tebex.io
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    
+    Version: 2.0.0
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRShared = LXRShared or {}
 LXRShared.Gangs = {

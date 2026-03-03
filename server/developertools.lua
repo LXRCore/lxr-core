@@ -1,37 +1,38 @@
 --[[
-    LXRCore - Supreme Developer Debug & Monitoring System
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Supreme Developer Debug & Monitoring System
     
-    Comprehensive debugging and monitoring tools for developers
-    Real-time issue tracking, API endpoints, error logging, and performance metrics
+    Comprehensive debugging and monitoring tools with real-time issue tracking,
+    API endpoints, error logging, and performance metrics for developers.
     
-    Features:
-    1. Real-time error tracking
-    2. Performance profiling
-    3. Database query monitoring
-    4. Event flow debugging
-    5. Player state inspection
-    6. Resource monitoring
-    7. API endpoints for external tools
-    8. Debug console with commands
-    9. Stack trace analysis
-    10. Memory leak detection
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION
+    ═══════════════════════════════════════════════════════════════════════════════
     
-    For Server Owners:
-    - Enable debug mode in config.lua
-    - Access debug panel at /debug
-    - Set log levels (info, warn, error, critical)
+    Server:      The Land of Wolves 🐺
+    Tagline:     Georgian RP 🇬🇪 | მგლების მიწა - რჩეულთა ადგილი!
+    Description: ისტორია ცოცხლდება აქ! (History Lives Here!)
+    Type:        Serious Hardcore Roleplay
+    Access:      Discord & Whitelisted
     
-    For Developers:
-    - Use LXRDebug:Log() for enhanced logging
-    - Profile functions with LXRDebug:Profile()
-    - Inspect player state with /debug:player
-    - Monitor events with /debug:events
+    Developer:   iBoss21 / The Lux Empire
+    Website:     https://www.wolves.land
+    Discord:     https://discord.gg/CrKcWdfd3A
+    GitHub:      https://github.com/iBoss21
+    Store:       https://theluxempire.tebex.io
     
-    Made by iBoss • LXRCore - www.lxrcore.com
-    Launched on The Land of Wolves RP - www.wolves.land
+    ═══════════════════════════════════════════════════════════════════════════════
     
     Version: 2.0.0
-]]--
+    
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+]]
 
 LXRDebug = {}
 LXRDebug.Logs = {}

@@ -1,3 +1,23 @@
+--[[
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                    
+    🐺 LXR Core - Weapons Data
+    
+    All weapon definitions for the LXR Core framework including revolvers,
+    rifles, shotguns, melee weapons, and throwables for the 1899 era.
+    
+    ═══════════════════════════════════════════════════════════════════════════════
+    SERVER INFORMATION  |  Developer: iBoss21 / The Lux Empire
+    Website: https://www.wolves.land  |  Store: https://theluxempire.tebex.io
+    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+    ═══════════════════════════════════════════════════════════════════════════════
+]]
+
 LXRShared = LXRShared or {}
 LXRShared.Weapons = {
 	
