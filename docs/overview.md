@@ -35,16 +35,16 @@
 ## 🎯 WHAT IS LXR CORE?
 ## ═══════════════════════════════════════════════════════════════════════════════
 
-LXR Core is a **premium, production-grade RedM roleplay framework** designed for serious hardcore roleplay servers. It's a complete conversion of QBCore, optimized specifically for RedM with:
+LXR Core is a RedM roleplay framework adapted from QBCore and re-architected for RedM. It is actively developed by a single operator and production-tested on wolves.land. Key areas of focus:
 
-- **70% Performance Improvement** over standard frameworks
-- **Military-Grade Security** with multi-layer protection
-- **Multi-Framework Compatibility** via unified adapter layer
-- **Enterprise-Level Code Quality** with comprehensive documentation
+- **Performance Optimization** — Reduced tick times and database query batching
+- **Security Hardening** — Rate limiting, anti-cheat, input validation
+- **Multi-Framework Compatibility** — Unified adapter layer for RSG-Core, VORP, and others
+- **Comprehensive Documentation** — API reference, migration guides, and examples
 
-### 🏆 Built For Excellence
+### 🏆 Production-Tested
 
-LXR Core powers **The Land of Wolves** (wolves.land), a premier Georgian RP server with whitelist access and serious roleplay standards. Every line of code is battle-tested in production.
+LXR Core runs on **The Land of Wolves** (wolves.land), a Georgian RP server with whitelist access. The framework is tested and iterated on in this real-world production environment.
 
 ---
 
