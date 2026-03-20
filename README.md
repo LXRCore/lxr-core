@@ -182,14 +182,19 @@ See [📖 Installation Guide](docs/installation.md) for complete step-by-step in
 
 | Document | Description |
 |----------|-------------|
+| [🚀 Getting Started](docs/getting-started.md) | Quick start guide (under 15 minutes) |
 | [📋 Overview](docs/overview.md) | Framework overview and features |
 | [⚙️ Installation](docs/installation.md) | Complete installation instructions |
-| [🔧 Configuration](docs/configuration.md) | Configuration guide |
+| [🔧 Configuration](docs/DOCUMENTATION.md) | Configuration guide |
+| [🏗️ Architecture](docs/framework-architecture.md) | Technical architecture overview |
 | [🔄 Frameworks](docs/frameworks.md) | Multi-framework support & compatibility |
-| [📡 Events & API](docs/events.md) | Complete API reference |
-| [🔒 Security](docs/security.md) | Security features and best practices |
-| [⚡ Performance](docs/performance.md) | Performance optimization guide |
-| [📸 Screenshots](docs/screenshots.md) | Screenshot requirements |
+| [📊 Compatibility Matrix](docs/compatibility-matrix.md) | Framework compatibility test results |
+| [📡 API Reference](docs/API.md) | Complete API reference |
+| [🔒 Security](docs/SECURITY.md) | Security features and best practices |
+| [⚡ Performance](docs/PERFORMANCE.md) | Performance optimization guide |
+| [🔀 RSG → LXR Migration](docs/migration/rsg-to-lxr.md) | Migration guide from RSG-Core |
+| [🔀 VORP → LXR Migration](docs/migration/vorp-to-lxr.md) | Migration guide from VORP |
+| [🔧 Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
 
 ---
 

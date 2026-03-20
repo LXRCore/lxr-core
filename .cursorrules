@@ -1,0 +1,107 @@
+# LXRCore Development Rules
+
+## Framework Context
+- LXRCore is a RedM (Red Dead Redemption 2) roleplay framework based on QBCore
+- Runtime: FXServer (CitizenFX) with Lua 5.4
+- Database: MySQL/MariaDB via oxmysql
+- Game: RedM (rdr3)
+
+## Lua Standards
+- Use `local` for all variables unless they need to be global
+- Use `Citizen.CreateThread` or `CreateThread` for threads
+- Use `Citizen.Wait` or `Wait` inside threads (never busy-wait)
+- Prefer early returns over nested if-else
+- Use string formatting with `string.format` or `('%s'):format()`
+- Always use `local` function declarations unless exporting
+
+## Naming Conventions
+- Variables: camelCase (`playerData`, `citizenId`)
+- Functions: PascalCase (`GetPlayer`, `AddMoney`)
+- Constants/Config: PascalCase with dots (`LXRConfig.Server`, `LXRConfig.Money`)
+- Events: namespace:action format (`lxr-core:server:playerLoaded`)
+- Exports: camelCase matching function name
+
+## Database (oxmysql) Patterns
+- Always use parameterized queries (NEVER string concatenation for SQL)
+- Use `MySQL.query` for SELECT, `MySQL.insert` for INSERT, `MySQL.update` for UPDATE
+- Use `MySQL.prepare` for frequently executed queries
+- Use `MySQL.transaction` for multi-statement operations
+- Always handle nil results from queries
+
+```lua
+-- CORRECT
+MySQL.query('SELECT * FROM players WHERE citizenid = ?', {citizenId}, function(result)
+    if not result or #result == 0 then return end
+    -- process result
+end)
+
+-- WRONG - SQL injection risk
+MySQL.query('SELECT * FROM players WHERE citizenid = "' .. citizenId .. '"')
+```
+
+## Security Rules
+- Never trust client data; always validate on server side
+- Use rate limiting for all client-triggered server events
+- Validate all player coordinates and values server-side
+- Never expose sensitive server exports to client
+- Use `source` from the event handler, never from client-sent data
+- Log all financial transactions and admin actions
+
+```lua
+-- CORRECT - use the native source
+RegisterNetEvent('lxr-core:server:action', function(data)
+    local src = source  -- use native source
+    -- validate data before processing
+end)
+
+-- WRONG - trusting client-provided source
+RegisterNetEvent('lxr-core:server:action', function(playerSource, data)
+    -- playerSource could be spoofed
+end)
+```
+
+## Event Patterns
+- Server events: `lxr-core:server:eventName`
+- Client events: `lxr-core:client:eventName`
+- Always use `RegisterNetEvent` before `AddEventHandler` for net events
+- Keep event payloads minimal
+
+## Resource Structure
+```
+resource-name/
+├── client/
+│   └── main.lua
+├── server/
+│   └── main.lua
+├── shared/
+│   └── config.lua
+├── html/           (if NUI needed)
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── locales/
+│   └── en.lua
+└── fxmanifest.lua
+```
+
+## Performance Guidelines
+- Cache repeated function calls (e.g., `local PlayerPedId = PlayerPedId`)
+- Use appropriate `Wait()` values in loops (avoid `Wait(0)` unless necessary)
+- Clean up threads and event handlers when resource stops
+- Use table pooling for frequently created/destroyed tables
+- Batch database operations where possible
+
+## Error Handling
+- Wrap risky operations in `pcall` or `xpcall`
+- Log errors with context (player source, function name, input data)
+- Never silently swallow errors
+- Provide meaningful error messages
+
+```lua
+local success, result = pcall(function()
+    return someRiskyOperation()
+end)
+if not success then
+    print(('[LXRCore] Error in %s: %s'):format('functionName', result))
+end
+```
