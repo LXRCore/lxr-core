@@ -11,15 +11,15 @@
 
 <div align="center">
 
-**🐺 The Land of Wolves - Premier RedM Framework 🐺**
+**🐺 The Land of Wolves - RedM Framework 🐺**
 
 [![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=for-the-badge)](https://github.com/LXRCore/lxr-core)
-[![License](https://img.shields.io/badge/license-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-green.svg?style=for-the-badge)](LICENSE)
 [![RedM](https://img.shields.io/badge/RedM-Compatible-red.svg?style=for-the-badge)](https://redm.net)
 [![Framework](https://img.shields.io/badge/Multi--Framework-Compatible-purple.svg?style=for-the-badge)](docs/frameworks.md)
 
-[![Performance](https://img.shields.io/badge/Performance-⚡_70%25_Faster-brightgreen?style=for-the-badge)](docs/performance.md)
-[![Security](https://img.shields.io/badge/Security-🔒_Military_Grade-red?style=for-the-badge)](docs/security.md)
+[![Performance](https://img.shields.io/badge/Performance-Optimized-brightgreen?style=for-the-badge)](docs/PERFORMANCE.md)
+[![Security](https://img.shields.io/badge/Security-Hardened-orange?style=for-the-badge)](docs/SECURITY.md)
 [![Support](https://img.shields.io/badge/Support-Discord-7289DA?style=for-the-badge&logo=discord)](https://discord.gg/CrKcWdfd3A)
 
 [🌐 Website](https://www.wolves.land) • [📚 Documentation](docs/overview.md) • [⚙️ Installation](docs/installation.md) • [🔄 Multi-Framework](docs/frameworks.md)
@@ -30,22 +30,31 @@
 
 ---
 
+## Credits & Lineage
+
+LXRCore is structurally inspired by [QBCore](https://github.com/qbcore-framework) (FiveM).
+We adapt its API philosophy to RedM while building custom systems around it.
+
+We respect and acknowledge the original work by the QBCore contributors.
+
+---
+
 ## ═══════════════════════════════════════════════════════════════════════════════
 ## 🎯 WHAT IS LXR CORE?
 ## ═══════════════════════════════════════════════════════════════════════════════
 
-**LXR Core** is a production-grade, premium RedM roleplay framework engineered for serious hardcore roleplay servers. Born from QBCore and completely re-architected for RedM, LXR Core delivers **supreme performance**, **military-grade security**, and **enterprise-level reliability**.
+**LXR Core** is a RedM roleplay framework adapted from QBCore and re-architected for RedM. It is actively developed by a single operator and production-tested on wolves.land. LXR Core focuses on **performance**, **security**, and **control**.
 
-### 🏆 Battle-Tested in Production
+### 🏆 Production-Tested
 
-Powering **The Land of Wolves** 🐺 (wolves.land) - a premier Georgian RP server with whitelist access and the highest roleplay standards. Every line of code has been tested and optimized in real-world production environments.
+Actively running on **The Land of Wolves** 🐺 (wolves.land) — a Georgian RP server with whitelist access. The framework is tested and iterated on in this real-world production environment.
 
 ### ⚡ Performance That Matters
 
 - **70% faster** than standard frameworks
 - **<1ms** average server tick time
 - **60-80%** reduction in database queries
-- **Supreme optimization** with intelligent caching
+- **Optimization** with intelligent caching
 
 ---
 
@@ -53,7 +62,7 @@ Powering **The Land of Wolves** 🐺 (wolves.land) - a premier Georgian RP serve
 ## ✨ KEY FEATURES
 ## ═══════════════════════════════════════════════════════════════════════════════
 
-### 🚀 Supreme Performance
+### 🚀 Performance
 
 | Metric | Standard Framework | LXR Core | Improvement |
 |--------|-------------------|----------|-------------|
@@ -62,7 +71,7 @@ Powering **The Land of Wolves** 🐺 (wolves.land) - a premier Georgian RP serve
 | **Client FPS Impact** | -15 FPS | -4 FPS | **73% less** |
 | **Memory Usage** | 210 MB | 145 MB | **31% less** |
 
-### 🔒 Military-Grade Security
+### 🔒 Security
 
 - **Rate Limiting** - Event spam protection & DDoS mitigation
 - **Anti-Cheat** - Client and server-side detection systems
@@ -101,6 +110,23 @@ Powering **The Land of Wolves** 🐺 (wolves.land) - a premier Georgian RP serve
 - **Admin Commands** - Live system monitoring
 - **Resource Analytics** - CPU, memory, database tracking
 - **Discord Webhooks** - Real-time alerts and logging
+
+---
+
+## ═══════════════════════════════════════════════════════════════════════════════
+## 📦 REQUIRED EXTERNAL RESOURCES
+## ═══════════════════════════════════════════════════════════════════════════════
+
+LXRCore provides the core framework. Some gameplay systems require additional resources:
+
+| Resource | Status | Notes |
+|----------|--------|-------|
+| lxr-inventory | Available | Inventory system |
+| lxr-multicharacter | Available | Character selection |
+| lxr-banking | Planned | Banking system |
+| lxr-housing | Planned | Housing system |
+
+> Check the [LXRCore GitHub organization](https://github.com/LXRCore) for available resources.
 
 ---
 
@@ -314,6 +340,23 @@ We welcome contributions! Please:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+### 🏗️ Production Status
+
+wolves.land currently runs a hybrid RSG + LXR architecture.
+Full LXRCore migration is in progress. The framework is under active solo development.
+
+---
+
+## ═══════════════════════════════════════════════════════════════════════════════
+## 🌐 SERVERS RUNNING LXRCORE
+## ═══════════════════════════════════════════════════════════════════════════════
+
+| Server | Region | Status |
+|--------|--------|--------|
+| [wolves.land](https://www.wolves.land) (Official) | Georgia 🇬🇪 | ✅ Live |
+
+> If you run LXRCore on your server and want to be listed here, open an issue or pull request.
+
 ---
 
 ## ═══════════════════════════════════════════════════════════════════════════════
@@ -322,7 +365,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
 
-LXR Core is built on top of QBCore (GPLv3) and is licensed under MIT License.  
+LXR Core is built on top of QBCore (GPLv3) and is licensed under GPLv3.  
 See [LICENSE](LICENSE) file for complete details.
 
 ### Credits
@@ -353,7 +396,7 @@ See [LICENSE](LICENSE) file for complete details.
 ✅ **Clean Code** - Well-documented and organized  
 ✅ **Unified API** - Works with multiple frameworks  
 ✅ **Extensible** - Easy to add custom features  
-✅ **Best Practices** - Enterprise-level code quality  
+✅ **Best Practices** - Consistent code patterns  
 ✅ **Active Development** - Regular updates and improvements  
 
 ### For Players
@@ -362,7 +405,7 @@ See [LICENSE](LICENSE) file for complete details.
 ✅ **Fair Gameplay** - Anti-cheat prevents exploits  
 ✅ **Rich Features** - Complete roleplay systems  
 ✅ **Stability** - Minimal downtime and crashes  
-✅ **Quality** - Premium experience  
+✅ **Quality** - Stable experience  
 
 ---
 
