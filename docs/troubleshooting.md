@@ -55,8 +55,9 @@ set mysql_connection_string "mysql://username:password@localhost/database_name?c
 
 **Error:** `Table 'lxrcore.players' doesn't exist`
 
-**Solution:** Import the SQL schema files:
+**Solution:** From your server's resources directory, import the SQL schema files:
 ```bash
+cd /path/to/server/resources/lxr-core
 mysql -u username -p database_name < database/lxrcore.sql
 mysql -u username -p database_name < database/lxrcore_tables.sql
 ```

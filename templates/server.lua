@@ -55,5 +55,9 @@ end
 -- Example: Save data
 local function savePlayerData(citizenId, data)
     MySQL.update('UPDATE your_table SET data = ? WHERE citizenid = ?',
-        { json.encode(data), citizenId })
+        { json.encode(data), citizenId }, function(affectedRows)
+            if affectedRows == 0 then
+                print(('[your-resource] No rows updated for citizen %s'):format(citizenId))
+            end
+        end)
 end
