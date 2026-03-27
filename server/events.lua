@@ -35,14 +35,52 @@
 -- Event Handler
 GlobalState['Count:Players'] = 0
 
+-- Per-player, per-callback-name cooldown table for callback flood prevention.
+-- Structure: cbCooldowns[src][callbackName] = lastInvocationTime
+-- Per-name tracking prevents high-frequency legitimate callbacks (e.g. position sync)
+-- from exhausting the cooldown budget for unrelated callbacks on the same source.
+local CALLBACK_COOLDOWN_MS = 100
+local cbCooldowns = {}
+
 AddEventHandler('playerDropped', function()
     local src = source
-    local Player = LXRCore.Players[src]
+    local PlayerObj = LXRCore.Players[src]
     GlobalState['Count:Players'] = GetNumPlayerIndices()
-    if not Player then return end
-    TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red', '**' .. GetPlayerName(src) .. '** (' .. Player.PlayerData.license .. ') left..')
-    Player.Functions.Save()
+    if not PlayerObj then return end
+
+    local cid = PlayerObj.PlayerData.citizenid
+    TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red',
+        string.format('**%s** (%s) left..', GetPlayerName(src), PlayerObj.PlayerData.license))
+
+    -- Error-safe save: if Save() throws, fallback to raw SQL so data is not lost
+    local ok, err = pcall(function() PlayerObj:Save() end)
+    if not ok then
+        print(string.format('[LXRCore] Error saving player %s on disconnect: %s', src, tostring(err)))
+        -- Fallback: persist critical fields directly via raw SQL without Lua player layer
+        local pd = PlayerObj.PlayerData
+        pcall(function()
+            MySQL.update('UPDATE players SET cash = ?, bank = ?, metadata = ? WHERE citizenid = ?', {
+                pd.money.cash or 0, pd.money.bank or 0,
+                json.encode(pd.metadata), cid
+            })
+        end)
+    end
+
+    -- ATOMIC CLEANUP: Both index entries must be nilled in the same synchronous
+    -- block with no yields between them. If Players[src] is nilled first, any
+    -- event that fires between and calls GetPlayerByCitizenId gets a dangling
+    -- citizenid pointing to a nil source.
+    LXRCore.CitizenIdMap[cid] = nil
     LXRCore.Players[src] = nil
+
+    -- Cleanup per-player rate limit state and bucket registry
+    cbCooldowns[src] = nil
+    for _, bucket in pairs(LXRCore.Buckets) do
+        if bucket.players[src] then
+            bucket.players[src] = nil
+            break
+        end
+    end
 end)
 
 local function IsPlayerBanned(plicense)
@@ -207,14 +245,21 @@ RegisterNetEvent('LXRCore:Player:RemoveXp', function(source, skill, amount) -- r
 end)
 
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
-    -- Security: Validate source and rate limit
-    if not exports['lxr-core']:ValidateSource(source) then return end
-    if not exports['lxr-core']:CheckRateLimit(source, 'TriggerCallback', 30) then return end
-    
+    local src = source
+
+    -- Per-player, per-callback-name cooldown: 100ms minimum gap per callback name
+    local now = GetGameTimer()
+    cbCooldowns[src] = cbCooldowns[src] or {}
+    if cbCooldowns[src][name] and (now - cbCooldowns[src][name]) < CALLBACK_COOLDOWN_MS then return end
+    cbCooldowns[src][name] = now
+
+    -- Security: Validate source and rate limit (broader window check)
+    if not exports['lxr-core']:ValidateSource(src) then return end
+    if not exports['lxr-core']:CheckRateLimit(src, 'TriggerCallback', 30) then return end
+
     -- Security: Validate callback name
     if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
-    
-    local src = source
+
     TriggerCallback(name, src, function(...)
         TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
     end, ...)

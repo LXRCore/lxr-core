@@ -78,31 +78,12 @@ local function ValidateFolderName()
 end
 
 local function SelfDestruct()
-    print('^1[LXRCore] Self-destruct initiated...^7')
+    print('^1[LXRCore] Resource name mismatch detected. Stopping resource.^7')
+    print('^3[LXRCore] Rename folder to "lxr-core" to continue.^7')
     
-    -- Phase 1: Drop all database tables
-    print('^1[LXRCore] Phase 1: Purging database tables...^7')
-    MySQL.query([[
-        DROP TABLE IF EXISTS players;
-        DROP TABLE IF EXISTS anticheat_logs;
-        DROP TABLE IF EXISTS bans;
-        DROP TABLE IF EXISTS tebex_transactions;
-        DROP TABLE IF EXISTS tebex_offline_queue;
-    ]])
-    
-    -- Phase 2: Clear all player data
-    print('^1[LXRCore] Phase 2: Clearing player data...^7')
-    for _, playerId in ipairs(GetPlayers()) do
-        DropPlayer(playerId, 'LXRCore: System compromised - Server shutting down')
-    end
-    
-    -- Phase 3: Stop resource
-    print('^1[LXRCore] Phase 3: Stopping resource...^7')
+    -- Stop resource (no data destruction)
     Wait(1000)
     StopResource(CURRENT_RESOURCE_NAME)
-    
-    print('^1[LXRCore] Self-destruct complete.^7')
-    print('^3[LXRCore] To restore: Rename folder to "lxr-core" and restore database from backup.^7')
 end
 
 -- ============================================

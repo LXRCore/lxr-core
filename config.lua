@@ -543,10 +543,40 @@ LXRConfig.Money.Exchange = {
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ PAYCHECK & MONEY BEHAVIOR █████████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
+
+-- Paycheck interval in minutes (how often players get paid)
+LXRConfig.Money.PayCheckTimeOut = 30
+
+-- Whether paychecks draw from society funds (requires lxr-bossmenu)
+LXRConfig.Money.PayCheckSociety = false
+
+-- Currency types that CANNOT go below zero
+LXRConfig.Money.DontAllowMinus = {
+    'cash', 'bank', 'gold', 'goldcurrency', 'coins',
+    'goldcoins', 'silvercoins', 'marshalcoins', 'trustcoins',
+    'diamonds', 'bloodmoney', 'bloodcoins', 'tokens',
+    'rewardtokens', 'promisarynotes'
+}
+
+-- ████████████████████████████████████████████████████████████████████████████████
 -- ████████████████████████ PLAYER SETTINGS ███████████████████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
 
 LXRConfig.Player = {}
+
+-- Maximum carry weight (grams)
+LXRConfig.Player.MaxWeight = 120000
+
+-- Maximum inventory slots
+LXRConfig.Player.MaxInvSlots = 30
+
+-- Possible blood types assigned at character creation
+LXRConfig.Player.Bloodtypes = {'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'}
+
+-- Whether to reveal the full map for players
+LXRConfig.Player.RevealMap = false
 
 -- Starting inventory (items given to new characters)
 LXRConfig.Player.StartingItems = {
@@ -833,6 +863,14 @@ LXRConfig.Progression.Reputation = {
     max = 100
 }
 
+-- Leveling system thresholds (used by player.lua SetLevel)
+LXRConfig.Levels = {
+    ['main'] = { [0] = 0, [1] = 100, [2] = 250, [3] = 500, [4] = 1000, [5] = 2000 },
+    ['herbalism'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
+    ['mining'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
+    ['hunting'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
+}
+
 -- XP thresholds for leveling up different skills
 LXRConfig.Progression.XPThresholds = {
     hunting = {
@@ -1064,8 +1102,15 @@ LXRConfig.Performance = {
         tickRate = 30,              -- Server tick rate (Hz)
         saveInterval = 300000,      -- Save player data every 5 minutes
         cleanupInterval = 600000,   -- Cleanup old data every 10 minutes
-        maxPlayersPerSecond = 2     -- Max new players per second (anti-DDoS)
-    }
+        maxPlayersPerSecond = 2,    -- Max new players per second (anti-DDoS)
+        defaultRoutingBucket = 0    -- Default routing bucket for players (scope-gates StateBag replication)
+    },
+
+    -- Database connection pool
+    -- oxmysql defaults to 10 connections which bottlenecks at high player counts.
+    -- Set this in your server.cfg mysql_connection_string:
+    --   set mysql_connection_string "mysql://user:pass@host/db?waitForConnections=true&connectionLimit=80&queueLimit=0"
+    -- Recommended: connectionLimit = max(50, expectedPlayers / 10)
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████

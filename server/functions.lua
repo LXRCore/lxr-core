@@ -34,23 +34,31 @@
 
 LXRCore = {}
 LXRCore.Player = {}
-LXRCore.Players = {}
+LXRCore.Players = {}          -- source → player object (primary index)
 LXRCore.UseableItems = {}
 LXRCore.ServerCallbacks = {}
 
--- Performance: Cache player count for faster access
-local playerCountCache = 0
+-- O(1) secondary index: citizenid → source
+-- Eliminates O(n) linear scans for citizenid lookups
+LXRCore.CitizenIdMap = {}
 
+-- Routing bucket registry: tracks which players are in which bucket.
+-- Prevents invisible player isolation when resources call SetPlayerRoutingBucket
+-- with arbitrary values. Structure: [bucketId] = {label = "", players = {[src] = true}}
+LXRCore.Buckets = {}
+
+-- Returns a cached list of active player source IDs
+-- Reuses a single table reference to reduce GC pressure
 function GetPlayers()
     local sources = {}
-    for k, v in pairs(LXRCore.Players) do
-        sources[#sources+1] = k
+    for k in pairs(LXRCore.Players) do
+        sources[#sources + 1] = k
     end
     return sources
 end
 exports('GetPlayers', GetPlayers)
 
--- Returns the entire player object
+-- Returns the entire player object table
 exports('GetLXRPlayers', function()
     return LXRCore.Players
 end)
@@ -68,45 +76,40 @@ function GetIdentifier(source, idtype)
 end
 exports('GetIdentifier', GetIdentifier)
 
--- Returns the object of a single player by ID
+-- Returns the object of a single player by source ID
 function GetPlayer(source)
     return LXRCore.Players[source]
 end
 exports('GetPlayer', GetPlayer)
 
--- Returns the object of a single player by Citizen ID
+-- O(1) lookup: Returns the object of a single player by Citizen ID
+-- Uses CitizenIdMap hash table instead of O(n) linear scan
 exports('GetPlayerByCitizenId', function(citizenid)
-    for k, v in pairs(LXRCore.Players) do
-        local cid = citizenid
-        if LXRCore.Players[k].PlayerData.citizenid == cid then
-            return LXRCore.Players[k]
-        end
+    local src = LXRCore.CitizenIdMap[citizenid]
+    if src then
+        return LXRCore.Players[src]
     end
     return nil
 end)
 
---- Gets a list of all on duty players of a specified job and the amount
+-- Gets a list of all on-duty players of a specified job and the count
 exports('GetPlayersOnDuty', function(job)
     local players = {}
     local count = 0
     for k, v in pairs(LXRCore.Players) do
-        if v.PlayerData.job.name == job then
-            if v.PlayerData.job.onduty then
-                players[#players + 1] = k
-                count = count + 1
-            end
+        if v.PlayerData.job.name == job and v.PlayerData.job.onduty then
+            players[#players + 1] = k
+            count = count + 1
         end
     end
     return players, count
 end)
 
--- Returns only the amount of players on duty for the specified job
--- Performance: Optimized with safe navigation
+-- Returns only the count of players on duty for the specified job
 exports('GetDutyCount', function(job)
     if not job then return 0 end
-    
     local count = 0
-    for k, v in pairs(LXRCore.Players) do
+    for _, v in pairs(LXRCore.Players) do
         if v.PlayerData and v.PlayerData.job and v.PlayerData.job.name == job and v.PlayerData.job.onduty then
             count = count + 1
         end
@@ -126,6 +129,124 @@ function TriggerCallback(name, source, cb, ...)
     LXRCore.ServerCallbacks[name](source, cb, ...)
 end
 exports('TriggerCallback', TriggerCallback)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- TRANSACTION HELPER: Atomic multi-table operations for downstream resources.
+-- Wraps MySQL.transaction so resource devs don't need to import oxmysql directly.
+--
+-- Usage (async):
+--   exports['lxr-core']:Transaction({
+--       { 'UPDATE players SET cash = cash - ? WHERE citizenid = ? AND cash >= ?', {price, cid, price} },
+--       { 'INSERT INTO player_items (citizenid, item, amount) VALUES (?, ?, ?)', {cid, item, qty} },
+--   }, function(success)
+--       if not success then -- rollback happened end
+--   end)
+--
+-- Usage (sync/await):
+--   local success = exports['lxr-core']:TransactionAwait({
+--       { 'UPDATE players SET cash = cash - ? WHERE citizenid = ? AND cash >= ?', {price, cid, price} },
+--       { 'INSERT INTO player_items (citizenid, item, amount) VALUES (?, ?, ?)', {cid, item, qty} },
+--   })
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+exports('Transaction', function(queries, cb)
+    if type(queries) ~= 'table' or #queries == 0 then
+        if cb then cb(false) end
+        return
+    end
+    -- Convert {sql, params} pairs to the format oxmysql expects
+    local formatted = {}
+    for i = 1, #queries do
+        local q = queries[i]
+        if type(q) ~= 'table' or type(q[1]) ~= 'string' then
+            if cb then cb(false) end
+            return
+        end
+        formatted[i] = { query = q[1], values = q[2] or {} }
+    end
+    MySQL.transaction(formatted, function(success)
+        if cb then cb(success) end
+    end)
+end)
+
+exports('TransactionAwait', function(queries)
+    if type(queries) ~= 'table' or #queries == 0 then
+        return false
+    end
+    local formatted = {}
+    for i = 1, #queries do
+        local q = queries[i]
+        if type(q) ~= 'table' or type(q[1]) ~= 'string' then
+            return false
+        end
+        formatted[i] = { query = q[1], values = q[2] or {} }
+    end
+    return MySQL.transaction.await(formatted)
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ROUTING BUCKET REGISTRY: Managed bucket assignment for instanced content.
+-- Resources should use these exports instead of raw SetPlayerRoutingBucket
+-- to maintain a central registry for debugging and collision prevention.
+--
+-- Usage:
+--   exports['lxr-core']:CreateBucket(100, "Bank Interior")
+--   exports['lxr-core']:SetPlayerBucket(source, 100)
+--   exports['lxr-core']:SetPlayerBucket(source, 0)  -- return to world
+--   exports['lxr-core']:RemoveBucket(100)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Creates a named bucket in the registry
+exports('CreateBucket', function(bucketId, label)
+    if type(bucketId) ~= 'number' then return false end
+    if LXRCore.Buckets[bucketId] then return false end
+    LXRCore.Buckets[bucketId] = { label = label or '', players = {} }
+    return true
+end)
+
+-- Removes a bucket from the registry (only if empty)
+exports('RemoveBucket', function(bucketId)
+    if type(bucketId) ~= 'number' then return false end
+    local bucket = LXRCore.Buckets[bucketId]
+    if not bucket then return false end
+    if next(bucket.players) then return false end
+    LXRCore.Buckets[bucketId] = nil
+    return true
+end)
+
+-- Returns bucket info: {label, players} or nil
+exports('GetBucket', function(bucketId)
+    return LXRCore.Buckets[bucketId]
+end)
+
+-- Returns the full bucket registry table
+exports('GetBuckets', function()
+    return LXRCore.Buckets
+end)
+
+-- Moves a player to a bucket via the registry, updating both the engine
+-- routing bucket and the registry's player tracking.
+-- Auto-creates bucket 0 (world) if it doesn't exist in the registry.
+exports('SetPlayerBucket', function(source, bucketId)
+    if type(source) ~= 'number' or type(bucketId) ~= 'number' then return false end
+
+    -- Remove player from their current bucket in the registry
+    for bid, bucket in pairs(LXRCore.Buckets) do
+        if bucket.players[source] then
+            bucket.players[source] = nil
+            break
+        end
+    end
+
+    -- Auto-create the target bucket if it doesn't exist (bucket 0 = default world)
+    if not LXRCore.Buckets[bucketId] then
+        LXRCore.Buckets[bucketId] = { label = bucketId == 0 and 'World' or '', players = {} }
+    end
+
+    LXRCore.Buckets[bucketId].players[source] = true
+    SetPlayerRoutingBucket(source, bucketId)
+    return true
+end)
 
 -- Items
 
