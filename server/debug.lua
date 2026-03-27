@@ -32,7 +32,7 @@
 -- 🐺 LXR CORE - DEBUG UTILITIES
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-
+local function tPrint(tbl, indent)
     indent = indent or 0
     for k, v in pairs(tbl) do
         local tblType = type(v)

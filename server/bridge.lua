@@ -278,8 +278,13 @@ function LXRBridge.RegisterCompatibilityCallbacks()
         RegisterServerEvent('vorp:TriggerServerCallback')
         AddEventHandler('vorp:TriggerServerCallback', function(name, ...)
             local src = source
-            -- Forward to LXRCore callback system
-            TriggerEvent('LXRCore:Server:TriggerCallback', name, ...)
+            -- Route through validated callback path (not via TriggerEvent which bypasses rate limiter)
+            if not exports['lxr-core']:ValidateSource(src) then return end
+            if not exports['lxr-core']:CheckRateLimit(src, 'TriggerCallback', 30) then return end
+            if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
+            TriggerCallback(name, src, function(...)
+                TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
+            end, ...)
         end)
     end
     
@@ -288,7 +293,13 @@ function LXRBridge.RegisterCompatibilityCallbacks()
         RegisterServerEvent('RSGCore:Server:TriggerCallback')
         AddEventHandler('RSGCore:Server:TriggerCallback', function(name, ...)
             local src = source
-            TriggerEvent('LXRCore:Server:TriggerCallback', name, ...)
+            -- Route through validated callback path (not via TriggerEvent which bypasses rate limiter)
+            if not exports['lxr-core']:ValidateSource(src) then return end
+            if not exports['lxr-core']:CheckRateLimit(src, 'TriggerCallback', 30) then return end
+            if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
+            TriggerCallback(name, src, function(...)
+                TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
+            end, ...)
         end)
     end
 end

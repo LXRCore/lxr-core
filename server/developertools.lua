@@ -278,8 +278,8 @@ function LXRDebug:TrackEvent(eventName, source, args)
     end
 end
 
--- Hook into event system
-if config.enabled and config.eventTracking then
+-- Hook into event system (gated behind convar to prevent accidental production use)
+if GetConvar('lxr_debug', 'false') == 'true' and config.enabled and config.eventTracking then
     local originalTriggerEvent = TriggerEvent
     TriggerEvent = function(eventName, ...)
         LXRDebug:TrackEvent(eventName, nil, {...})
