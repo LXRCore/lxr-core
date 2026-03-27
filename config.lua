@@ -1111,7 +1111,6 @@ LXRConfig.Performance = {
     -- Set this in your server.cfg mysql_connection_string:
     --   set mysql_connection_string "mysql://user:pass@host/db?waitForConnections=true&connectionLimit=80&queueLimit=0"
     -- Recommended: connectionLimit = max(50, expectedPlayers / 10)
-    dbConnectionLimit = 80
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████

@@ -157,6 +157,8 @@ set mysql_connection_string "user=username;password=yourpassword;host=localhost;
 **Performance Note:** The `connectionLimit` parameter controls the oxmysql connection pool size.
 At 200+ players with staggered saves, the default 10 connections will bottleneck all DB writes.
 Set `connectionLimit=80` (or higher for 500+ player servers) to prevent query queuing.
+`queueLimit=0` means queries fail immediately if all connections are busy (fail-fast).
+Set `queueLimit` to a positive number (e.g., `100`) if you prefer queries to wait in a queue instead.
 
 **Security Note:** Use a dedicated database user with limited permissions, not root!
 

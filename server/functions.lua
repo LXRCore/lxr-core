@@ -153,6 +153,10 @@ exports('Transaction', function(queries, cb)
     local formatted = {}
     for i = 1, #queries do
         local q = queries[i]
+        if type(q) ~= 'table' or type(q[1]) ~= 'string' then
+            if cb then cb(false) end
+            return
+        end
         formatted[i] = { query = q[1], values = q[2] or {} }
     end
     MySQL.transaction(formatted, function(success)
@@ -167,6 +171,9 @@ exports('TransactionAwait', function(queries)
     local formatted = {}
     for i = 1, #queries do
         local q = queries[i]
+        if type(q) ~= 'table' or type(q[1]) ~= 'string' then
+            return false
+        end
         formatted[i] = { query = q[1], values = q[2] or {} }
     end
     return MySQL.transaction.await(formatted)

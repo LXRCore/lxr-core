@@ -35,6 +35,10 @@
 -- Event Handler
 GlobalState['Count:Players'] = 0
 
+-- Per-player cooldown table for callback flood prevention (defense in depth).
+-- Declared here so it's accessible in both the playerDropped handler and TriggerCallback.
+local cbCooldowns = {}
+
 AddEventHandler('playerDropped', function()
     local src = source
     local PlayerObj = LXRCore.Players[src]
@@ -65,6 +69,9 @@ AddEventHandler('playerDropped', function()
     -- citizenid pointing to a nil source.
     LXRCore.CitizenIdMap[cid] = nil
     LXRCore.Players[src] = nil
+
+    -- Cleanup per-player rate limit state
+    if cbCooldowns then cbCooldowns[src] = nil end
 end)
 
 local function IsPlayerBanned(plicense)
@@ -228,10 +235,6 @@ RegisterNetEvent('LXRCore:Player:RemoveXp', function(source, skill, amount) -- r
 	end
 end)
 
--- Per-player cooldown table for callback flood prevention (defense in depth).
--- CheckRateLimit allows 30/s; this enforces a 100ms minimum gap between calls.
-local cbCooldowns = {}
-
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
     local src = source
 
@@ -250,11 +253,6 @@ RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
     TriggerCallback(name, src, function(...)
         TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
     end, ...)
-end)
-
--- Cleanup callback cooldowns when player drops
-AddEventHandler('playerDropped', function()
-    cbCooldowns[source] = nil
 end)
 
 CreateCallback('LXRCore:HasItem', function(source, cb, items, amount)
