@@ -60,14 +60,32 @@ mysql -u username -p database_name < tebex_tables.sql
 - Purchase history
 - Webhook data storage
 
+#### 4. **migrate_rsg_to_lxr.sql**
+Migration script for servers upgrading from RSG-Core to LXR-Core.
+
+```bash
+mysql -u username -p database_name < migrate_rsg_to_lxr.sql
+```
+
+**Contains:**
+- Schema migration (adds normalized columns to existing RSG-Core players table)
+- Data migration (extracts JSON blob data into normalized columns)
+- Idempotent — safe to re-run without data loss
+
 ---
 
 ## 📋 Installation Order
 
-For a fresh installation, import the files in this order:
+For a **fresh installation**, import the files in this order:
 
 1. **lxrcore.sql** (Required) - Base schema
 2. **lxrcore_tables.sql** (Required) - Extended tables
+3. **tebex_tables.sql** (Optional) - Only if using Tebex integration
+
+For **migration from RSG-Core**, run these instead:
+
+1. **migrate_rsg_to_lxr.sql** (Required) - Adds normalized columns and migrates data
+2. **lxrcore_tables.sql** (Required) - Extended tables (logging, monitoring, etc.)
 3. **tebex_tables.sql** (Optional) - Only if using Tebex integration
 
 ### Quick Installation
@@ -113,6 +131,21 @@ When updating LXRCore, check for migration scripts that may be required. Always 
 # Backup your database
 mysqldump -u username -p database_name > backup_$(date +%Y%m%d).sql
 ```
+
+### Migrating from RSG-Core
+
+If you are migrating from RSG-Core (which stores money, charinfo, job, gang, and position as JSON TEXT blobs), run the migration script **before** starting lxr-core:
+
+```bash
+mysql -u username -p database_name < database/migrate_rsg_to_lxr.sql
+```
+
+This script:
+- Adds normalized columns (`cash`, `bank`, `firstname`, `job_name`, `pos_x`, etc.) if they don't already exist
+- Extracts data from the legacy JSON blob columns using `JSON_EXTRACT`
+- Is idempotent and safe to re-run
+
+See the full migration guide: [RSG-Core → LXR-Core Migration](../docs/migration/rsg-to-lxr.md)
 
 ---
 
