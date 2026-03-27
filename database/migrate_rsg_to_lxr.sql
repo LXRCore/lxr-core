@@ -66,6 +66,7 @@ END //
 DELIMITER ;
 
 -- ── Money columns ────────────────────────────────────────────────────────
+-- Defaults match database/lxrcore.sql (the fresh-install schema)
 CALL _lxr_add_column_if_missing('players', 'cash',           'DECIMAL(18,2) NOT NULL DEFAULT 2.00');
 CALL _lxr_add_column_if_missing('players', 'bank',           'DECIMAL(18,2) NOT NULL DEFAULT 5.00');
 CALL _lxr_add_column_if_missing('players', 'gold',           'DECIMAL(18,2) NOT NULL DEFAULT 0.00');

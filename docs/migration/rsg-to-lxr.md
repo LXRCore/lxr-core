@@ -167,7 +167,7 @@ The bridge system will automatically translate API calls between frameworks. See
 > **⚠️ IMPORTANT:** LXRCore uses **normalized SQL columns** instead of JSON blobs. RSG-Core stores `money`, `charinfo`, `job`, `gang`, and `position` as JSON TEXT columns — LXR-Core stores them as individual typed columns (`cash`, `bank`, `firstname`, `lastname`, `job_name`, `pos_x`, etc.). **A database migration is required.**
 
 ### Why?
-RSG-Core writes a single `INSERT ... ON DUPLICATE KEY UPDATE` with 12 JSON-encoded fields every save cycle. This causes:
+RSG-Core writes a single `INSERT ... ON DUPLICATE KEY UPDATE` with JSON-encoded fields (money, charinfo, job, gang, position, and others) every save cycle. This causes:
 - Lock-wait timeouts under load (all players save simultaneously)
 - No dirty-flag tracking (every player writes every cycle)
 - Index-unfriendly JSON blobs (can't query by `cash > 100` without `JSON_EXTRACT`)
