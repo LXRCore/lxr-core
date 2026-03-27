@@ -434,34 +434,8 @@ if IsDuplicityVersion() then
     end
     exports('IsPlayerLoaded', LXRFramework.IsPlayerLoaded)
     
-    -- Print framework detection info
-    print(string.format([[
-        
-        ═══════════════════════════════════════════════════════════════════════════════
-        🐺 LXR FRAMEWORK ADAPTER - SERVER-SIDE LOADED
-        ═══════════════════════════════════════════════════════════════════════════════
-        
-        Active Framework:     %s
-        
-        Detected Frameworks:
-        - LXR-Core:           %s
-        - RSG-Core:           %s
-        - VORP Core:          %s
-        - RedEM:RP:           %s
-        - QBR-Core:           %s
-        - QR-Core:            %s
-        
-        ═══════════════════════════════════════════════════════════════════════════════
-        
-    ]], 
-    LXRFramework.ActiveFramework,
-    LXRFramework.DetectedFrameworks['lxr-core'] and '✓ DETECTED' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['rsg-core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['vorp_core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['redem_roleplay'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['qbr-core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['qr-core'] and '✓ Detected' or '✗ Not Found'
-    ))
+    -- Log framework detection info
+    print(('[LXRCore] Framework Adapter (server) loaded | Active: %s'):format(LXRFramework.ActiveFramework))
     
 else
     -- ════════════════════════════════════════════════════════════════════════════
@@ -578,34 +552,8 @@ else
     end
     exports('ProgressBar', LXRFramework.ProgressBar)
     
-    -- Print framework detection info
-    print(string.format([[
-        
-        ═══════════════════════════════════════════════════════════════════════════════
-        🐺 LXR FRAMEWORK ADAPTER - CLIENT-SIDE LOADED
-        ═══════════════════════════════════════════════════════════════════════════════
-        
-        Active Framework:     %s
-        
-        Detected Frameworks:
-        - LXR-Core:           %s
-        - RSG-Core:           %s
-        - VORP Core:          %s
-        - RedEM:RP:           %s
-        - QBR-Core:           %s
-        - QR-Core:            %s
-        
-        ═══════════════════════════════════════════════════════════════════════════════
-        
-    ]], 
-    LXRFramework.ActiveFramework,
-    LXRFramework.DetectedFrameworks['lxr-core'] and '✓ DETECTED' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['rsg-core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['vorp_core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['redem_roleplay'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['qbr-core'] and '✓ Detected' or '✗ Not Found',
-    LXRFramework.DetectedFrameworks['qr-core'] and '✓ Detected' or '✗ Not Found'
-    ))
+    -- Log framework detection info
+    print(('[LXRCore] Framework Adapter (client) loaded | Active: %s'):format(LXRFramework.ActiveFramework))
 end
 
 -- ████████████████████████████████████████████████████████████████████████████████

@@ -266,7 +266,9 @@ function LXRLog:FlushLogBuffer()
         })
     end
     
-    MySQL.insert('INSERT INTO logs (timestamp, datetime, category, title, data, source, resource) VALUES (?, ?, ?, ?, ?, ?, ?)', values)
+    for _, row in ipairs(values) do
+        MySQL.insert('INSERT INTO logs (timestamp, datetime, category, title, data, source, resource) VALUES (?, ?, ?, ?, ?, ?, ?)', row)
+    end
     
     logBuffer = {}
 end

@@ -32,7 +32,8 @@
 -- 🐺 LXR CORE - CLIENT LOOPS
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-
+local sid = GetPlayerServerId(PlayerId())
+local isLoggedIn = false
 
 AddStateBagChangeHandler('isLoggedIn', ('player:%s'):format(sid), function(_, _, value)
     isLoggedIn = value
