@@ -32,6 +32,10 @@ CREATE TABLE IF NOT EXISTS `players` (
   `tokens` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
   `rewardtokens` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
   `promisarynotes` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+  `rhobank` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+  `blkbank` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+  `armbank` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
+  `valbank` DECIMAL(18,2) NOT NULL DEFAULT 0.00,
 
   -- ===================== Character Info =====================
   `firstname` VARCHAR(50) DEFAULT NULL,

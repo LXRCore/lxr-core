@@ -30,7 +30,8 @@ local MONEY_COLUMNS = {
     'cash', 'bank', 'gold', 'goldcurrency', 'coins',
     'goldcoins', 'silvercoins', 'marshalcoins', 'trustcoins',
     'diamonds', 'bloodmoney', 'bloodcoins', 'tokens',
-    'rewardtokens', 'promisarynotes'
+    'rewardtokens', 'promisarynotes',
+    'rhobank', 'blkbank', 'armbank', 'valbank'
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -186,6 +187,7 @@ local function SavePlayer(source)
                 goldcoins = ?, silvercoins = ?, marshalcoins = ?, trustcoins = ?,
                 diamonds = ?, bloodmoney = ?, bloodcoins = ?, tokens = ?,
                 rewardtokens = ?, promisarynotes = ?,
+                rhobank = ?, blkbank = ?, armbank = ?, valbank = ?,
                 firstname = ?, lastname = ?, birthdate = ?, gender = ?,
                 nationality = ?, account = ?,
                 job_name = ?, job_label = ?, job_grade_name = ?, job_grade_level = ?,
@@ -206,6 +208,8 @@ local function SavePlayer(source)
             PlayerData.money.bloodmoney or 0, PlayerData.money.bloodcoins or 0,
             PlayerData.money.tokens or 0, PlayerData.money.rewardtokens or 0,
             PlayerData.money.promisarynotes or 0,
+            PlayerData.money.rhobank or 0, PlayerData.money.blkbank or 0,
+            PlayerData.money.armbank or 0, PlayerData.money.valbank or 0,
             -- Charinfo columns (direct scalar)
             PlayerData.charinfo.firstname, PlayerData.charinfo.lastname,
             PlayerData.charinfo.birthdate, PlayerData.charinfo.gender or 0,
@@ -248,6 +252,7 @@ local function InsertNewPlayer(PlayerData, pcoords, heading)
             goldcoins, silvercoins, marshalcoins, trustcoins,
             diamonds, bloodmoney, bloodcoins, tokens,
             rewardtokens, promisarynotes,
+            rhobank, blkbank, armbank, valbank,
             firstname, lastname, birthdate, gender, nationality, account,
             job_name, job_label, job_grade_name, job_grade_level,
             job_payment, job_onduty, job_isboss,
@@ -260,6 +265,7 @@ local function InsertNewPlayer(PlayerData, pcoords, heading)
             ?, ?, ?, ?,
             ?, ?, ?, ?,
             ?, ?,
+            ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?,
             ?, ?, ?,
@@ -277,6 +283,8 @@ local function InsertNewPlayer(PlayerData, pcoords, heading)
         PlayerData.money.bloodmoney or 0, PlayerData.money.bloodcoins or 0,
         PlayerData.money.tokens or 0, PlayerData.money.rewardtokens or 0,
         PlayerData.money.promisarynotes or 0,
+        PlayerData.money.rhobank or 0, PlayerData.money.blkbank or 0,
+        PlayerData.money.armbank or 0, PlayerData.money.valbank or 0,
         PlayerData.charinfo.firstname, PlayerData.charinfo.lastname,
         PlayerData.charinfo.birthdate, PlayerData.charinfo.gender or 0,
         PlayerData.charinfo.nationality or 'USA', PlayerData.charinfo.account,

@@ -519,6 +519,59 @@ LXRConfig.Money.MoneyTypes = {
             locations = {'bank'},   -- Can only redeem at bank
             fee = 0.02              -- 2% redemption fee
         }
+    },
+
+    -- ============ Regional Bank Accounts (RSG-Core) ============
+    rhobank = {
+        label = 'Rhodes Bank',
+        startAmount = 0,
+        tangible = false,
+        canMinus = false,
+        icon = 'bank',
+        weight = 0,
+        maxCarry = 999999,
+        description = 'Money stored in the Rhodes bank branch',
+        paycheck = false,
+        hidden = false
+    },
+
+    blkbank = {
+        label = 'Blackwater Bank',
+        startAmount = 0,
+        tangible = false,
+        canMinus = false,
+        icon = 'bank',
+        weight = 0,
+        maxCarry = 999999,
+        description = 'Money stored in the Blackwater bank branch',
+        paycheck = false,
+        hidden = false
+    },
+
+    armbank = {
+        label = 'Armadillo Bank',
+        startAmount = 0,
+        tangible = false,
+        canMinus = false,
+        icon = 'bank',
+        weight = 0,
+        maxCarry = 999999,
+        description = 'Money stored in the Armadillo bank branch',
+        paycheck = false,
+        hidden = false
+    },
+
+    valbank = {
+        label = 'Valentine Bank',
+        startAmount = 0,
+        tangible = false,
+        canMinus = false,
+        icon = 'bank',
+        weight = 0,
+        maxCarry = 999999,
+        description = 'Money stored in the Valentine bank branch',
+        paycheck = false,
+        hidden = false
     }
 }
 
@@ -557,7 +610,8 @@ LXRConfig.Money.DontAllowMinus = {
     'cash', 'bank', 'gold', 'goldcurrency', 'coins',
     'goldcoins', 'silvercoins', 'marshalcoins', 'trustcoins',
     'diamonds', 'bloodmoney', 'bloodcoins', 'tokens',
-    'rewardtokens', 'promisarynotes'
+    'rewardtokens', 'promisarynotes',
+    'rhobank', 'blkbank', 'armbank', 'valbank'
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████

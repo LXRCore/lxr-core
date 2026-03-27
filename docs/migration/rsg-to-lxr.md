@@ -139,7 +139,7 @@ After migration, test these systems in order:
 | Core object | `RSGCore` | `LXRCore` | Direct rename |
 | Event prefix | `RSGCore:` | `LXRCore:` | Direct rename |
 | Export resource | `rsg-core` | `lxr-core` | Direct rename |
-| Currency types | Standard | Extended (15+) | LXR has more currency types |
+| Currency types | Standard | Extended (19+) | LXR has more currency types including regional banks |
 | Framework bridge | No | Yes | LXR can detect and bridge with RSG |
 | Anti-cheat | Basic | Integrated | LXR has built-in anti-cheat |
 
@@ -187,15 +187,15 @@ LXR-Core's normalized columns enable staggered batch saves, dirty-flag tracking,
    ```
 
    This script:
-   - Adds normalized columns (`cash`, `bank`, `firstname`, `job_name`, `pos_x`, etc.) if they don't already exist
+   - Adds normalized columns (`cash`, `bank`, `rhobank`, `blkbank`, `armbank`, `valbank`, `firstname`, `job_name`, `pos_x`, etc.) if they don't already exist
    - Extracts data from the legacy JSON blob columns (`money`, `charinfo`, `job`, `gang`, `position`) using `JSON_EXTRACT`
    - Is **idempotent** — safe to re-run without data loss
    - Reports row counts for each migration phase
 
 3. **Verify the migration**:
    ```sql
-   -- Check that money was extracted correctly
-   SELECT citizenid, cash, bank, gold FROM players LIMIT 10;
+   -- Check that money was extracted correctly (including regional banks)
+   SELECT citizenid, cash, bank, gold, rhobank, blkbank, armbank, valbank FROM players LIMIT 10;
 
    -- Check character info
    SELECT citizenid, firstname, lastname, birthdate FROM players LIMIT 10;
@@ -216,6 +216,18 @@ LXR-Core's normalized columns enable staggered batch saves, dirty-flag tracking,
    ALTER TABLE players DROP COLUMN IF EXISTS position;
    ```
    These lines are also provided (commented out) at the end of `migrate_rsg_to_lxr.sql`.
+
+### Migration Notes
+
+#### Weight & Slots (Behavioral Change)
+
+RSG-Core stored `weight` and `slots` as SQL columns on the `players` table. LXR-Core **does not persist** these columns — total weight is now computed at runtime from inventory items (see `GetTotalWeight()`), and slot count is configured via `LXRConfig.Player.MaxWeight` / inventory settings.
+
+After migration, the old `weight` and `slots` columns will remain in the database but are **no longer read or written** by LXR-Core. If you have any downstream resource that queries `SELECT weight, slots FROM players` directly, update it to use the player object's computed values instead.
+
+#### Player Heading After Migration
+
+RSG-Core's `position` JSON typically stores only `x`, `y`, and `z` coordinates — the `heading` key is **not present** in most RSG-Core databases. As a result, the `pos_heading` column will default to `0.0` (facing north) for all migrated players. Players will correct their heading naturally on their next save after logging in.
 
 ---
 
