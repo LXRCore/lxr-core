@@ -116,11 +116,11 @@ function LXRSecurity.ValidateSource(source)
 end
 exports('ValidateSource', LXRSecurity.ValidateSource)
 
--- Security: Validate citizenid format
+-- Security: Validate citizenid format (LXR-XXX99999)
 function LXRSecurity.ValidateCitizenId(citizenid)
     if type(citizenid) ~= 'string' then return false end
-    -- CitizenId format: 3 letters + 5 numbers
-    return string.match(citizenid, '^%u%u%u%d%d%d%d%d$') ~= nil
+    -- CitizenId format: "LXR-" prefix + 3 uppercase letters + 5 digits
+    return string.match(citizenid, '^LXR%-%u%u%u%d%d%d%d%d$') ~= nil
 end
 exports('ValidateCitizenId', LXRSecurity.ValidateCitizenId)
 

@@ -58,10 +58,10 @@ CREATE TABLE IF NOT EXISTS `players` (
   `gang_isboss` TINYINT(1) NOT NULL DEFAULT 0,
 
   -- ===================== Position =====================
-  `pos_x` FLOAT NOT NULL DEFAULT -1035.71,
-  `pos_y` FLOAT NOT NULL DEFAULT -2731.87,
-  `pos_z` FLOAT NOT NULL DEFAULT 12.86,
-  `pos_heading` FLOAT NOT NULL DEFAULT 0.0,
+  `pos_x` DOUBLE NOT NULL DEFAULT -1035.71,
+  `pos_y` DOUBLE NOT NULL DEFAULT -2731.87,
+  `pos_z` DOUBLE NOT NULL DEFAULT 12.86,
+  `pos_heading` DOUBLE NOT NULL DEFAULT 0.0,
 
   -- ===================== Flexible JSON Data =====================
   `metadata` text NOT NULL,
