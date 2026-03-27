@@ -125,6 +125,53 @@ function TriggerCallback(name, source, cb, ...)
 end
 exports('TriggerCallback', TriggerCallback)
 
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- TRANSACTION HELPER: Atomic multi-table operations for downstream resources.
+-- Wraps MySQL.transaction so resource devs don't need to import oxmysql directly.
+--
+-- Usage (async):
+--   exports['lxr-core']:Transaction({
+--       { 'UPDATE players SET cash = cash - ? WHERE citizenid = ? AND cash >= ?', {price, cid, price} },
+--       { 'INSERT INTO player_items (citizenid, item, amount) VALUES (?, ?, ?)', {cid, item, qty} },
+--   }, function(success)
+--       if not success then -- rollback happened end
+--   end)
+--
+-- Usage (sync/await):
+--   local success = exports['lxr-core']:TransactionAwait({
+--       { 'UPDATE players SET cash = cash - ? WHERE citizenid = ? AND cash >= ?', {price, cid, price} },
+--       { 'INSERT INTO player_items (citizenid, item, amount) VALUES (?, ?, ?)', {cid, item, qty} },
+--   })
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+exports('Transaction', function(queries, cb)
+    if type(queries) ~= 'table' or #queries == 0 then
+        if cb then cb(false) end
+        return
+    end
+    -- Convert {sql, params} pairs to the format oxmysql expects
+    local formatted = {}
+    for i = 1, #queries do
+        local q = queries[i]
+        formatted[i] = { query = q[1], values = q[2] or {} }
+    end
+    MySQL.transaction(formatted, function(success)
+        if cb then cb(success) end
+    end)
+end)
+
+exports('TransactionAwait', function(queries)
+    if type(queries) ~= 'table' or #queries == 0 then
+        return false
+    end
+    local formatted = {}
+    for i = 1, #queries do
+        local q = queries[i]
+        formatted[i] = { query = q[1], values = q[2] or {} }
+    end
+    return MySQL.transaction.await(formatted)
+end)
+
 -- Items
 
 -- Creates an item as usable

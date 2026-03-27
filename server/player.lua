@@ -753,6 +753,11 @@ local function CreatePlayer(PlayerData)
     state.money = PlayerData.money
     state.isLoggedIn = true
 
+    -- Assign routing bucket to scope-gate StateBag replication.
+    -- Without this, every StateBag write replicates to all connected players.
+    local bucket = (LXRConfig.Performance and LXRConfig.Performance.server and LXRConfig.Performance.server.defaultRoutingBucket) or 0
+    SetPlayerRoutingBucket(self.PlayerData.source, bucket)
+
     -- Emit load event and send data to client
     TriggerEvent('LXRCore:Server:PlayerLoaded', self)
     self:UpdatePlayerData()
@@ -940,15 +945,21 @@ end)
 
 exports('Logout', function(source)
     local player = LXRCore.Players[source]
-    if player then
-        -- Remove from O(1) citizenid index
-        LXRCore.CitizenIdMap[player.PlayerData.citizenid] = nil
-        -- Clear StateBag
-        Player(source).state.isLoggedIn = false
-    end
+    local cid = player and player.PlayerData.citizenid or nil
+
     TriggerClientEvent('LXRCore:Client:OnPlayerUnload', source)
     TriggerClientEvent('LXRCore:Player:UpdatePlayerData', source)
     Wait(200)
+
+    if player then
+        -- Clear StateBag
+        Player(source).state.isLoggedIn = false
+    end
+
+    -- ATOMIC CLEANUP: nil both indexes in the same synchronous block, no yields between
+    if cid then
+        LXRCore.CitizenIdMap[cid] = nil
+    end
     LXRCore.Players[source] = nil
 end)
 

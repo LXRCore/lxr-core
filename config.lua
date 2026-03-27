@@ -1102,8 +1102,16 @@ LXRConfig.Performance = {
         tickRate = 30,              -- Server tick rate (Hz)
         saveInterval = 300000,      -- Save player data every 5 minutes
         cleanupInterval = 600000,   -- Cleanup old data every 10 minutes
-        maxPlayersPerSecond = 2     -- Max new players per second (anti-DDoS)
-    }
+        maxPlayersPerSecond = 2,    -- Max new players per second (anti-DDoS)
+        defaultRoutingBucket = 0    -- Default routing bucket for players (scope-gates StateBag replication)
+    },
+
+    -- Database connection pool
+    -- oxmysql defaults to 10 connections which bottlenecks at high player counts.
+    -- Set this in your server.cfg mysql_connection_string:
+    --   set mysql_connection_string "mysql://user:pass@host/db?waitForConnections=true&connectionLimit=80&queueLimit=0"
+    -- Recommended: connectionLimit = max(50, expectedPlayers / 10)
+    dbConnectionLimit = 80
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████

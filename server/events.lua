@@ -40,15 +40,30 @@ AddEventHandler('playerDropped', function()
     local PlayerObj = LXRCore.Players[src]
     GlobalState['Count:Players'] = GetNumPlayerIndices()
     if not PlayerObj then return end
+
+    local cid = PlayerObj.PlayerData.citizenid
     TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red',
         string.format('**%s** (%s) left..', GetPlayerName(src), PlayerObj.PlayerData.license))
-    -- Error-safe save: if Save() throws, still clean up the player entry
+
+    -- Error-safe save: if Save() throws, fallback to raw SQL so data is not lost
     local ok, err = pcall(function() PlayerObj:Save() end)
     if not ok then
         print(string.format('[LXRCore] Error saving player %s on disconnect: %s', src, tostring(err)))
+        -- Fallback: persist critical fields directly via raw SQL without Lua player layer
+        local pd = PlayerObj.PlayerData
+        pcall(function()
+            MySQL.update('UPDATE players SET cash = ?, bank = ?, metadata = ? WHERE citizenid = ?', {
+                pd.money.cash or 0, pd.money.bank or 0,
+                json.encode(pd.metadata), cid
+            })
+        end)
     end
-    -- Remove from O(1) citizenid index
-    LXRCore.CitizenIdMap[PlayerObj.PlayerData.citizenid] = nil
+
+    -- ATOMIC CLEANUP: Both index entries must be nilled in the same synchronous
+    -- block with no yields between them. If Players[src] is nilled first, any
+    -- event that fires between and calls GetPlayerByCitizenId gets a dangling
+    -- citizenid pointing to a nil source.
+    LXRCore.CitizenIdMap[cid] = nil
     LXRCore.Players[src] = nil
 end)
 
@@ -213,18 +228,33 @@ RegisterNetEvent('LXRCore:Player:RemoveXp', function(source, skill, amount) -- r
 	end
 end)
 
+-- Per-player cooldown table for callback flood prevention (defense in depth).
+-- CheckRateLimit allows 30/s; this enforces a 100ms minimum gap between calls.
+local cbCooldowns = {}
+
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
-    -- Security: Validate source and rate limit
-    if not exports['lxr-core']:ValidateSource(source) then return end
-    if not exports['lxr-core']:CheckRateLimit(source, 'TriggerCallback', 30) then return end
-    
+    local src = source
+
+    -- Inline per-player cooldown: 100ms minimum gap between callback invocations
+    local now = GetGameTimer()
+    if cbCooldowns[src] and (now - cbCooldowns[src]) < 100 then return end
+    cbCooldowns[src] = now
+
+    -- Security: Validate source and rate limit (broader window check)
+    if not exports['lxr-core']:ValidateSource(src) then return end
+    if not exports['lxr-core']:CheckRateLimit(src, 'TriggerCallback', 30) then return end
+
     -- Security: Validate callback name
     if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
-    
-    local src = source
+
     TriggerCallback(name, src, function(...)
         TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
     end, ...)
+end)
+
+-- Cleanup callback cooldowns when player drops
+AddEventHandler('playerDropped', function()
+    cbCooldowns[source] = nil
 end)
 
 CreateCallback('LXRCore:HasItem', function(source, cb, items, amount)

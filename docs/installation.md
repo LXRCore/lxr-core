@@ -146,11 +146,17 @@ Edit your `server.cfg`:
 
 ```cfg
 # MySQL Connection String
-set mysql_connection_string "mysql://username:password@localhost/lxrcore?charset=utf8mb4"
+# IMPORTANT: Set connectionLimit for high player counts (default is 10, far too low for 100+ players).
+# Recommended: connectionLimit = max(50, expectedPlayers / 10)
+set mysql_connection_string "mysql://username:password@localhost/lxrcore?charset=utf8mb4&waitForConnections=true&connectionLimit=80&queueLimit=0"
 
 # Alternative: Individual parameters
-set mysql_connection_string "user=username;password=yourpassword;host=localhost;database=lxrcore"
+set mysql_connection_string "user=username;password=yourpassword;host=localhost;database=lxrcore;waitForConnections=true;connectionLimit=80;queueLimit=0"
 ```
+
+**Performance Note:** The `connectionLimit` parameter controls the oxmysql connection pool size.
+At 200+ players with staggered saves, the default 10 connections will bottleneck all DB writes.
+Set `connectionLimit=80` (or higher for 500+ player servers) to prevent query queuing.
 
 **Security Note:** Use a dedicated database user with limited permissions, not root!
 
