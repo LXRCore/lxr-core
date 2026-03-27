@@ -22,7 +22,7 @@
 --             after you have verified the migration.
 --
 -- RSG-CORE JSON BLOB FORMAT (typical QBCore/RSG-Core layout):
---   money    TEXT  '{"cash":100,"bank":5000,"gold":0, ...}'
+--   money    TEXT  '{"cash":100,"bank":5000,"gold":0,"rhobank":0,"blkbank":0,"armbank":0,"valbank":0, ...}'
 --   charinfo TEXT  '{"firstname":"John","lastname":"Doe","birthdate":"1990-01-01","gender":0,"nationality":"USA","account":"US001"}'
 --   job      TEXT  '{"name":"unemployed","label":"Civilian","payment":10,"onduty":false,"isboss":false,"grade":{"name":"Freelancer","level":0}}'
 --   gang     TEXT  '{"name":"none","label":"No Gang Affiliation","isboss":false,"grade":{"name":"none","level":0}}'
@@ -82,6 +82,10 @@ CALL _lxr_add_column_if_missing('players', 'bloodcoins',     'DECIMAL(18,2) NOT 
 CALL _lxr_add_column_if_missing('players', 'tokens',         'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
 CALL _lxr_add_column_if_missing('players', 'rewardtokens',   'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
 CALL _lxr_add_column_if_missing('players', 'promisarynotes', 'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
+CALL _lxr_add_column_if_missing('players', 'rhobank',        'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
+CALL _lxr_add_column_if_missing('players', 'blkbank',        'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
+CALL _lxr_add_column_if_missing('players', 'armbank',        'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
+CALL _lxr_add_column_if_missing('players', 'valbank',        'DECIMAL(18,2) NOT NULL DEFAULT 0.00');
 
 -- ── Character info columns ───────────────────────────────────────────────
 CALL _lxr_add_column_if_missing('players', 'firstname',   'VARCHAR(50)  DEFAULT NULL');
@@ -170,7 +174,11 @@ BEGIN
             bloodcoins     = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.bloodcoins')),     bloodcoins),
             tokens         = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.tokens')),         tokens),
             rewardtokens   = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.rewardtokens')),   rewardtokens),
-            promisarynotes = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.promisarynotes')), promisarynotes)
+            promisarynotes = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.promisarynotes')), promisarynotes),
+            rhobank        = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.rhobank')),        rhobank),
+            blkbank        = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.blkbank')),        blkbank),
+            armbank        = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.armbank')),        armbank),
+            valbank        = COALESCE(JSON_UNQUOTE(JSON_EXTRACT(money, '$.valbank')),        valbank)
         WHERE money IS NOT NULL
           AND JSON_VALID(money);
 
