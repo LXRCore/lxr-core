@@ -248,11 +248,16 @@ AddEventHandler('playerDropped', function(reason)
     if playerLocks[source] then
         local lock = playerLocks[source]
         
+        -- Defensive: game natives may return nil if the core playerDropped handler
+        -- already cleaned up (handler order is non-deterministic across restarts)
+        local playerName = GetPlayerName(source) or 'Unknown'
+        local license = exports['lxr-core']:GetIdentifier(source, 'license') or 'Unknown'
+        
         -- Log suspicious disconnection
         local logEntry = {
             source = source,
-            name = GetPlayerName(source),
-            license = exports['lxr-core']:GetIdentifier(source, 'license'),
+            name = playerName,
+            license = license,
             lockType = lock.type,
             timestamp = os.time(),
             reason = reason,
@@ -265,7 +270,7 @@ AddEventHandler('playerDropped', function(reason)
         -- Alert admins
         TriggerEvent('lxr-log:server:CreateLog', 'antidupe', 'Suspicious Disconnection', 'red', 
             ('**ANTI-DUPE ALERT**\n**Player:** %s (ID: %d)\n**License:** %s\n**Action:** %s\n**Reason:** %s\n**Duration:** %dms\n**Status:** Transaction rolled back'):format(
-                logEntry.name, source, logEntry.license, lock.type, reason, logEntry.duration
+                playerName, source, license, lock.type, reason, logEntry.duration
             ), true)
         
         -- Store snapshot for investigation
@@ -418,13 +423,10 @@ function LXRAntiDupe.EnsureSaved(source)
     local Player = exports['lxr-core']:GetPlayer(source)
     if not Player then return false end
     
-    -- Force immediate save
+    -- Force immediate save (oxmysql is async; no need to block the coroutine)
     Player.Functions.Save()
     
-    -- Wait briefly for database write
-    Wait(100)
-    
-    -- Update last save time
+    -- Update last save time immediately — the save has been dispatched
     lastSave[source] = GetGameTimer()
     
     return true

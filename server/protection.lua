@@ -106,19 +106,8 @@ CreateThread(function()
     print('^2[LXRCore] Resource name: ' .. CURRENT_RESOURCE_NAME .. '^7')
 end)
 
--- Continuous monitoring (check every minute)
-CreateThread(function()
-    while true do
-        Wait(60000) -- Check every 60 seconds
-        
-        local newResourceName = GetCurrentResourceName()
-        if newResourceName ~= AUTHORIZED_FOLDER_NAME then
-            print('^1[LXRCore] WARNING: Resource name changed detected!^7')
-            SelfDestruct()
-            break
-        end
-    end
-end)
+-- Note: Continuous monitoring removed — GetCurrentResourceName() returns a
+-- constant for the lifetime of the resource; the startup check above is sufficient.
 
 -- ============================================
 -- EXPORT VERIFICATION

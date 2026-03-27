@@ -568,7 +568,7 @@ CreateThread(function()
     -- Position and teleport checking
     while true do
         Wait(config.intervals.position)
-        for _, source in ipairs(GetPlayers()) do
+        for source, _ in pairs(LXRCore.Players) do
             if playerData[source] then
                 LXRAntiCheat.CheckTeleportation(source)
             end
@@ -582,7 +582,7 @@ CreateThread(function()
     -- Health and god mode checking
     while true do
         Wait(config.intervals.health)
-        for _, source in ipairs(GetPlayers()) do
+        for source, _ in pairs(LXRCore.Players) do
             if playerData[source] then
                 LXRAntiCheat.CheckGodMode(source)
                 LXRAntiCheat.CheckInvisible(source)
@@ -597,7 +597,7 @@ CreateThread(function()
     -- Speed checking
     while true do
         Wait(config.intervals.speed)
-        for _, source in ipairs(GetPlayers()) do
+        for source, _ in pairs(LXRCore.Players) do
             if playerData[source] then
                 LXRAntiCheat.CheckSpeed(source)
                 LXRAntiCheat.CheckNoClip(source)
@@ -612,7 +612,7 @@ CreateThread(function()
     -- Weapon and entity checking
     while true do
         Wait(config.intervals.weapon)
-        for _, source in ipairs(GetPlayers()) do
+        for source, _ in pairs(LXRCore.Players) do
             if playerData[source] then
                 LXRAntiCheat.CheckWeapons(source)
             end

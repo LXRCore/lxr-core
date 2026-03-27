@@ -701,20 +701,19 @@ end
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 local function WrapFunctions(playerObj)
-    playerObj.Functions = {}
-    local methodNames = {
-        'UpdatePlayerItems', 'UpdatePlayerData', 'SetJob', 'SetGang',
-        'SetJobDuty', 'SetMetaData', 'AddJobReputation', 'UpdateLevelData',
-        'AddMoney', 'RemoveMoney', 'SetMoney', 'GetMoney',
-        'AddXp', 'RemoveXp', 'AddItem', 'RemoveItem',
-        'SetInventory', 'ClearInventory', 'GetItemByName', 'GetItemsByName',
-        'GetItemBySlot', 'Save'
-    }
-    for _, name in ipairs(methodNames) do
-        playerObj.Functions[name] = function(...)
-            return playerObj[name](playerObj, ...)
+    -- Lazy wrapper: closures are created on-demand only when .Functions.X is
+    -- actually called, instead of eagerly creating one per method per player.
+    playerObj.Functions = setmetatable({}, {
+        __index = function(_, name)
+            local method = PlayerMethods[name]
+            if method then
+                -- Cache the closure on the table so __index fires only once per method
+                local fn = function(...) return method(playerObj, ...) end
+                rawset(playerObj.Functions, name, fn)
+                return fn
+            end
         end
-    end
+    })
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════
