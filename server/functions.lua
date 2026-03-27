@@ -42,6 +42,11 @@ LXRCore.ServerCallbacks = {}
 -- Eliminates O(n) linear scans for citizenid lookups
 LXRCore.CitizenIdMap = {}
 
+-- Routing bucket registry: tracks which players are in which bucket.
+-- Prevents invisible player isolation when resources call SetPlayerRoutingBucket
+-- with arbitrary values. Structure: [bucketId] = {label = "", players = {[src] = true}}
+LXRCore.Buckets = {}
+
 -- Returns a cached list of active player source IDs
 -- Reuses a single table reference to reduce GC pressure
 function GetPlayers()
@@ -177,6 +182,70 @@ exports('TransactionAwait', function(queries)
         formatted[i] = { query = q[1], values = q[2] or {} }
     end
     return MySQL.transaction.await(formatted)
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ROUTING BUCKET REGISTRY: Managed bucket assignment for instanced content.
+-- Resources should use these exports instead of raw SetPlayerRoutingBucket
+-- to maintain a central registry for debugging and collision prevention.
+--
+-- Usage:
+--   exports['lxr-core']:CreateBucket(100, "Bank Interior")
+--   exports['lxr-core']:SetPlayerBucket(source, 100)
+--   exports['lxr-core']:SetPlayerBucket(source, 0)  -- return to world
+--   exports['lxr-core']:RemoveBucket(100)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Creates a named bucket in the registry
+exports('CreateBucket', function(bucketId, label)
+    if type(bucketId) ~= 'number' then return false end
+    if LXRCore.Buckets[bucketId] then return false end
+    LXRCore.Buckets[bucketId] = { label = label or '', players = {} }
+    return true
+end)
+
+-- Removes a bucket from the registry (only if empty)
+exports('RemoveBucket', function(bucketId)
+    if type(bucketId) ~= 'number' then return false end
+    local bucket = LXRCore.Buckets[bucketId]
+    if not bucket then return false end
+    if next(bucket.players) then return false end
+    LXRCore.Buckets[bucketId] = nil
+    return true
+end)
+
+-- Returns bucket info: {label, players} or nil
+exports('GetBucket', function(bucketId)
+    return LXRCore.Buckets[bucketId]
+end)
+
+-- Returns the full bucket registry table
+exports('GetBuckets', function()
+    return LXRCore.Buckets
+end)
+
+-- Moves a player to a bucket via the registry, updating both the engine
+-- routing bucket and the registry's player tracking.
+-- Auto-creates bucket 0 (world) if it doesn't exist in the registry.
+exports('SetPlayerBucket', function(source, bucketId)
+    if type(source) ~= 'number' or type(bucketId) ~= 'number' then return false end
+
+    -- Remove player from their current bucket in the registry
+    for bid, bucket in pairs(LXRCore.Buckets) do
+        if bucket.players[source] then
+            bucket.players[source] = nil
+            break
+        end
+    end
+
+    -- Auto-create the target bucket if it doesn't exist (bucket 0 = default world)
+    if not LXRCore.Buckets[bucketId] then
+        LXRCore.Buckets[bucketId] = { label = bucketId == 0 and 'World' or '', players = {} }
+    end
+
+    LXRCore.Buckets[bucketId].players[source] = true
+    SetPlayerRoutingBucket(source, bucketId)
+    return true
 end)
 
 -- Items

@@ -753,10 +753,10 @@ local function CreatePlayer(PlayerData)
     state.money = PlayerData.money
     state.isLoggedIn = true
 
-    -- Assign routing bucket to scope-gate StateBag replication.
+    -- Assign routing bucket via the bucket registry to scope-gate StateBag replication.
     -- Without this, every StateBag write replicates to all connected players.
     local bucket = (LXRConfig.Performance and LXRConfig.Performance.server and LXRConfig.Performance.server.defaultRoutingBucket) or 0
-    SetPlayerRoutingBucket(self.PlayerData.source, bucket)
+    exports['lxr-core']:SetPlayerBucket(self.PlayerData.source, bucket)
 
     -- Emit load event and send data to client
     TriggerEvent('LXRCore:Server:PlayerLoaded', self)

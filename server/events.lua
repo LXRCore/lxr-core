@@ -35,8 +35,10 @@
 -- Event Handler
 GlobalState['Count:Players'] = 0
 
--- Per-player cooldown table for callback flood prevention (defense in depth).
--- Declared here so it's accessible in both the playerDropped handler and TriggerCallback.
+-- Per-player, per-callback-name cooldown table for callback flood prevention.
+-- Structure: cbCooldowns[src][callbackName] = lastInvocationTime
+-- Per-name tracking prevents high-frequency legitimate callbacks (e.g. position sync)
+-- from exhausting the cooldown budget for unrelated callbacks on the same source.
 local cbCooldowns = {}
 
 AddEventHandler('playerDropped', function()
@@ -70,8 +72,14 @@ AddEventHandler('playerDropped', function()
     LXRCore.CitizenIdMap[cid] = nil
     LXRCore.Players[src] = nil
 
-    -- Cleanup per-player rate limit state
-    if cbCooldowns then cbCooldowns[src] = nil end
+    -- Cleanup per-player rate limit state and bucket registry
+    cbCooldowns[src] = nil
+    for _, bucket in pairs(LXRCore.Buckets) do
+        if bucket.players[src] then
+            bucket.players[src] = nil
+            break
+        end
+    end
 end)
 
 local function IsPlayerBanned(plicense)
@@ -238,10 +246,11 @@ end)
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
     local src = source
 
-    -- Inline per-player cooldown: 100ms minimum gap between callback invocations
+    -- Per-player, per-callback-name cooldown: 100ms minimum gap per callback name
     local now = GetGameTimer()
-    if cbCooldowns[src] and (now - cbCooldowns[src]) < 100 then return end
-    cbCooldowns[src] = now
+    cbCooldowns[src] = cbCooldowns[src] or {}
+    if cbCooldowns[src][name] and (now - cbCooldowns[src][name]) < 100 then return end
+    cbCooldowns[src][name] = now
 
     -- Security: Validate source and rate limit (broader window check)
     if not exports['lxr-core']:ValidateSource(src) then return end
