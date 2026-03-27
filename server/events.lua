@@ -39,6 +39,7 @@ GlobalState['Count:Players'] = 0
 -- Structure: cbCooldowns[src][callbackName] = lastInvocationTime
 -- Per-name tracking prevents high-frequency legitimate callbacks (e.g. position sync)
 -- from exhausting the cooldown budget for unrelated callbacks on the same source.
+local CALLBACK_COOLDOWN_MS = 100
 local cbCooldowns = {}
 
 AddEventHandler('playerDropped', function()
@@ -249,7 +250,7 @@ RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
     -- Per-player, per-callback-name cooldown: 100ms minimum gap per callback name
     local now = GetGameTimer()
     cbCooldowns[src] = cbCooldowns[src] or {}
-    if cbCooldowns[src][name] and (now - cbCooldowns[src][name]) < 100 then return end
+    if cbCooldowns[src][name] and (now - cbCooldowns[src][name]) < CALLBACK_COOLDOWN_MS then return end
     cbCooldowns[src][name] = now
 
     -- Security: Validate source and rate limit (broader window check)
