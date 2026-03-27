@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `players` (
   `last_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
 
   -- ===================== Keys & Indexes =====================
-  UNIQUE KEY `uniq_citizenid` (`citizenid`),
+  PRIMARY KEY (`citizenid`),
   KEY `id` (`id`),
   KEY `last_updated` (`last_updated`),
   KEY `license` (`license`),

@@ -553,7 +553,10 @@ function PlayerMethods:AddItem(item, amount, slot, info)
     amount = tonumber(amount)
     slot = tonumber(slot) or GetFirstSlotByItem(self.PlayerData.items, item)
     if itemInfo.type == 'weapon' and info == nil then
-        local weaponSerial = 'LXR-' .. tostring(LXRShared.RandomInt(2)) .. LXRShared.RandomStr(3) .. tostring(LXRShared.RandomInt(1)) .. LXRShared.RandomStr(2) .. tostring(LXRShared.RandomInt(3)) .. LXRShared.RandomStr(4)
+        local weaponSerial = string.format('LXR-%s%s%s%s%s%s',
+            tostring(LXRShared.RandomInt(2)), LXRShared.RandomStr(3),
+            tostring(LXRShared.RandomInt(1)), LXRShared.RandomStr(2),
+            tostring(LXRShared.RandomInt(3)), LXRShared.RandomStr(4))
         info = { serie = weaponSerial }
     end
     if (totalWeight + (itemInfo.weight * amount)) <= LXRConfig.Player.MaxWeight then
@@ -782,7 +785,9 @@ local function CheckPlayerData(source, PlayerData)
     PlayerData.charinfo.birthdate = PlayerData.charinfo.birthdate or '00-00-0000'
     PlayerData.charinfo.gender = PlayerData.charinfo.gender or 0
     PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or 'USA'
-    local accountNumber = 'LXR' .. (PlayerData.charinfo.lastname):sub(1, 3):upper() .. '-' .. math.random(1111, 9999)
+    local accountNumber
+    local ln = (PlayerData.charinfo.lastname and #PlayerData.charinfo.lastname >= 3) and PlayerData.charinfo.lastname:sub(1, 3):upper() or 'UNK'
+    accountNumber = 'LXR' .. ln .. '-' .. math.random(1111, 9999)
     PlayerData.charinfo.account = PlayerData.charinfo.account or accountNumber
 
     -- Metadata
@@ -993,6 +998,8 @@ end)
 
 local SAVE_INTERVAL_MS = (LXRConfig.Performance and LXRConfig.Performance.server and LXRConfig.Performance.server.saveInterval) or 300000
 
+local MIN_STAGGER_DELAY_MS = 50
+
 CreateThread(function()
     while true do
         Wait(SAVE_INTERVAL_MS)
@@ -1005,7 +1012,7 @@ CreateThread(function()
 
         if #players > 0 then
             -- Stagger: spread saves across 80% of the interval to avoid thundering herd
-            local staggerDelay = math.floor((SAVE_INTERVAL_MS * 0.8) / #players)
+            local staggerDelay = math.max(MIN_STAGGER_DELAY_MS, math.floor((SAVE_INTERVAL_MS * 0.8) / #players))
             for _, src in ipairs(players) do
                 if LXRCore.Players[src] then
                     local ok, err = pcall(SavePlayer, src)
@@ -1013,9 +1020,7 @@ CreateThread(function()
                         print(string.format('[LXRCore] Batch save error for source %s: %s', src, tostring(err)))
                     end
                 end
-                if staggerDelay > 50 then
-                    Wait(staggerDelay)
-                end
+                Wait(staggerDelay)
             end
             print(string.format('[LXRCore] Batch save complete: %d players saved', #players))
         end
