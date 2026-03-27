@@ -37,11 +37,18 @@ GlobalState['Count:Players'] = 0
 
 AddEventHandler('playerDropped', function()
     local src = source
-    local Player = LXRCore.Players[src]
+    local PlayerObj = LXRCore.Players[src]
     GlobalState['Count:Players'] = GetNumPlayerIndices()
-    if not Player then return end
-    TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red', '**' .. GetPlayerName(src) .. '** (' .. Player.PlayerData.license .. ') left..')
-    Player.Functions.Save()
+    if not PlayerObj then return end
+    TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red',
+        string.format('**%s** (%s) left..', GetPlayerName(src), PlayerObj.PlayerData.license))
+    -- Error-safe save: if Save() throws, still clean up the player entry
+    local ok, err = pcall(function() PlayerObj:Save() end)
+    if not ok then
+        print(string.format('[LXRCore] Error saving player %s on disconnect: %s', src, tostring(err)))
+    end
+    -- Remove from O(1) citizenid index
+    LXRCore.CitizenIdMap[PlayerObj.PlayerData.citizenid] = nil
     LXRCore.Players[src] = nil
 end)
 

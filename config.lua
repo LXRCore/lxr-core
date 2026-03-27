@@ -543,10 +543,40 @@ LXRConfig.Money.Exchange = {
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ PAYCHECK & MONEY BEHAVIOR █████████████████████████████
+-- ████████████████████████████████████████████████████████████████████████████████
+
+-- Paycheck interval in minutes (how often players get paid)
+LXRConfig.Money.PayCheckTimeOut = 30
+
+-- Whether paychecks draw from society funds (requires lxr-bossmenu)
+LXRConfig.Money.PayCheckSociety = false
+
+-- Currency types that CANNOT go below zero
+LXRConfig.Money.DontAllowMinus = {
+    'cash', 'bank', 'gold', 'goldcurrency', 'coins',
+    'goldcoins', 'silvercoins', 'marshalcoins', 'trustcoins',
+    'diamonds', 'bloodmoney', 'bloodcoins', 'tokens',
+    'rewardtokens', 'promisarynotes'
+}
+
+-- ████████████████████████████████████████████████████████████████████████████████
 -- ████████████████████████ PLAYER SETTINGS ███████████████████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
 
 LXRConfig.Player = {}
+
+-- Maximum carry weight (grams)
+LXRConfig.Player.MaxWeight = 120000
+
+-- Maximum inventory slots
+LXRConfig.Player.MaxInvSlots = 30
+
+-- Possible blood types assigned at character creation
+LXRConfig.Player.Bloodtypes = {'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'}
+
+-- Whether to reveal the full map for players
+LXRConfig.Player.RevealMap = false
 
 -- Starting inventory (items given to new characters)
 LXRConfig.Player.StartingItems = {
@@ -831,6 +861,14 @@ LXRConfig.Progression.Reputation = {
     -- Reputation ranges
     min = -100,
     max = 100
+}
+
+-- Leveling system thresholds (used by player.lua SetLevel)
+LXRConfig.Levels = {
+    ['main'] = { [0] = 0, [1] = 100, [2] = 250, [3] = 500, [4] = 1000, [5] = 2000 },
+    ['herbalism'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
+    ['mining'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
+    ['hunting'] = { [0] = 0, [1] = 50, [2] = 100, [3] = 200, [4] = 400, [5] = 800 },
 }
 
 -- XP thresholds for leveling up different skills

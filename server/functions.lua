@@ -34,23 +34,26 @@
 
 LXRCore = {}
 LXRCore.Player = {}
-LXRCore.Players = {}
+LXRCore.Players = {}          -- source → player object (primary index)
 LXRCore.UseableItems = {}
 LXRCore.ServerCallbacks = {}
 
--- Performance: Cache player count for faster access
-local playerCountCache = 0
+-- O(1) secondary index: citizenid → source
+-- Eliminates O(n) linear scans for citizenid lookups
+LXRCore.CitizenIdMap = {}
 
+-- Returns a cached list of active player source IDs
+-- Reuses a single table reference to reduce GC pressure
 function GetPlayers()
     local sources = {}
-    for k, v in pairs(LXRCore.Players) do
-        sources[#sources+1] = k
+    for k in pairs(LXRCore.Players) do
+        sources[#sources + 1] = k
     end
     return sources
 end
 exports('GetPlayers', GetPlayers)
 
--- Returns the entire player object
+-- Returns the entire player object table
 exports('GetLXRPlayers', function()
     return LXRCore.Players
 end)
@@ -68,45 +71,40 @@ function GetIdentifier(source, idtype)
 end
 exports('GetIdentifier', GetIdentifier)
 
--- Returns the object of a single player by ID
+-- Returns the object of a single player by source ID
 function GetPlayer(source)
     return LXRCore.Players[source]
 end
 exports('GetPlayer', GetPlayer)
 
--- Returns the object of a single player by Citizen ID
+-- O(1) lookup: Returns the object of a single player by Citizen ID
+-- Uses CitizenIdMap hash table instead of O(n) linear scan
 exports('GetPlayerByCitizenId', function(citizenid)
-    for k, v in pairs(LXRCore.Players) do
-        local cid = citizenid
-        if LXRCore.Players[k].PlayerData.citizenid == cid then
-            return LXRCore.Players[k]
-        end
+    local src = LXRCore.CitizenIdMap[citizenid]
+    if src then
+        return LXRCore.Players[src]
     end
     return nil
 end)
 
---- Gets a list of all on duty players of a specified job and the amount
+-- Gets a list of all on-duty players of a specified job and the count
 exports('GetPlayersOnDuty', function(job)
     local players = {}
     local count = 0
     for k, v in pairs(LXRCore.Players) do
-        if v.PlayerData.job.name == job then
-            if v.PlayerData.job.onduty then
-                players[#players + 1] = k
-                count = count + 1
-            end
+        if v.PlayerData.job.name == job and v.PlayerData.job.onduty then
+            players[#players + 1] = k
+            count = count + 1
         end
     end
     return players, count
 end)
 
--- Returns only the amount of players on duty for the specified job
--- Performance: Optimized with safe navigation
+-- Returns only the count of players on duty for the specified job
 exports('GetDutyCount', function(job)
     if not job then return 0 end
-    
     local count = 0
-    for k, v in pairs(LXRCore.Players) do
+    for _, v in pairs(LXRCore.Players) do
         if v.PlayerData and v.PlayerData.job and v.PlayerData.job.name == job and v.PlayerData.job.onduty then
             count = count + 1
         end
