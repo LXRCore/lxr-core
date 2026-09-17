@@ -6,6 +6,8 @@ semantic versioning; the `lxr_core_api` manifest field tracks API level.
 ## [3.1.0] — 2026-09-17
 
 ### Added
+- **1899 price ledger** (`shared/prices.lua`): every item, horse breed and vehicle priced at real 1899 US retail; wages in `shared/jobs.lua` are one working day at 1899 rates; starting cash $5.
+- `/me` renderer switch (`Config.Commands.meRenderer`) for lxr-me.
 - **Shared catalog** (`shared/catalog.lua`): LXRCore's own data model with category profiles, rarities, named animations/props, towns/states, and an offline + boot validator (`LXRShared.Catalog.Validate`, `Config.Catalog`).
 - 579 era-accurate items (1899–1907): currency, food, graded meat/fish (quality in `info`, not three copies), drink, spirits, tobacco, period medicine, herbs, hunting by-products, materials, tools, fishing, horse care & tack, documents/keys, valuables, collectibles, contraband, 33 ammunition types, 61 weapons, throwables.
 - 61 weapons with ammo classes, stats, era, maker, dual-wield, degrade and a gunsmith component vocabulary (`LXRShared.WeaponComponents`, `LXRShared.AmmoClasses`).
@@ -22,7 +24,7 @@ semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
 ## [3.0.0] — 2026-09-17
 
-Complete rewrite. v2.x was a QBR-Core fork with bolted-on modules; v3 is an
+Complete rewrite. v2.x was a fork-based core with bolted-on modules; v3 is an
 independent implementation with a documented, tested core.
 
 ### Added

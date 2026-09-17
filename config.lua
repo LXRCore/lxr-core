@@ -67,7 +67,7 @@ Config.General = {
     enablePVP         = true,  -- Friendly fire between players
     paycheck = {
         enabled         = true,
-        intervalMin     = 10,      -- Minutes between paychecks
+        intervalMin     = 10,      -- Minutes between paychecks; one paycheck is one working day at 1899 rates (shared/jobs.lua)
         account         = 'bank',  -- Account that receives the paycheck
         fromSociety     = false,   -- true: pay from the job society account through the banking resource below
         societyResource = 'lxr-banking',
@@ -110,7 +110,7 @@ Config.Database = {
 Config.Money = {
     -- account = starting balance. Accounts are added to existing characters on
     -- login when missing; removing one here never deletes stored balances.
-    MoneyTypes = { cash = 25, bank = 0, gold = 0, bloodmoney = 0, valbank = 0, rhobank = 0, blkbank = 0, armbank = 0 },
+    MoneyTypes = { cash = 5, bank = 0, gold = 0, bloodmoney = 0, valbank = 0, rhobank = 0, blkbank = 0, armbank = 0 },
     DontAllowMinus  = { 'cash', 'gold', 'bloodmoney' }, -- Accounts that can never go negative
     MinusLimit      = -5000,           -- Floor for accounts that may go negative (bank overdraft)
     MaxBalance      = 1000000000,      -- Hard cap per account (protects against overflow exploits)

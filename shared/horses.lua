@@ -11,9 +11,9 @@
      Stats are 1–10 like the game's stable screen: speed, acceleration,
      health, stamina, handling, courage (how it behaves near predators and
      gunfire). Stable resources sell what `availability` lists for their
-     town; `wild = true` breeds can be tamed in the open. Prices are period
-     dollars (a working horse $40–90, a fine saddle horse $150–400, an
-     Arabian is a rich man's toy).
+     town; `wild = true` breeds can be tamed in the open. Prices come from
+     shared/prices.lua (1899 dollars: a work horse $60–100, a draft horse
+     $200, a Thoroughbred $1,000, an Arabian $1,200 and up).
 
      Model names are RDR2 (build 1491). `LXRShared.HorseTiers` and
      `LXRShared.HorseGenders` are the vocabulary for stables and breeding.
@@ -100,7 +100,7 @@ local function coat(model, breedKey, coat, o)
     Horses[model] = {
         model = model, hash = joaat(model), breed = breedKey, coat = coat,
         label = ('%s %s'):format(b.label, coat), class = b.class, temperament = o.temperament or b.temperament,
-        price = o.price or math.floor(b.price * (o.mult or 1.0) + 0.5), sellMult = 0.45,
+        price = o.price or math.floor(b.price * (o.mult or 1.0) + 0.5), priceMult = o.mult or 1.0, sellMult = 0.45,
         tier = o.tier or b.tier, rarity = o.rarity or 'common', gender = o.gender,
         stats = { speed = stats[1], acceleration = stats[2], health = stats[3], stamina = stats[4], handling = stats[5], courage = stats[6] },
         availability = o.availability or b.availability, wild = (o.wild ~= nil) and o.wild or b.wild,
@@ -134,7 +134,7 @@ coat('a_c_horse_arabian_black',            'arabian', 'Black', { mult = 1.1, rar
 coat('a_c_horse_arabian_grey',             'arabian', 'Grey', { rarity = 'uncommon' })
 coat('a_c_horse_arabian_rosegreybay',      'arabian', 'Rose Grey Bay', { mult = 1.2, rarity = 'rare' })
 coat('a_c_horse_arabian_warpedbrindle_pc', 'arabian', 'Warped Brindle', { mult = 1.4, rarity = 'exquisite' })
-coat('a_c_horse_arabian_white',            'arabian', 'White', { mult = 1.8, rarity = 'legendary', wild = true, availability = {} })
+coat('a_c_horse_arabian_white',            'arabian', 'White', { mult = 2.5, rarity = 'legendary', wild = true, availability = {} })
 coat('a_c_horse_arabian_redchestnut',      'arabian', 'Red Chestnut', { mult = 1.15, rarity = 'rare' })
 -- Ardennes
 coat('a_c_horse_ardennes_bayroan',        'ardennes', 'Bay Roan')

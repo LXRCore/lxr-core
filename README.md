@@ -25,7 +25,7 @@ lifecycle, accounts, jobs, gangs, permissions, callbacks, usable items, an
 inventory abstraction, and compatibility adapters that let resources written
 for **RSG-Core**, **VORP** and **QBR / old LXR** run on the same server.
 
-v3 is a complete, independent rewrite. The v2 code base (a QBR-Core fork with
+v3 is a complete, independent rewrite. The v2 code base (a fork-based core with
 bolted-on modules) is gone; see [`CHANGELOG.md`](CHANGELOG.md) and
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 

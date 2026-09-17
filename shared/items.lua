@@ -12,8 +12,9 @@
        M(name, label, grams, { health=, ... }, opts)            -- medical
 
      Conventions
-       • weight is grams; value is period US dollars (1 lb bread ≈ $0.05,
-         Cattleman ≈ $30, a good horse ≈ $150);
+       • weight is grams; `value` is the 1899 retail price in dollars and
+         cents and is set by shared/prices.lua (the price ledger) — inline
+         values here are placeholders that the ledger overrides;
        • graded goods (pelts, meat, fish, tools, weapons) carry
          info.quality (1 poor / 2 good / 3 perfect) — never three items;
        • `legal = false` marks contraband: lawmen may seize, fences buy,

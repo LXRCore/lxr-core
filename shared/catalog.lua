@@ -7,7 +7,7 @@
      the same defaults and can be validated offline (tests/test_shared.lua) and
      at boot (Config.Catalog.validateOnBoot).
 
-     Design goals (learned from RSG / VORP / QBR item tables):
+     Design rules:
        • one record per thing, quality/grade live in item *info*, never as
          three copies of the same item (pelt_deer_poor/good/perfect);
        • category profiles supply sane defaults (a 'food' item already knows
@@ -306,6 +306,10 @@ function Catalog.Validate()
     for model, v in pairs(S.Vehicles or {}) do
         if v.model ~= model then bad('vehicle key %s != model %s', model, tostring(v.model)) end
         if not S.VehicleCategories[v.category or ''] then bad('vehicle %s unknown category %s', model, tostring(v.category)) end
+    end
+
+    if S.UnpricedItems then
+        for _, name in ipairs(S.UnpricedItems()) do bad('item %s has no entry in shared/prices.lua', name) end
     end
 
     for kitName, kit in pairs(S.StarterKits or {}) do

@@ -77,6 +77,7 @@ shared_scripts {
     'shared/weapons.lua',
     'shared/horses.lua',
     'shared/vehicles.lua',
+    'shared/prices.lua',
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════════

@@ -12,6 +12,7 @@ Everything a character can own, ride, drive, shoot or work for is data in
 | `shared/horses.lua` | `LXRShared.HorseBreeds`, `Horses` (by model), `HorseClasses`, `HorseTiers` | 26 breeds, 120 coats | `breed() / coat()` |
 | `shared/vehicles.lua` | `LXRShared.Vehicles` (= `Wagons`), `VehicleCategories` | 60 | `V()` |
 | `shared/jobs.lua` | `LXRShared.Jobs`, `JobTypes`, `JobCategories` | 55 | `J()` |
+| `shared/prices.lua` | `LXRShared.Prices` (items, horses, vehicles, metals, fares) | 1899 ledger: 579 items, 28 breeds, 60 vehicles | — |
 | `shared/gangs.lua` | `LXRShared.Gangs`, `GangTypes`, `GangTemplate` | 18 | `G()` |
 
 ## Item record
@@ -45,6 +46,13 @@ LXRShared.GangHasPerm(PlayerData.gang, 'invite')   LXRShared.GangsAreRivals(a, b
 LXRShared.Catalog.Validate()  --> { 'problem', ... }
 ```
 
+## Economy
+
+Every price is the 1899 United States retail price in dollars and cents
+(`shared/prices.lua`): bread 5¢, a Colt $15, a Concord coach $1,250, gold
+$20.67 a troy ounce. Wages in `shared/jobs.lua` are one working day at 1899
+rates. The validator fails when an item has no ledger entry.
+
 ## Rules the validator enforces
 
 * item key == `name`, lowercase; known category, rarity, animation, prop;
@@ -57,5 +65,5 @@ LXRShared.Catalog.Validate()  --> { 'problem', ... }
 ## Status
 
 Record shapes and lookups are covered by `tests/test_shared.lua`. Model and
-animation names are RDR2 build 1491 names taken from documentation, **NOT
-TESTED** in-game for the coats and components added beyond the common set.
+animation names are RDR2 build 1491 names, **NOT TESTED** in-game for the
+coats and components added beyond the common set.
