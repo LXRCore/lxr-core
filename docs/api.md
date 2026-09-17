@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Core API
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Core API
 
 Everything below exists in the code as written. Names in **bold** are the
 preferred v3 API; the others are RSG / QBR-compatible aliases of the same

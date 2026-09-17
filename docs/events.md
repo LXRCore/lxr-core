@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Events (v3, API level 3)
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Events (v3, API level 3)
 
 Names are stable within API level 3. When `Config.Compat.rsg.enabled` is true
 every lifecycle event is also emitted under the equivalent `RSGCore:*` name.

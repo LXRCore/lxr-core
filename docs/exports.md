@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Exports
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Exports
 
 Generated from the source on 2026-09-17. Legacy resources call these as
 `exports['lxr-core']:Name(...)`; new resources should prefer the core object

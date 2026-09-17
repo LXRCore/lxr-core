@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Compatibility Matrix
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Compatibility Matrix
 
 "Adapter" means LXRCore reproduces the API shape so the resource runs
 unmodified. "Tested" is only marked after a real run; the offline suite

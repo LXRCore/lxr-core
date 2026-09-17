@@ -1,4 +1,6 @@
-# 🐺 Shared data — the LXRCore catalog
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# Shared data — the LXRCore catalog
 
 Everything a character can own, ride, drive, shoot or work for is data in
 `shared/*.lua`, built through `shared/catalog.lua` and validated offline

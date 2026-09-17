@@ -6,12 +6,14 @@
     ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 
-    🐺 lxr-core — LXRCore RedM Framework Core
+    lxr-core — LXRCore RedM Framework Core
     Developer: iBoss21 / LXRCore · https://www.lxrcore.com
     © 2026 iBoss21 / LXRCore | lxrcore.com | All Rights Reserved
 -->
 
-# 🐺 lxr-core — LXRCore Framework Core (v3)
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# lxr-core — LXRCore Framework Core (v3)
 
 ![Version](https://img.shields.io/badge/version-3.0.0-c4a574)
 ![API](https://img.shields.io/badge/API_level-3-1a1512)
@@ -120,7 +122,7 @@ marked working without having been executed.
 |---|---|
 | 🌐 Website | [lxrcore.com](https://www.lxrcore.com) |
 | 🛠 Dev Discord | [discord.gg/ZHMKVYyhBa](https://discord.gg/ZHMKVYyhBa) |
-| 🐺 Community | [discord.gg/wolvesland](https://discord.gg/wolvesland) |
+| Community | [discord.gg/wolvesland](https://discord.gg/wolvesland) |
 | 🐙 GitHub | [github.com/LXRCore](https://github.com/LXRCore) |
 
 > © 2026 iBoss21 / LXRCore | [lxrcore.com](https://www.lxrcore.com) | All Rights Reserved

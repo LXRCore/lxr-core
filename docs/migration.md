@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Migration Guides
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Migration Guides
 
 Every path below: **back up first**, run the pre-flight `SELECT`s, then the
 script, then the post-check. Nothing in these scripts deletes data.

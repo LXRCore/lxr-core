@@ -1,4 +1,6 @@
-# 🐺 LXR-CORE — Installation
+<img src="https://raw.githubusercontent.com/LXRCore/.github/main/profile/lxrcore-logo.png" alt="LXRCore" width="72" align="left" style="margin-right:12px">
+
+# LXR-CORE — Installation
 
 ## Requirements
 
