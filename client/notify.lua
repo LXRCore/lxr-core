@@ -89,8 +89,10 @@ function LXRCore.Functions.Notify(...)
         end
         return
     end
-    local backend = (Config.Notify and Config.Notify.backend) or 'native'
-    if backend == 'ox_lib' and GetResourceState('ox_lib') == 'started' then
+    local backend = (Config.Notify and Config.Notify.backend) or 'auto'
+    if (backend == 'auto' or backend == 'lxr-nui') and GetResourceState('lxr-nui') == 'started' then
+        return exports['lxr-nui']:Toast({ title = opts.text, type = opts.type, duration = opts.duration })
+    elseif backend == 'ox_lib' and GetResourceState('ox_lib') == 'started' then
         return oxlib(opts)
     elseif backend == 'event' then
         return TriggerEvent('lxr-notify:client:show', opts)

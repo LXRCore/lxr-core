@@ -80,7 +80,7 @@ Config.General = {
 -- ████████████████████████████████████████████████████████████████████████████████
 
 Config.Notify = {
-    backend  = 'native',  -- 'native' (RedM feed), 'ox_lib' (lib.notify when started), 'event' (lxr-notify:client:show)
+    backend  = 'auto',    -- 'auto' (lxr-nui toasts when started, else the RedM feed), 'lxr-nui', 'native', 'ox_lib', 'event' (lxr-notify:client:show)
     duration = 4000,      -- Default duration in ms
 }
 
