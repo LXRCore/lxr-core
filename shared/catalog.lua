@@ -320,3 +320,6 @@ function Catalog.Validate()
     table.sort(problems)
     return problems
 end
+
+-- config.lua has loaded by now: let the configured temper win over the convar default
+if Config and Config.UI and Config.UI.theme and LXRCore.Brand and GetConvar('lxr_theme', '') == '' then LXRCore.Brand.theme = Config.UI.theme end

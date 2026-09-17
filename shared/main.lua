@@ -41,6 +41,7 @@ LXRCore.Brand = {
     discord    = convar('lxr_discord', 'https://discord.gg/wolvesland'),
     devDiscord = 'https://discord.gg/ZHMKVYyhBa',
     github     = 'https://github.com/LXRCore',
+    theme      = convar('lxr_theme', 'night'),  -- refined from Config.UI.theme once config.lua has loaded
 }
 
 -- Shared data tables. Populated by shared/*.lua, mutated at runtime only through

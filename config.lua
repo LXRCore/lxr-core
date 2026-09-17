@@ -89,6 +89,13 @@ Config.Prompts = {
     distance  = 1.5,      -- Default interaction distance (meters)
 }
 
+-- The temper of every LXR interface (published as LXRCore.Brand.theme; convar `lxr_theme` overrides):
+--   'night'   — LXR Night: void and pit inks, blood accent, sharp corners, serif titles (the kit as designed)
+--   'morning' — LXR Morning: neutral greys, soft hairlines, rounded corners, sans titles
+Config.UI = {
+    theme = 'night',
+}
+
 -- ████████████████████████████████████████████████████████████████████████████████
 -- ████████████████████████ DATABASE & PERSISTENCE ████████████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
