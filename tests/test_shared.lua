@@ -72,7 +72,7 @@ T.test('catalog is big enough to be a framework, and every item has the LXR fiel
     T.ok(LXRShared.TableSize(LXRShared.WeaponsByName) >= 60, 'weapons')
     T.ok(LXRShared.TableSize(LXRShared.Jobs) >= 50, 'jobs')
     T.ok(LXRShared.TableSize(LXRShared.Gangs) >= 15, 'gangs')
-    T.ok(LXRShared.TableSize(LXRShared.Horses) >= 120, 'horses')
+    T.ok(LXRShared.TableSize(LXRShared.Horses) >= 145, 'horses')
     T.ok(LXRShared.TableSize(LXRShared.Vehicles) >= 60, 'wagons+boats')
 end)
 
