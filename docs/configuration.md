@@ -2,7 +2,6 @@
 
 | Section | Key | Default | Meaning |
 |---|---|---|---|
-| `ServerInfo` | `name`, `tagline`, `website`, `discord`, `devDiscord`, `brand` | LXRCore values | branding in connection messages / kick text / banner |
 | `Lang` | | `'en'` | locale file in `locales/` (`ka` shipped) |
 | `General` | `maxPlayers` | `sv_maxclients` | |
 | | `defaultSpawn` | vector4 | fallback spawn |
@@ -39,6 +38,7 @@
 | | `permissions` | 7 groups | become `lxrcore.<group>` aces |
 | `Commands` | `oocColor`, `meRange` | | |
 | `Inventory` | `provider` | `'auto'` | or a provider id |
+| `Catalog` | `validateOnBoot`, `failOnInvalid`, `year`, `enforceEra`, `contrabandSeizable`, `skills`, `decay`, `defaultStarterKit` | see file | shared-data validation, server year for `era` filtering, item decay, starter kit |
 | | `providers` | `lxr-inventory, rsg-inventory, vorp_inventory, internal` | detection order |
 | `Compat` | `rsg.enabled` | `true` | RSG events + aces |
 | | `vorp.enabled`, `vorp.rolAccount` | `true`, `bloodmoney` | VORP facade |

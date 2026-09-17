@@ -53,7 +53,7 @@ function Roles.BuildJob(name, grade, onduty)
         onduty = onduty == true,
         isboss = isboss,
         payment = payment,
-        grade = { name = g.name or ('Grade ' .. key), level = level, payment = payment, isboss = isboss },
+        grade = { name = g.name or ('Grade ' .. key), level = level, payment = payment, isboss = isboss, perms = g.perms or {} },
     }
 end
 
@@ -76,7 +76,7 @@ function Roles.BuildGang(name, grade)
         name = name,
         label = def.label or name,
         isboss = isboss,
-        grade = { name = g.name or ('Grade ' .. key), level = level, isboss = isboss },
+        grade = { name = g.name or ('Grade ' .. key), level = level, isboss = isboss, perms = g.perms or {} },
     }
 end
 

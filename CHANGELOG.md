@@ -3,6 +3,23 @@
 All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
+## [3.1.0] — 2026-09-17
+
+### Added
+- **Shared catalog** (`shared/catalog.lua`): LXRCore's own data model with category profiles, rarities, named animations/props, towns/states, and an offline + boot validator (`LXRShared.Catalog.Validate`, `Config.Catalog`).
+- 579 era-accurate items (1899–1907): currency, food, graded meat/fish (quality in `info`, not three copies), drink, spirits, tobacco, period medicine, herbs, hunting by-products, materials, tools, fishing, horse care & tack, documents/keys, valuables, collectibles, contraband, 33 ammunition types, 61 weapons, throwables.
+- 61 weapons with ammo classes, stats, era, maker, dual-wield, degrade and a gunsmith component vocabulary (`LXRShared.WeaponComponents`, `LXRShared.AmmoClasses`).
+- 26 horse breeds / 120 coats with 1–10 stats, tiers, temperaments, town availability and wild flags (`LXRShared.HorseBreeds`, `LXRShared.HorsesForTown`).
+- 60 wagons, coaches, carts and boats with seats, draft, storage, job restrictions (`LXRShared.WagonsForShop`).
+- 55 jobs with permission ladders (`grade.perms`: duty/hire/fire/promote/stash/armory/society/till/vehicles/manage), societies, towns, uniforms; 18 gangs/families/factions with permissions, rivals, allies, activities, and `LXRShared.GangTemplate` for player-made gangs.
+- Eight starter kits chosen at character creation (`LXRShared.StarterKits`).
+- `LXRCore.Brand` (shared/main.lua) replaces `Config.ServerInfo`; player-facing name/discord come from `sv_projectName` / `lxr_discord` convars.
+- Item use gates: `use.whileDead`, `use.whileCuffed`, per-item cooldown + `Config.Security.itemUseCooldownMs`.
+
+### Changed
+- `Roles.BuildJob/BuildGang` include `grade.perms`.
+- Test suite: 81 tests (catalog integrity, lookups, perms).
+
 ## [3.0.0] — 2026-09-17
 
 Complete rewrite. v2.x was a QBR-Core fork with bolted-on modules; v3 is an

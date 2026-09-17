@@ -125,6 +125,21 @@ function Items.Use(source, item, ...)
         LXRCore.Log.debug('items', 'use rejected: item not held', { source = source, item = name })
         return false
     end
+    -- state + cooldown gates (catalog `use.whileDead / whileCuffed / cooldown`, Config.Security.itemUseCooldownMs)
+    local def = LXRShared.Items[name] or {}
+    local use = def.use or {}
+    local md = player.PlayerData.metadata or {}
+    if md.isdead and not use.whileDead then return false, 'dead' end
+    if md.ishandcuffed and not use.whileCuffed then return false, 'cuffed' end
+    local now = GetGameTimer()
+    local cd = math.max(tonumber(use.cooldown) or 0, tonumber(Config.Security.itemUseCooldownMs) or 0)
+    Items.lastUse = Items.lastUse or {}
+    local last = Items.lastUse[source]
+    if cd > 0 and last and last.name == name and now - last.at < cd then
+        LXRCore.Log.debug('items', 'use rejected: cooldown', { source = source, item = name })
+        return false, 'cooldown'
+    end
+    Items.lastUse[source] = { name = name, at = now }
     LXRCore.Metrics.Inc('items.use')
     local ok, err = pcall(handler, source, held, ...)
     if not ok then LXRCore.Log.error('items', ('usable handler for %s errored'):format(name), { error = tostring(err) }) end

@@ -49,19 +49,6 @@
 Config = Config or {}
 
 -- ████████████████████████████████████████████████████████████████████████████████
--- ████████████████████████ SERVER BRANDING & INFO ████████████████████████████████
--- ████████████████████████████████████████████████████████████████████████████████
-
-Config.ServerInfo = {
-    name        = 'The Land of Wolves',             -- Shown in connection messages and the console banner
-    tagline     = 'მგლების მიწა - რჩეულთა ადგილი!', -- Georgian tagline (player-facing)
-    website     = 'https://www.lxrcore.com',
-    discord     = 'https://discord.gg/wolvesland',  -- Appended to kick / ban messages
-    devDiscord  = 'https://discord.gg/ZHMKVYyhBa',
-    brand       = 'LXRCore',
-}
-
--- ████████████████████████████████████████████████████████████████████████████████
 -- ████████████████████████ LANGUAGE CONFIGURATION ████████████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
 
@@ -210,6 +197,24 @@ Config.Inventory = {
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████
+-- ████████████████████████ SHARED CATALOG (items · jobs · gangs · horses …) ██████
+-- ████████████████████████████████████████████████████████████████████████████████
+
+Config.Catalog = {
+    validateOnBoot   = true,   -- Cross-check every shared/*.lua record at boot (missing ammo, bad category, …)
+    failOnInvalid    = false,  -- true: refuse to accept players while the catalog has problems (strict servers)
+    year             = 1899,   -- Server year. Shops hide items / weapons whose `era` is later than this
+    enforceEra       = true,   -- false: ignore `era` everywhere
+    contrabandSeizable = true, -- Lawmen may seize `legal = false` items (search resources read this)
+    -- Skills that earn XP (Config.Player.skills is extended with these at boot)
+    skills           = { 'gunslinging', 'marksman', 'cooking', 'crafting', 'horsemanship', 'trading' },
+    -- Item decay: metadata.decayAt is stamped on pickup; the inventory turns the item into `decay.into` when it passes
+    decay            = { enabled = true, tickMin = 10, realtimeHoursPerGameHour = 1.0 },
+    -- Starter kit offered at character creation when the multicharacter UI has no kit picker
+    defaultStarterKit = 'drifter',
+}
+
+-- ████████████████████████████████████████████████████████████████████████████████
 -- ████████████████████████ COMPATIBILITY ADAPTERS ████████████████████████████████
 -- ████████████████████████████████████████████████████████████████████████████████
 
@@ -229,6 +234,7 @@ Config.Compat = {
 -- ████████████████████████████████████████████████████████████████████████████████
 
 Config.Security = {
+    itemUseCooldownMs   = 300,    -- Minimum ms between two uses of the same item by one player (item `use.cooldown` may raise it)
     callbackRateLimit   = { burst = 40, windowMs = 5000 },  -- Per player, server callbacks
     callbackTimeoutMs   = 15000,   -- Pending callbacks are rejected after this
     eventRateLimit      = { burst = 60, windowMs = 5000 },  -- Per player, validated net events

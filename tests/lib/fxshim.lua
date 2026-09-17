@@ -123,7 +123,20 @@ vecmt.__sub = function(a, b) return setmetatable({ x = a.x - b.x, y = a.y - b.y,
 vecmt.__len = function(a) return math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z) end
 function vector3(x, y, z) return setmetatable({ x = x, y = y, z = z }, vecmt) end
 function vector4(x, y, z, w) return setmetatable({ x = x, y = y, z = z, w = w }, vecmt) end
-function joaat(s) local h = 0 for i = 1, #s do h = (h + s:byte(i)) & 0xffffffff end return h end
+function joaat(s)
+    s = tostring(s):lower()
+    local h = 0
+    for i = 1, #s do
+        h = (h + s:byte(i)) & 0xffffffff
+        h = (h + (h << 10)) & 0xffffffff
+        h = h ~ (h >> 6)
+    end
+    h = (h + (h << 3)) & 0xffffffff
+    h = h ~ (h >> 11)
+    h = (h + (h << 15)) & 0xffffffff
+    if h >= 0x80000000 then h = h - 0x100000000 end
+    return h
+end
 
 -- ── events ────────────────────────────────────────────────────────────────────
 Shim.handlers = {}
@@ -280,7 +293,7 @@ end
 function Shim.bootCore()
     for _, f in ipairs({
         'shared/main.lua', 'shared/locale.lua', 'locales/en.lua', 'locales/ka.lua', 'config.lua',
-        'shared/items.lua', 'shared/jobs.lua', 'shared/gangs.lua', 'shared/weapons.lua', 'shared/horses.lua', 'shared/vehicles.lua',
+        'shared/catalog.lua', 'shared/items.lua', 'shared/jobs.lua', 'shared/gangs.lua', 'shared/weapons.lua', 'shared/horses.lua', 'shared/vehicles.lua',
         'server/main.lua', 'server/log.lua', 'server/emit.lua', 'server/database.lua', 'server/callbacks.lua', 'server/permissions.lua',
         'server/commands.lua', 'server/roles.lua', 'server/accounts.lua', 'server/items.lua', 'server/player.lua',
         'server/events.lua', 'server/exports.lua', 'server/api.lua', 'server/compat/rsg.lua', 'server/compat/vorp.lua', 'server/compat/legacy.lua',

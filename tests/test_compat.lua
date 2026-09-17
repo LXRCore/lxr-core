@@ -42,7 +42,7 @@ T.test('RSG net events are answered', function()
     T.eq(#ev, 1)
     T.eq(ev[1].args[2], 'rsg-ok')
     local p = LXRCore.Functions.GetPlayer(61)
-    p.Functions.SetJob('medic', 0)
+    p.Functions.SetJob('valdoc', 0)
     Shim.netEvent(61, 'RSGCore:ToggleDuty')
     T.eq(p.PlayerData.job.onduty, true)
     Shim.netEvent(61, 'RSGCore:Server:SetMetaData', 'thirst', 10)
@@ -63,7 +63,7 @@ T.test('VORP facade: getUser / getUsedCharacter / currencies / callbacks', funct
     T.ok(user, 'user')
     local ch = user.getUsedCharacter
     T.eq(ch.firstname, 'R')
-    T.eq(ch.job, 'medic')
+    T.eq(ch.job, 'valdoc')
     local before = ch.money
     ch.addCurrency(0, 10)
     T.eq(LXRCore.Functions.GetPlayer(61).PlayerData.money.cash, before + 10)

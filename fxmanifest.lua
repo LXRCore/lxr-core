@@ -70,6 +70,7 @@ shared_scripts {
     'shared/locale.lua',
     'locales/*.lua',
     'config.lua',
+    'shared/catalog.lua',
     'shared/items.lua',
     'shared/jobs.lua',
     'shared/gangs.lua',

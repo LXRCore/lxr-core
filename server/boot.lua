@@ -48,7 +48,7 @@ local function banner()
     ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝
     ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝^7]])
-    print(('^5🐺 LXRCore^7 ^3v%s^7 — %s'):format(LXRCore.Version, Config.ServerInfo.name))
+    print(('^5🐺 LXRCore^7 ^3v%s^7 — %s'):format(LXRCore.Version, LXRCore.Brand.name))
     print(('   ^3Language:^7 ^6%s^7   ^3Inventory:^7 ^6%s^7   ^3Save every:^7 ^6%d min^7'):format(Config.Lang, inv, Config.General.saveInterval))
     print(('   ^3Accounts:^7 ^6%s^7'):format(accountList()))
     print(('   ^3Compat:^7 RSG %s  VORP %s  Legacy %s   ^3Ledger:^7 %s'):format(on(Config.Compat.rsg.enabled), on(Config.Compat.vorp.enabled), on(Config.Compat.legacy.enabled), on(Config.Money.Ledger.enabled)))
@@ -66,6 +66,29 @@ CreateThread(function()
     end
 
     LXRCore.Perms.Boot()
+    LXRCore.CatalogProblems = {}
+    if Config.Catalog and Config.Catalog.validateOnBoot then
+        local problems = LXRShared.Catalog.Validate()
+        LXRCore.CatalogProblems = problems
+        if #problems > 0 then
+            LXRCore.Log.error('catalog', ('%d problem(s) in shared data'):format(#problems))
+            for i = 1, math.min(#problems, 25) do LXRCore.Log.error('catalog', problems[i]) end
+            if Config.Catalog.failOnInvalid then
+                LXRCore.Log.error('catalog', 'Config.Catalog.failOnInvalid is set — connections refused until fixed')
+                return
+            end
+        else
+            local n = 0 for _ in pairs(LXRShared.Items) do n = n + 1 end
+            LXRCore.Log.info('catalog', ('healthy: %d items, %d weapons, %d jobs, %d gangs, %d horses, %d wagons'):format(
+                n, LXRShared.TableSize(LXRShared.WeaponsByName), LXRShared.TableSize(LXRShared.Jobs), LXRShared.TableSize(LXRShared.Gangs),
+                LXRShared.TableSize(LXRShared.Horses), LXRShared.TableSize(LXRShared.Vehicles)))
+        end
+    end
+    if Config.Catalog and Config.Catalog.skills then
+        local have = {}
+        for _, s in ipairs(Config.Player.skills) do have[s] = true end
+        for _, s in ipairs(Config.Catalog.skills) do if not have[s] then Config.Player.skills[#Config.Player.skills + 1] = s end end
+    end
     if not LXRCore.DB.Boot() then return end
     ensureColumns()
     LXRCore.Inventory.Resolve()

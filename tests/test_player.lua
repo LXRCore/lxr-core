@@ -57,7 +57,7 @@ T.test('SetJob / SetGang / duty update state bag and fire events', function()
     p.Functions.SetJobDuty(true)
     T.eq(p.PlayerData.job.onduty, true)
     T.eq(LXRCore.Functions.GetDutyCount('vallaw'), 1)
-    T.eq(p.Functions.SetGang('odriscoll', 3), true)
+    T.eq(p.Functions.SetGang('odriscoll', 4), true)
     T.eq(p.PlayerData.gang.isboss, true)
 end)
 

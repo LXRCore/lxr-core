@@ -24,6 +24,25 @@ LXRCore.ApiLevel = 3
 LXRCore.ResourceName = (GetCurrentResourceName and GetCurrentResourceName()) or 'lxr-core'
 LXRCore.IsServer = (IsDuplicityVersion and IsDuplicityVersion()) or false
 
+-- Framework identity. Server owners override the player-facing values with
+-- convars in server.cfg (sv_projectName, lxr_discord) — nothing to edit here.
+local function convar(name, default)
+    if GetConvar then
+        local v = GetConvar(name, '')
+        if v ~= '' then return v end
+    end
+    return default
+end
+LXRCore.Brand = {
+    framework  = 'LXRCore',
+    name       = convar('sv_projectName', 'The Land of Wolves'),
+    tagline    = convar('lxr_tagline', 'მგლების მიწა - რჩეულთა ადგილი!'),
+    website    = 'https://www.lxrcore.com',
+    discord    = convar('lxr_discord', 'https://discord.gg/wolvesland'),
+    devDiscord = 'https://discord.gg/ZHMKVYyhBa',
+    github     = 'https://github.com/LXRCore',
+}
+
 -- Shared data tables. Populated by shared/*.lua, mutated at runtime only through
 -- the server-side registry functions (AddJob/AddItem/…) so clients stay in sync.
 LXRShared = LXRShared or {}

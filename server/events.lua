@@ -57,14 +57,14 @@ function LXRCore.Functions.ExploitBan(source, origin, hours)
         'LXRCore Anti-Exploit',
     })
     LXRCore.Log.exploit(source, 'banned: ' .. tostring(origin))
-    DropPlayer(source, Lang:t('error.exploit_banned', { discord = Config.ServerInfo.discord }))
+    DropPlayer(source, Lang:t('error.exploit_banned', { discord = LXRCore.Brand.discord }))
     return true
 end
 
 ---Kick with a reason; safe to call during deferrals.
 function LXRCore.Functions.Kick(source, reason, setKickReason, deferrals)
     source = LXRCore.ToSource(source)
-    reason = ('\n%s\n🔸 %s'):format(tostring(reason or ''), Config.ServerInfo.discord or '')
+    reason = ('\n%s\n🔸 %s'):format(tostring(reason or ''), LXRCore.Brand.discord or '')
     if setKickReason then setKickReason(reason) end
     if deferrals then
         deferrals.update(reason)
@@ -136,7 +136,7 @@ local function onPlayerConnecting(name, setKickReason, deferrals)
         return finish(reason)
     end
 
-    deferrals.update(Lang:t('info.join_server', { name = name, server = Config.ServerInfo.name }))
+    deferrals.update(Lang:t('info.join_server', { name = name, server = LXRCore.Brand.name }))
     -- give other resources a chance to veto (queue, whitelist systems); they may call deferrals.done(reason)
     LXRCore.Emit('lxr:player:connecting', { legacy = 'LXRCore:Server:PlayerConnecting' }, src, name, setKickReason, deferrals)
     Wait(0)
@@ -158,6 +158,7 @@ AddEventHandler('playerDropped', function(reason)
     local player = LXRCore.Players[src]
     GlobalState['Count:Players'] = math.max(0, GetNumPlayerIndices() - 1)
     eventBuckets[src] = nil
+    if LXRCore.Items.lastUse then LXRCore.Items.lastUse[src] = nil end
     LXRCore.Callback.CleanupSource(src)
     if not player then return end
     LXRCore.Emit('lxr:player:dropped', { legacy = 'LXRCore:Server:PlayerDropped', rsg = 'RSGCore:Server:PlayerDropped' }, player, reason)
