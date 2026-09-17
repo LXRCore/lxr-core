@@ -281,9 +281,9 @@ function Shim.bootCore()
     for _, f in ipairs({
         'shared/main.lua', 'shared/locale.lua', 'locales/en.lua', 'locales/ka.lua', 'config.lua',
         'shared/items.lua', 'shared/jobs.lua', 'shared/gangs.lua', 'shared/weapons.lua', 'shared/horses.lua', 'shared/vehicles.lua',
-        'server/main.lua', 'server/log.lua', 'server/database.lua', 'server/callbacks.lua', 'server/permissions.lua',
+        'server/main.lua', 'server/log.lua', 'server/emit.lua', 'server/database.lua', 'server/callbacks.lua', 'server/permissions.lua',
         'server/commands.lua', 'server/roles.lua', 'server/accounts.lua', 'server/items.lua', 'server/player.lua',
-        'server/events.lua', 'server/exports.lua', 'server/compat/rsg.lua', 'server/compat/vorp.lua', 'server/compat/legacy.lua',
+        'server/events.lua', 'server/exports.lua', 'server/api.lua', 'server/compat/rsg.lua', 'server/compat/vorp.lua', 'server/compat/legacy.lua',
         'server/boot.lua',
     }) do
         Shim.load(f)

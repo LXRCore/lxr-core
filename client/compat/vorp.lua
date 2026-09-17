@@ -82,7 +82,7 @@ end)
 
 RegisterNetEvent('vorp:SelectedCharacter', function()
     if LXRCore.IsLoggedIn then return end
-    TriggerEvent('LXRCore:Client:OnPlayerLoaded')
+    TriggerEvent('lxr:client:loaded')
 end)
 
 exports('GetVorpCore', function() return Core end)

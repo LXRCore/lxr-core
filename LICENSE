@@ -1,19 +1,102 @@
-LXRCore Framework License
+LXRCORE FRAMEWORK LICENSE
+Version 1.0 — September 2026
+
 Copyright (c) 2026 iBoss21 / LXRCore (https://www.lxrcore.com)
 All Rights Reserved.
 
-Permission is granted to server owners to install, configure and run this
-software on RedM servers they operate, and to modify configuration files and
-locale files for that purpose.
+This licence governs the software distributed under the LXRCore name
+("the Software"): the lxr-core framework and every resource, bridge,
+documentation file, locale, database migration and asset published by the
+LXRCore organisation (https://github.com/LXRCore), unless a file carries its
+own licence notice.
 
-Redistribution of the source code, in whole or in part, modified or not, and
-publishing derivative frameworks under another name, require prior written
-permission from the copyright holder. Third-party resources may depend on the
-public API of this software (exports, events and the core object) without
-restriction.
+1. DEFINITIONS
+   "Licensor"      iBoss21 / LXRCore, the copyright holder.
+   "You"           any person or entity exercising rights under this licence.
+   "Server"        a RedM / Cfx.re game server instance that You operate.
+   "Public API"    the exports, events, state bags, callbacks, database
+                   tables and configuration keys documented in the Software's
+                   docs/ folder as the interface for other resources.
+   "Derivative"    any work that copies, modifies, translates or otherwise
+                   adapts the Software's source code, in whole or in part,
+                   other than through the Public API.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE
-USE OF THE SOFTWARE.
+2. GRANT — USE
+   Subject to this licence, the Licensor grants You a worldwide,
+   non-exclusive, royalty-free right to:
+   a) download, install and run the Software on Servers You operate;
+   b) modify configuration files (config.lua and files under locales/ and
+      database/migrate/) for the purpose of operating Your Server;
+   c) modify any other file of the Software solely for use on Your own
+      Servers, provided the modified copies are not distributed;
+   d) read the source code for the purpose of writing resources that use
+      the Public API.
+
+3. GRANT — BUILDING ON THE PUBLIC API
+   Resources, scripts and services that interact with the Software only
+   through the Public API are not Derivatives. You may write, sell and
+   distribute such works under any terms You choose, and You may state that
+   they are "made for LXRCore" or "LXRCore-compatible". You may not state or
+   imply that the Licensor endorses them.
+
+4. RESTRICTIONS
+   Unless You have prior written permission from the Licensor, You may not:
+   a) distribute, publish, sublicense, sell, rent or lease the Software or
+      any Derivative, in source or object form, including inside server
+      bundles, "server packs", recipes or repositories other than those of
+      the LXRCore organisation;
+   b) publish a framework, "core" or fork based on the Software under any
+      name, or remove LXRCore branding, copyright notices, this licence or
+      the THIRD_PARTY_NOTICES file;
+   c) use the LXRCore name, wolf mark or lxrcore.com to identify a
+      Derivative or an unrelated product;
+   d) use the Software to circumvent Cfx.re platform rules, the Rockstar
+      Games terms applicable to RedM, or any law;
+   e) train, fine-tune or benchmark machine-learning models on the Software's
+      source code for the purpose of producing a competing framework.
+
+5. CONTRIBUTIONS
+   By submitting a contribution (pull request, patch, translation, asset)
+   to a LXRCore repository You assign to the Licensor all rights in that
+   contribution and warrant that You are entitled to do so. Contributors are
+   credited in the repository history and, where applicable, in the
+   CHANGELOG.
+
+6. THIRD-PARTY MATERIAL
+   Components listed in THIRD_PARTY_NOTICES.md remain under their own
+   licences. The Software reproduces the shape of certain public APIs of
+   other RedM frameworks for compatibility only; no code from those
+   frameworks is included and no endorsement by their authors is implied.
+
+7. UPDATES AND SUPPORT
+   The Licensor may publish updates under this or a later version of this
+   licence. Nothing in this licence obliges the Licensor to provide updates,
+   support or maintenance. Community support is offered through the
+   channels listed in the README.
+
+8. TERMINATION
+   Your rights under this licence end automatically if You breach section 4.
+   On termination You must stop distributing any copy or Derivative; copies
+   already installed on Your own Servers may continue to be used for their
+   original purpose. Sections 6, 9 and 10 survive termination.
+
+9. DISCLAIMER OF WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. RedM is a
+   pre-release platform; the Licensor does not warrant that the Software will
+   remain compatible with future RedM, FXServer or game updates.
+
+10. LIMITATION OF LIABILITY
+   IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE, INCLUDING LOSS OF DATA, PLAYERS OR REVENUE.
+
+11. GENERAL
+   If any provision of this licence is held unenforceable, the remaining
+   provisions stay in effect. Failure to enforce a provision is not a waiver.
+   Requests for permissions beyond this licence: https://www.lxrcore.com or
+   the development Discord (https://discord.gg/ZHMKVYyhBa).
+
+— LXRCore · lxrcore.com · © 2026 iBoss21 / LXRCore

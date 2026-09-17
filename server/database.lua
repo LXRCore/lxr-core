@@ -255,7 +255,7 @@ function DB.Boot()
         CreateThread(fn)
     end
     readyCallbacks = {}
-    TriggerEvent('LXRCore:Server:DatabaseReady')
+    LXRCore.Emit('lxr:db:ready', { legacy = 'LXRCore:Server:DatabaseReady' })
     return true
 end
 

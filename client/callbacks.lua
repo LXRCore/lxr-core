@@ -44,7 +44,7 @@ end
 local function dispatch(name, cb, promise, ...)
     local reqId = newRequestId()
     pending[reqId] = { cb = cb, promise = promise, name = name }
-    TriggerServerEvent('LXRCore:Server:Callback:Request', name, reqId, ...)
+    TriggerServerEvent('lxr:rpc:request', name, reqId, ...)
     SetTimeout(TIMEOUT, function()
         if pending[reqId] then settle(reqId, false, 'timeout') end
     end)
@@ -65,7 +65,7 @@ function Callback.Await(name, ...)
     return table.unpack(packed, 1, packed.n)
 end
 
-RegisterNetEvent('LXRCore:Client:Callback:Response', function(reqId, ok, ...)
+RegisterNetEvent('lxr:rpc:response', function(reqId, ok, ...)
     settle(reqId, ok, ...)
 end)
 
@@ -106,9 +106,9 @@ local function invoke(name, respond, ...)
     end
 end
 
-RegisterNetEvent('LXRCore:Client:Callback:Request', function(name, reqId, ...)
+RegisterNetEvent('lxr:rpc:ask', function(name, reqId, ...)
     invoke(name, function(...)
-        TriggerServerEvent('LXRCore:Server:Callback:Response', reqId, ...)
+        TriggerServerEvent('lxr:rpc:answer', reqId, ...)
     end, ...)
 end)
 

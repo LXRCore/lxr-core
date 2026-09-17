@@ -19,10 +19,10 @@ exports('KeyPressed', function() return false end) -- removed: use prompts
 
 RegisterNetEvent('QBRCore:Client:OnPlayerLoaded', function()
     if LXRCore.IsLoggedIn then return end
-    TriggerEvent('LXRCore:Client:OnPlayerLoaded')
+    TriggerEvent('lxr:client:loaded')
 end)
 RegisterNetEvent('QBRCore:Player:SetPlayerData', function(data)
-    if type(data) == 'table' then LXRCore.PlayerData = data end
+    if type(data) == 'table' then TriggerEvent('lxr:client:data', data) end
 end)
 RegisterNetEvent('QBRCore:Client:TriggerCallback', function(name, ...)
     local cb = LXRCore.ServerCallbacks[name]

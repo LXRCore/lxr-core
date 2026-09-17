@@ -126,13 +126,12 @@ local function announce(player, account, amount, op, reason)
     player._dirty = true
     if player.Offline then return end
     player.Functions.UpdatePlayerData()
-    TriggerEvent('LXRCore:Server:OnMoneyChange', src, account, amount, op, reason)
-    TriggerClientEvent('LXRCore:Client:OnMoneyChange', src, account, amount, op, reason)
+    local balance = player.PlayerData.money[account]
+    LXRCore.Emit('lxr:money:changed', { legacy = 'LXRCore:Server:OnMoneyChange', rsg = 'RSGCore:Server:OnMoneyChange' }, src, account, amount, op, reason, balance)
+    LXRCore.EmitClient(src, 'lxr:client:money', { legacy = 'LXRCore:Client:OnMoneyChange', rsg = 'RSGCore:Client:OnMoneyChange' }, account, amount, op, reason, balance)
     -- HUD convention shared with RSG: (moneytype, amount, isMinus)
-    TriggerClientEvent('hud:client:OnMoneyChange', src, account, amount, op == 'remove')
-    if Config.Compat.rsg.enabled then
-        TriggerEvent('RSGCore:Server:OnMoneyChange', src, account, amount, op, reason)
-        TriggerClientEvent('RSGCore:Client:OnMoneyChange', src, account, amount, op, reason)
+    if Config.Compat.rsg.enabled or Config.Compat.legacy.enabled then
+        TriggerClientEvent('hud:client:OnMoneyChange', src, account, amount, op == 'remove')
     end
     if Accounts.OnChanged then Accounts.OnChanged(player, account, amount, op, reason) end
     local level = amount >= (Config.Money.LogThreshold or math.huge) and 'warn' or 'info'
@@ -190,7 +189,7 @@ function Accounts.Set(player, account, amount, reason)
     money[acc] = amt
     ledger(player, acc, 'set', amt, reason)
     announce(player, acc, math.abs(amt - before), amt < before and 'remove' or 'add', reason or 'set')
-    TriggerEvent('LXRCore:Server:OnMoneySet', player.PlayerData.source, acc, amt, before, reason)
+    LXRCore.Emit('lxr:money:set', { legacy = 'LXRCore:Server:OnMoneySet' }, player.PlayerData.source, acc, amt, before, reason)
     return true
 end
 

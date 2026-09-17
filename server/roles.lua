@@ -109,18 +109,14 @@ end
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 local function broadcastOne(tbl, key, value)
-    TriggerClientEvent('LXRCore:Client:OnSharedUpdate', -1, tbl, key, value)
-    if Config.Compat.rsg.enabled then
-        TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, tbl, key, value)
-    end
+    LXRCore.EmitClient(-1, 'lxr:client:shared', { legacy = 'LXRCore:Client:OnSharedUpdate', rsg = 'RSGCore:Client:OnSharedUpdate' }, tbl, key, value)
+    LXRCore.Emit('lxr:shared:updated', nil, tbl, key, value)
     LXRCore.NotifyObjectUpdate()
 end
 
 local function broadcastMany(tbl, values)
-    TriggerClientEvent('LXRCore:Client:OnSharedUpdateMultiple', -1, tbl, values)
-    if Config.Compat.rsg.enabled then
-        TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, tbl, values)
-    end
+    LXRCore.EmitClient(-1, 'lxr:client:sharedMany', { legacy = 'LXRCore:Client:OnSharedUpdateMultiple', rsg = 'RSGCore:Client:OnSharedUpdateMultiple' }, tbl, values)
+    LXRCore.Emit('lxr:shared:updated', nil, tbl, nil, values)
     LXRCore.NotifyObjectUpdate()
 end
 

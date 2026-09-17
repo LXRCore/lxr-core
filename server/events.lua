@@ -138,7 +138,7 @@ local function onPlayerConnecting(name, setKickReason, deferrals)
 
     deferrals.update(Lang:t('info.join_server', { name = name, server = Config.ServerInfo.name }))
     -- give other resources a chance to veto (queue, whitelist systems); they may call deferrals.done(reason)
-    TriggerEvent('LXRCore:Server:PlayerConnecting', src, name, setKickReason, deferrals)
+    LXRCore.Emit('lxr:player:connecting', { legacy = 'LXRCore:Server:PlayerConnecting' }, src, name, setKickReason, deferrals)
     Wait(0)
     finish()
     LXRCore.Metrics.Inc('connect.accepted')
@@ -149,8 +149,7 @@ AddEventHandler('playerConnecting', onPlayerConnecting)
 AddEventHandler('playerJoining', function()
     local src = source
     -- shared data snapshot so late-added items/jobs are present before any resource asks
-    TriggerClientEvent('LXRCore:Client:SharedUpdate', src, LXRShared)
-    if Config.Compat.rsg.enabled then TriggerClientEvent('RSGCore:Client:SharedUpdate', src, LXRShared) end
+    LXRCore.EmitClient(src, 'lxr:client:sharedAll', { legacy = 'LXRCore:Client:SharedUpdate', rsg = 'RSGCore:Client:SharedUpdate' }, LXRShared)
     GlobalState['Count:Players'] = GetNumPlayerIndices()
 end)
 
@@ -161,8 +160,7 @@ AddEventHandler('playerDropped', function(reason)
     eventBuckets[src] = nil
     LXRCore.Callback.CleanupSource(src)
     if not player then return end
-    TriggerEvent('LXRCore:Server:PlayerDropped', player, reason)
-    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Server:PlayerDropped', player, reason) end
+    LXRCore.Emit('lxr:player:dropped', { legacy = 'LXRCore:Server:PlayerDropped', rsg = 'RSGCore:Server:PlayerDropped' }, player, reason)
     player.Functions.PersistStateBags()
     LXRCore.Player.Save(src, true)
     LXRCore.Players[src] = nil
@@ -187,17 +185,19 @@ end)
 
 -- Client asks for a save (legacy loop / logout screens). Rate-limited: one per 30s.
 local saveRequests = {}
-RegisterNetEvent('LXRCore:UpdatePlayer', function()
+local function onSaveRequest()
     local src = source
     local player = LXRCore.Players[src]
     if not player then return end
     if not LXRCore.RateLimit(saveRequests, src, 1, 30000) then return end
     player.Functions.PersistStateBags()
     LXRCore.Player.Save(src, false)
-end)
+end
+RegisterNetEvent('lxr:player:save', onSaveRequest)
+RegisterNetEvent('LXRCore:UpdatePlayer', onSaveRequest) -- legacy name
 
 -- Client may only set whitelisted metadata keys (hunger/thirst/…).
-RegisterNetEvent('LXRCore:Server:SetMetaData', function(meta, data)
+local function onSetMeta(meta, data)
     local src = source
     if limited(src) then return end
     local player = LXRCore.Players[src]
@@ -212,34 +212,42 @@ RegisterNetEvent('LXRCore:Server:SetMetaData', function(meta, data)
     end
     if type(data) ~= 'number' then return end
     player.Functions.SetMetaData(meta, data)
-end)
+end
+RegisterNetEvent('lxr:player:meta', onSetMeta)
+RegisterNetEvent('LXRCore:Server:SetMetaData', onSetMeta) -- legacy name
 
-RegisterNetEvent('LXRCore:ToggleDuty', function()
+local function onToggleDuty()
     local src = source
     if limited(src) then return end
     local player = LXRCore.Players[src]
     if not player then return end
     local onduty = not player.PlayerData.job.onduty
     player.Functions.SetJobDuty(onduty)
-    TriggerClientEvent('LXRCore:Notify', src, onduty and Lang:t('info.on_duty') or Lang:t('info.off_duty'))
-end)
+    LXRCore.Notify(src, onduty and Lang:t('info.on_duty') or Lang:t('info.off_duty'))
+end
+RegisterNetEvent('lxr:player:duty', onToggleDuty)
+RegisterNetEvent('LXRCore:ToggleDuty', onToggleDuty) -- legacy name
 
--- Legacy spawn resources announce that the character is in the world.
-RegisterNetEvent('LXRCore:Server:OnPlayerLoaded', function()
+-- Spawn resources announce that the character stands in the world.
+local function onSpawned()
     local src = source
     local player = LXRCore.Players[src]
     if not player then return end
     Player(src).state:set('isLoggedIn', true, true)
-    TriggerEvent('LXRCore:Server:PlayerSpawned', src, player)
-end)
+    LXRCore.Emit('lxr:player:spawned', { legacy = 'LXRCore:Server:PlayerSpawned' }, src, player)
+end
+RegisterNetEvent('lxr:player:spawned', onSpawned)
+RegisterNetEvent('LXRCore:Server:OnPlayerLoaded', onSpawned) -- legacy name
 
 -- Usable item from an inventory UI. Ownership is re-verified server-side in Items.Use.
-RegisterNetEvent('LXRCore:Server:UseItem', function(item)
+local function onUseItem(item)
     local src = source
     if limited(src) then return end
     if type(item) ~= 'table' and type(item) ~= 'string' then return end
     LXRCore.Items.Use(src, item)
-end)
+end
+RegisterNetEvent('lxr:item:use', onUseItem)
+RegisterNetEvent('LXRCore:Server:UseItem', onUseItem) -- legacy name
 
 RegisterNetEvent('LXRCore:Server:CloseServer', function(reason)
     local src = source
@@ -285,7 +293,7 @@ end
 
 -- Shared data on demand (resources that start late).
 RegisterNetEvent('LXRCore:Server:RequestShared', function()
-    TriggerClientEvent('LXRCore:Client:SharedUpdate', source, LXRShared)
+    LXRCore.EmitClient(source, 'lxr:client:sharedAll', { legacy = 'LXRCore:Client:SharedUpdate', rsg = 'RSGCore:Client:SharedUpdate' }, LXRShared)
 end)
 
 -- Vehicle spawn helper (server-side entity creation, returns net id).

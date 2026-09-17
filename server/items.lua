@@ -25,8 +25,8 @@ local Inventory = LXRCore.Inventory
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 local function broadcast(key, value)
-    TriggerClientEvent('LXRCore:Client:OnSharedUpdate', -1, 'Items', key, value)
-    if Config.Compat.rsg.enabled then TriggerClientEvent('RSGCore:Client:OnSharedUpdate', -1, 'Items', key, value) end
+    LXRCore.EmitClient(-1, 'lxr:client:shared', { legacy = 'LXRCore:Client:OnSharedUpdate', rsg = 'RSGCore:Client:OnSharedUpdate' }, 'Items', key, value)
+    LXRCore.Emit('lxr:shared:updated', nil, 'Items', key, value)
     LXRCore.NotifyObjectUpdate()
 end
 
@@ -56,8 +56,8 @@ function Items.AddMany(list)
         LXRShared.Items[key] = data
         added[key] = data
     end
-    TriggerClientEvent('LXRCore:Client:OnSharedUpdateMultiple', -1, 'Items', added)
-    if Config.Compat.rsg.enabled then TriggerClientEvent('RSGCore:Client:OnSharedUpdateMultiple', -1, 'Items', added) end
+    LXRCore.EmitClient(-1, 'lxr:client:sharedMany', { legacy = 'LXRCore:Client:OnSharedUpdateMultiple', rsg = 'RSGCore:Client:OnSharedUpdateMultiple' }, 'Items', added)
+    LXRCore.Emit('lxr:shared:updated', nil, 'Items', nil, added)
     LXRCore.NotifyObjectUpdate()
     return true, 'success', nil
 end
@@ -339,7 +339,7 @@ local function afterChange(p)
     p._dirty = true
     if not p.Offline then
         p.Functions.UpdatePlayerData()
-        TriggerEvent('LXRCore:Server:OnInventoryUpdate', p.PlayerData.source)
+        LXRCore.Emit('lxr:inventory:changed', { legacy = 'LXRCore:Server:OnInventoryUpdate' }, p.PlayerData.source)
     end
 end
 
@@ -381,7 +381,7 @@ function Inventory.AddItem(source, name, amount, slot, info, reason)
     local ok, err, usedSlot = Core.AddItem(p, name, amount, slot, info)
     if ok then
         afterChange(p)
-        TriggerClientEvent('lxr-inventory:client:UpdateItems', source, usedSlot, p.PlayerData.items[usedSlot])
+        if Config.Compat.legacy.enabled then TriggerClientEvent('lxr-inventory:client:UpdateItems', source, usedSlot, p.PlayerData.items[usedSlot]) end
         LXRCore.Log.info('inventory', ('add %sx %s'):format(amount or 1, name), { source = source, slot = usedSlot, reason = reason, resource = LXRCore.Invoker() })
     end
     return ok, err
@@ -400,7 +400,7 @@ function Inventory.RemoveItem(source, name, amount, slot, reason)
     local ok, err = Core.RemoveItem(p, name, amount, slot)
     if ok then
         afterChange(p)
-        TriggerClientEvent('lxr-inventory:client:UpdateItems', source, slot, slot and p.PlayerData.items[slot] or nil)
+        if Config.Compat.legacy.enabled then TriggerClientEvent('lxr-inventory:client:UpdateItems', source, slot, slot and p.PlayerData.items[slot] or nil) end
         LXRCore.Log.info('inventory', ('remove %sx %s'):format(amount or 1, name), { source = source, slot = slot, reason = reason, resource = LXRCore.Invoker() })
     end
     return ok, err

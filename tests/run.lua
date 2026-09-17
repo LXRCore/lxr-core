@@ -47,7 +47,7 @@ end
 local files = {
     'tests/test_shared.lua', 'tests/test_locale.lua', 'tests/test_database.lua', 'tests/test_roles.lua',
     'tests/test_accounts.lua', 'tests/test_inventory.lua', 'tests/test_callbacks.lua', 'tests/test_player.lua',
-    'tests/test_permissions_commands.lua', 'tests/test_events.lua', 'tests/test_compat.lua',
+    'tests/test_permissions_commands.lua', 'tests/test_events.lua', 'tests/test_compat.lua', 'tests/test_api.lua',
 }
 for _, f in ipairs(files) do
     local chunk, err = loadfile(f)

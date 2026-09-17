@@ -13,10 +13,10 @@
        LXRCore.Functions.TriggerClientCallback('name', source, cb, ...) -- RSG style
 
      Wire protocol (v3):
-       C→S  LXRCore:Server:Callback:Request  (name, reqId, ...)
-       S→C  LXRCore:Client:Callback:Response (reqId, ok, ...)
-       S→C  LXRCore:Client:Callback:Request  (name, reqId, ...)
-       C→S  LXRCore:Server:Callback:Response (reqId, ...)
+       C→S  lxr:rpc:request   (name, reqId, ...)
+       S→C  lxr:rpc:response  (reqId, ok, ...)
+       S→C  lxr:rpc:ask       (name, reqId, ...)
+       C→S  lxr:rpc:answer    (reqId, ...)
      Legacy events (LXRCore:Server:TriggerCallback / RSGCore:*) are answered by
      the compat modules using the same registry.
      ═══════════════════════════════════════════════════════════════════════════
@@ -121,20 +121,22 @@ local function allowed(source)
     return false
 end
 
-RegisterNetEvent('LXRCore:Server:Callback:Request', function(name, reqId, ...)
+local function handleRequest(name, reqId, ...)
     local src = source
     if type(name) ~= 'string' or type(reqId) ~= 'string' then return end
     if not allowed(src) then
-        TriggerClientEvent('LXRCore:Client:Callback:Response', src, reqId, false, 'rate_limited')
+        TriggerClientEvent('lxr:rpc:response', src, reqId, false, 'rate_limited')
         return
     end
     local found = Callback.Invoke(name, src, function(...)
-        TriggerClientEvent('LXRCore:Client:Callback:Response', src, reqId, true, ...)
+        TriggerClientEvent('lxr:rpc:response', src, reqId, true, ...)
     end, ...)
     if not found then
-        TriggerClientEvent('LXRCore:Client:Callback:Response', src, reqId, false, 'unknown_callback')
+        TriggerClientEvent('lxr:rpc:response', src, reqId, false, 'unknown_callback')
     end
-end)
+end
+RegisterNetEvent('lxr:rpc:request', handleRequest)
+RegisterNetEvent('LXRCore:Server:Callback:Request', handleRequest) -- v3.0 wire name, kept
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- 📤 CLIENT CALLBACKS (asking the client)
@@ -159,7 +161,7 @@ local function dispatch(name, source, cb, promise, ...)
     end
     local reqId = newRequestId()
     pending[reqId] = { cb = cb, promise = promise, source = source, name = name, at = GetGameTimer() }
-    TriggerClientEvent('LXRCore:Client:Callback:Request', source, name, reqId, ...)
+    TriggerClientEvent('lxr:rpc:ask', source, name, reqId, ...)
     local timeout = Config.Security.callbackTimeoutMs or 15000
     SetTimeout(timeout, function()
         if pending[reqId] then
@@ -185,7 +187,7 @@ function Callback.Await(name, source, ...)
     return table.unpack(packed, 1, packed.n)
 end
 
-RegisterNetEvent('LXRCore:Server:Callback:Response', function(reqId, ...)
+local function handleAnswer(reqId, ...)
     local src = source
     local req = pending[reqId]
     if not req then return end
@@ -194,7 +196,9 @@ RegisterNetEvent('LXRCore:Server:Callback:Response', function(reqId, ...)
         return
     end
     settle(reqId, ...)
-end)
+end
+RegisterNetEvent('lxr:rpc:answer', handleAnswer)
+RegisterNetEvent('LXRCore:Server:Callback:Response', handleAnswer) -- v3.0 wire name, kept
 
 ---Drop everything a disconnected player still owed us.
 function Callback.CleanupSource(source)

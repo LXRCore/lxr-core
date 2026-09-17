@@ -17,7 +17,7 @@ Commands.List = {}
 Commands.IgnoreList = { god = true, user = true }
 
 local function notify(src, msg, kind)
-    TriggerClientEvent('LXRCore:Notify', src, msg, kind or 'inform')
+    LXRCore.Notify(src, msg, kind or 'inform')
 end
 
 local function grantAce(group, name)
@@ -50,7 +50,7 @@ function Commands.Add(name, help, arguments, argsRequired, callback, permission,
             end
             return
         end
-        TriggerEvent('LXRCore:Server:PreCommandExecution', source, name, args)
+        LXRCore.Emit('lxr:command:run', { legacy = 'LXRCore:Server:PreCommandExecution' }, source, name, args)
         local ok, err = pcall(callback, source, args, raw)
         if not ok then
             LXRCore.Log.error('command', ('command /%s errored'):format(name), { error = tostring(err), source = source })
@@ -112,11 +112,13 @@ function Commands.Call(source, name, args)
     return true
 end
 
-RegisterNetEvent('LXRCore:CallCommand', function(command, args)
+local function onCallCommand(command, args)
     local src = source
     if not LXRCore.Players[src] then return end
     Commands.Call(src, command, args)
-end)
+end
+RegisterNetEvent('lxr:command:call', onCallCommand)
+RegisterNetEvent('LXRCore:CallCommand', onCallCommand) -- legacy name
 
 -- Swallow chat messages that start with '/' but are not registered (stock chat behaviour)
 AddEventHandler('chatMessage', function(_, _, message)
@@ -148,12 +150,12 @@ function Commands.RegisterBuiltins()
             local target = tonumber(args[1])
             local ped = target and GetPlayerPed(target) or 0
             if ped == 0 then return notify(src, Lang:t('error.not_online'), 'error') end
-            TriggerClientEvent('LXRCore:Command:TeleportToCoords', src, GetEntityCoords(ped))
+            LXRCore.EmitClient(src, 'lxr:client:teleport', { legacy = 'LXRCore:Command:TeleportToCoords' }, GetEntityCoords(ped))
             notify(src, Lang:t('success.teleported_to_player'), 'success')
         elseif args[1] and args[2] and args[3] then
             local x, y, z = tonumber((args[1]:gsub(',', ''))), tonumber((args[2]:gsub(',', ''))), tonumber((args[3]:gsub(',', '')))
             if not (x and y and z) then return notify(src, Lang:t('error.wrong_format'), 'error') end
-            TriggerClientEvent('LXRCore:Command:TeleportToCoords', src, vector3(x, y, z))
+            LXRCore.EmitClient(src, 'lxr:client:teleport', { legacy = 'LXRCore:Command:TeleportToCoords' }, vector3(x, y, z))
             notify(src, Lang:t('success.teleported_to_coords'), 'success')
         else
             notify(src, Lang:t('error.missing_args'), 'error')
@@ -161,12 +163,12 @@ function Commands.RegisterBuiltins()
     end, 'admin')
 
     Commands.Add('tpm', T('command.tpm.help'), {}, false, function(src)
-        TriggerClientEvent('LXRCore:Command:GoToMarker', src)
+        LXRCore.EmitClient(src, 'lxr:client:teleportMarker', { legacy = 'LXRCore:Command:GoToMarker' })
     end, 'admin')
 
     Commands.Add('togglepvp', T('command.togglepvp.help'), {}, false, function(src)
         Config.General.enablePVP = not Config.General.enablePVP
-        TriggerClientEvent('LXRCore:Client:PvpHasToggled', -1, Config.General.enablePVP)
+        LXRCore.EmitClient(-1, 'lxr:client:pvp', { legacy = 'LXRCore:Client:PvpHasToggled', rsg = 'RSGCore:Client:PvpHasToggled' }, Config.General.enablePVP)
         if src > 0 then
             notify(src, Config.General.enablePVP and Lang:t('info.pvp_enabled') or Lang:t('info.pvp_disabled'))
         end
@@ -264,7 +266,7 @@ function Commands.RegisterBuiltins()
         local coords = GetEntityCoords(GetPlayerPed(src))
         for id in pairs(LXRCore.Players) do
             if #(GetEntityCoords(GetPlayerPed(id)) - coords) <= (Config.Commands.meRange or 12.0) then
-                TriggerClientEvent('LXRCore:Command:ShowMe3D', id, src, message)
+                LXRCore.EmitClient(id, 'lxr:client:me', { legacy = 'LXRCore:Command:ShowMe3D' }, src, message)
             end
         end
     end, 'user')
@@ -305,11 +307,11 @@ function Commands.RegisterBuiltins()
     end, 'admin')
 
     Commands.Add('vehicle', T('command.vehicle.help'), { P('vehicle.params.model') }, true, function(src, args)
-        TriggerClientEvent('LXRCore:Command:SpawnVehicle', src, tostring(args[1]))
+        LXRCore.EmitClient(src, 'lxr:client:vehicle:spawn', { legacy = 'LXRCore:Command:SpawnVehicle' }, tostring(args[1]))
     end, 'admin')
 
     Commands.Add('dv', T('command.dv.help'), {}, false, function(src)
-        TriggerClientEvent('LXRCore:Command:DeleteVehicle', src)
+        LXRCore.EmitClient(src, 'lxr:client:vehicle:delete', { legacy = 'LXRCore:Command:DeleteVehicle' })
     end, 'admin')
 end
 

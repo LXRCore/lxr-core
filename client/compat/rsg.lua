@@ -13,17 +13,17 @@ if not Config.Compat.rsg.enabled then return end
 -- rsg-spawn / rsg-multicharacter announce the spawn with this event
 RegisterNetEvent('RSGCore:Client:OnPlayerLoaded', function()
     if LXRCore.IsLoggedIn then return end -- re-fired by the core itself
-    TriggerEvent('LXRCore:Client:OnPlayerLoaded')
-    TriggerServerEvent('LXRCore:Server:OnPlayerLoaded')
+    TriggerEvent('lxr:client:loaded')
+    TriggerServerEvent('lxr:player:spawned')
 end)
 
 RegisterNetEvent('RSGCore:Client:OnPlayerUnload', function()
     if not LXRCore.IsLoggedIn then return end
-    TriggerEvent('LXRCore:Client:OnPlayerUnload')
+    TriggerEvent('lxr:client:unloaded')
 end)
 
 RegisterNetEvent('RSGCore:Player:SetPlayerData', function(data)
-    if type(data) == 'table' then LXRCore.PlayerData = data end
+    if type(data) == 'table' then TriggerEvent('lxr:client:data', data) end
 end)
 
 RegisterNetEvent('RSGCore:Player:UpdatePlayerData', function()
@@ -31,18 +31,18 @@ RegisterNetEvent('RSGCore:Player:UpdatePlayerData', function()
 end)
 
 RegisterNetEvent('RSGCore:Client:PvpHasToggled', function(state)
-    TriggerEvent('LXRCore:Client:PvpHasToggled', state)
+    TriggerEvent('lxr:client:pvp', state)
 end)
 
 -- Shared registry updates (server sends both names; keep RSG-only senders working)
 RegisterNetEvent('RSGCore:Client:OnSharedUpdate', function(tbl, key, value)
-    TriggerEvent('LXRCore:Client:OnSharedUpdate', tbl, key, value)
+    TriggerEvent('lxr:client:shared', tbl, key, value)
 end)
 RegisterNetEvent('RSGCore:Client:OnSharedUpdateMultiple', function(tbl, values)
-    TriggerEvent('LXRCore:Client:OnSharedUpdateMultiple', tbl, values)
+    TriggerEvent('lxr:client:sharedMany', tbl, values)
 end)
 RegisterNetEvent('RSGCore:Client:SharedUpdate', function(shared)
-    TriggerEvent('LXRCore:Client:SharedUpdate', shared)
+    TriggerEvent('lxr:client:sharedAll', shared)
 end)
 
 -- RSG name-keyed callback protocol
@@ -61,12 +61,12 @@ RegisterNetEvent('RSGCore:Client:TriggerClientCallback', function(name, ...)
 end)
 
 -- Admin command helpers
-RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords) TriggerEvent('LXRCore:Command:TeleportToCoords', coords) end)
-RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z) TriggerEvent('LXRCore:Command:TeleportToCoords', vector3(x, y, z)) end)
-RegisterNetEvent('RSGCore:Command:GoToMarker', function() TriggerEvent('LXRCore:Command:GoToMarker') end)
-RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(model) TriggerEvent('LXRCore:Command:SpawnVehicle', model) end)
-RegisterNetEvent('RSGCore:Command:DeleteVehicle', function() TriggerEvent('LXRCore:Command:DeleteVehicle') end)
-RegisterNetEvent('RSGCore:Command:ShowMe3D', function(id, msg) TriggerEvent('LXRCore:Command:ShowMe3D', id, msg) end)
+RegisterNetEvent('RSGCore:Command:TeleportToPlayer', function(coords) TriggerEvent('lxr:client:teleport', coords) end)
+RegisterNetEvent('RSGCore:Command:TeleportToCoords', function(x, y, z) TriggerEvent('lxr:client:teleport', vector3(x, y, z)) end)
+RegisterNetEvent('RSGCore:Command:GoToMarker', function() TriggerEvent('lxr:client:teleportMarker') end)
+RegisterNetEvent('RSGCore:Command:SpawnVehicle', function(model) TriggerEvent('lxr:client:vehicle:spawn', model) end)
+RegisterNetEvent('RSGCore:Command:DeleteVehicle', function() TriggerEvent('lxr:client:vehicle:delete') end)
+RegisterNetEvent('RSGCore:Command:ShowMe3D', function(id, msg) TriggerEvent('lxr:client:me', id, msg) end)
 
 -- RSG client helpers that exist on RSGCore.Functions but not natively here
 LXRCore.Functions.LookAtEntity = function(entity, timeout, speed)

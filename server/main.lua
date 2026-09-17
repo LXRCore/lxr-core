@@ -120,5 +120,7 @@ exports('GetCore', GetCoreObject)
 
 -- Fired after every mutation of the core object so wrappers can refresh copies.
 function LXRCore.NotifyObjectUpdate()
-    TriggerEvent('LXRCore:Server:UpdateObject')
+    TriggerEvent('lxr:core:updated')
+    if Config.Compat.legacy.enabled then TriggerEvent('LXRCore:Server:UpdateObject') end
+    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Server:UpdateObject') end
 end

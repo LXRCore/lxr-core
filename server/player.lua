@@ -242,12 +242,8 @@ function PlayerAPI.Logout(source, switching)
     local player = source and LXRCore.Players[source]
     if not player then return false end
 
-    TriggerEvent('LXRCore:Server:OnPlayerUnload', source)
-    TriggerClientEvent('LXRCore:Client:OnPlayerUnload', source)
-    if Config.Compat.rsg.enabled then
-        TriggerEvent('RSGCore:Server:OnPlayerUnload', source)
-        TriggerClientEvent('RSGCore:Client:OnPlayerUnload', source)
-    end
+    LXRCore.Emit('lxr:player:unloaded', { legacy = 'LXRCore:Server:OnPlayerUnload', rsg = 'RSGCore:Server:OnPlayerUnload' }, source)
+    LXRCore.EmitClient(source, 'lxr:client:unloaded', { legacy = 'LXRCore:Client:OnPlayerUnload', rsg = 'RSGCore:Client:OnPlayerUnload' })
 
     PlayerAPI.Save(source, true)
 
@@ -290,13 +286,9 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         SetTimeout(Config.Performance.playerDataSyncMs or 100, function()
             syncPending[s] = nil
             if LXRCore.Players[s] ~= self then return end
-            TriggerEvent('LXRCore:Player:SetPlayerData', self.PlayerData)
-            TriggerEvent('LXRCore:Server:OnPlayerUpdated', self.PlayerData)
-            TriggerClientEvent('LXRCore:Player:SetPlayerData', s, self.PlayerData)
-            if Config.Compat.rsg.enabled then
-                TriggerEvent('RSGCore:Player:SetPlayerData', self.PlayerData)
-                TriggerClientEvent('RSGCore:Player:SetPlayerData', s, self.PlayerData)
-            end
+            LXRCore.Emit('lxr:player:updated', { legacy = 'LXRCore:Server:OnPlayerUpdated', rsg = 'RSGCore:Player:SetPlayerData' }, s, self.PlayerData)
+            if Config.Compat.legacy.enabled then TriggerEvent('LXRCore:Player:SetPlayerData', self.PlayerData) end
+            LXRCore.EmitClient(s, 'lxr:client:data', { legacy = 'LXRCore:Player:SetPlayerData', rsg = 'RSGCore:Player:SetPlayerData' }, self.PlayerData)
             LXRCore.Metrics.Inc('player.sync')
         end)
     end
@@ -317,12 +309,8 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         if not self.Offline then
             Player(src()).state:set('job', { name = built.name, grade = built.grade.level, onduty = built.onduty, type = built.type }, true)
             F.UpdatePlayerData()
-            TriggerEvent('LXRCore:Server:OnJobUpdate', src(), built)
-            TriggerClientEvent('LXRCore:Client:OnJobUpdate', src(), built)
-            if Config.Compat.rsg.enabled then
-                TriggerEvent('RSGCore:Server:OnJobUpdate', src(), built)
-                TriggerClientEvent('RSGCore:Client:OnJobUpdate', src(), built)
-            end
+            LXRCore.Emit('lxr:job:changed', { legacy = 'LXRCore:Server:OnJobUpdate', rsg = 'RSGCore:Server:OnJobUpdate' }, src(), built)
+            LXRCore.EmitClient(src(), 'lxr:client:job', { legacy = 'LXRCore:Client:OnJobUpdate', rsg = 'RSGCore:Client:OnJobUpdate' }, built)
         end
         return true
     end
@@ -334,12 +322,8 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         self._dirty = true
         if not self.Offline then
             F.UpdatePlayerData()
-            TriggerEvent('LXRCore:Server:OnGangUpdate', src(), built)
-            TriggerClientEvent('LXRCore:Client:OnGangUpdate', src(), built)
-            if Config.Compat.rsg.enabled then
-                TriggerEvent('RSGCore:Server:OnGangUpdate', src(), built)
-                TriggerClientEvent('RSGCore:Client:OnGangUpdate', src(), built)
-            end
+            LXRCore.Emit('lxr:gang:changed', { legacy = 'LXRCore:Server:OnGangUpdate', rsg = 'RSGCore:Server:OnGangUpdate' }, src(), built)
+            LXRCore.EmitClient(src(), 'lxr:client:gang', { legacy = 'LXRCore:Client:OnGangUpdate', rsg = 'RSGCore:Client:OnGangUpdate' }, built)
         end
         return true
     end
@@ -350,16 +334,10 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         if not self.Offline then
             local j = self.PlayerData.job
             Player(src()).state:set('job', { name = j.name, grade = j.grade.level, onduty = j.onduty, type = j.type }, true)
-            TriggerEvent('LXRCore:Server:SetDuty', src(), j.onduty)
-            TriggerEvent('LXRCore:Server:OnJobUpdate', src(), j)
-            TriggerClientEvent('LXRCore:Client:SetDuty', src(), j.onduty)
-            TriggerClientEvent('LXRCore:Client:OnJobUpdate', src(), j)
-            if Config.Compat.rsg.enabled then
-                TriggerEvent('RSGCore:Server:SetDuty', src(), j.onduty)
-                TriggerEvent('RSGCore:Server:OnJobUpdate', src(), j)
-                TriggerClientEvent('RSGCore:Client:SetDuty', src(), j.onduty)
-                TriggerClientEvent('RSGCore:Client:OnJobUpdate', src(), j)
-            end
+            LXRCore.Emit('lxr:duty:changed', { legacy = 'LXRCore:Server:SetDuty', rsg = 'RSGCore:Server:SetDuty' }, src(), j.onduty)
+            LXRCore.Emit('lxr:job:changed', { legacy = 'LXRCore:Server:OnJobUpdate', rsg = 'RSGCore:Server:OnJobUpdate' }, src(), j)
+            LXRCore.EmitClient(src(), 'lxr:client:duty', { legacy = 'LXRCore:Client:SetDuty', rsg = 'RSGCore:Client:SetDuty' }, j.onduty)
+            LXRCore.EmitClient(src(), 'lxr:client:job', { legacy = 'LXRCore:Client:OnJobUpdate', rsg = 'RSGCore:Client:OnJobUpdate' }, j)
             F.UpdatePlayerData()
         end
         return true
@@ -384,7 +362,7 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
             return false
         end
         F.UpdatePlayerData()
-        if not self.Offline then TriggerEvent('LXRCore:Server:OnMetaDataUpdate', src(), meta, val) end
+        if not self.Offline then LXRCore.Emit('lxr:meta:changed', { legacy = 'LXRCore:Server:OnMetaDataUpdate' }, src(), meta, val) end
         return true
     end
 
@@ -427,7 +405,7 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         xp[skill] = (tonumber(xp[skill]) or 0) + tonumber(amount)
         local level = recalcLevel(skill)
         F.UpdatePlayerData()
-        if not self.Offline then TriggerClientEvent('LXRCore:Client:OnXpChange', src(), skill, xp[skill], level) end
+        if not self.Offline then LXRCore.EmitClient(src(), 'lxr:client:xp', { legacy = 'LXRCore:Client:OnXpChange' }, skill, xp[skill], level) end
         return true
     end
 
@@ -437,7 +415,7 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
         xp[skill] = math.max(0, (tonumber(xp[skill]) or 0) - tonumber(amount))
         local level = recalcLevel(skill)
         F.UpdatePlayerData()
-        if not self.Offline then TriggerClientEvent('LXRCore:Client:OnXpChange', src(), skill, xp[skill], level) end
+        if not self.Offline then LXRCore.EmitClient(src(), 'lxr:client:xp', { legacy = 'LXRCore:Client:OnXpChange' }, skill, xp[skill], level) end
         return true
     end
 
@@ -525,8 +503,7 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
     LXRCore.PlayersByLicense[self.PlayerData.license] = self
     F.InitializeStateBags()
     PlayerAPI.Save(self.PlayerData.source) -- guarantees the row exists for new characters
-    TriggerEvent('LXRCore:Server:PlayerLoaded', self)
-    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Server:PlayerLoaded', self) end
+    LXRCore.Emit('lxr:player:loaded', { legacy = 'LXRCore:Server:PlayerLoaded', rsg = 'RSGCore:Server:PlayerLoaded' }, self)
     F.UpdatePlayerData()
     LXRCore.Commands.Refresh(self.PlayerData.source)
     LXRCore.Metrics.Inc('player.loaded')
@@ -777,7 +754,7 @@ function PlayerAPI.DeleteCharacter(source, citizenid)
     end
     local ok = LXRCore.DB.Transaction(deleteQueries(citizenid))
     if ok then
-        TriggerEvent('LXRCore:Server:CharacterDeleted', source, citizenid)
+        LXRCore.Emit('lxr:character:deleted', { legacy = 'LXRCore:Server:CharacterDeleted' }, source, citizenid)
         LXRCore.Log.info('player', 'character deleted', { source = source, citizenid = citizenid })
     end
     return ok
@@ -794,7 +771,7 @@ function PlayerAPI.ForceDeleteCharacter(citizenid)
     end
     local ok = LXRCore.DB.Transaction(deleteQueries(citizenid))
     if ok then
-        TriggerEvent('LXRCore:Server:CharacterDeleted', 0, citizenid)
+        LXRCore.Emit('lxr:character:deleted', { legacy = 'LXRCore:Server:CharacterDeleted' }, 0, citizenid)
         LXRCore.Log.warn('player', 'character force deleted', { citizenid = citizenid, by = LXRCore.Invoker() })
     end
     return ok
@@ -828,7 +805,7 @@ function PlayerAPI.StartLoops()
                             if okBal and tonumber(balance) and balance > 0 then
                                 if balance < payment then
                                     paid = false
-                                    TriggerClientEvent('LXRCore:Notify', source, Lang:t('error.company_too_poor'), 'error')
+                                    LXRCore.Notify(source, Lang:t('error.company_too_poor'), 'error')
                                 else
                                     pcall(function() exports[cfg.societyResource][cfg.societyExports.remove](nil, job.name, payment, 'Employee paycheck') end)
                                 end
@@ -836,7 +813,7 @@ function PlayerAPI.StartLoops()
                         end
                         if paid then
                             player.Functions.AddMoney(cfg.account or 'bank', payment, 'paycheck')
-                            TriggerClientEvent('LXRCore:Notify', source, Lang:t('info.received_paycheck', { value = payment }), 'success')
+                            LXRCore.Notify(source, Lang:t('info.received_paycheck', { value = payment }), 'success')
                         end
                     end
                 end

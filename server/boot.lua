@@ -77,7 +77,7 @@ CreateThread(function()
     LXRCore.Metrics.Time('core.boot', GetGameTimer() - started)
     banner()
     LXRCore.Log.info('core', ('ready in %dms'):format(GetGameTimer() - started))
-    TriggerEvent('LXRCore:Server:Ready')
+    LXRCore.Emit('lxr:core:ready', { legacy = 'LXRCore:Server:Ready' })
 end)
 
 exports('IsReady', function() return LXRCore.Ready end)

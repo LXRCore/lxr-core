@@ -98,9 +98,8 @@ function LXRCore.Functions.Notify(...)
     native(opts)
 end
 
-RegisterNetEvent('LXRCore:Notify', function(...)
-    LXRCore.Functions.Notify(...)
-end)
+RegisterNetEvent('lxr:client:notify', function(...) LXRCore.Functions.Notify(...) end)
+RegisterNetEvent('LXRCore:Notify', function(...) LXRCore.Functions.Notify(...) end) -- legacy name
 
 -- RSG resources call lib.notify; when ox_lib is absent, route its event to us.
 if GetResourceState('ox_lib') ~= 'started' then

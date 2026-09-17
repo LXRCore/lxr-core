@@ -24,36 +24,66 @@ local function applyWorldSettings()
     Citizen.InvokeNative(0xDE1B1907A83A1550, ped, 0.0)             -- SetHealthRechargeMultiplier
 end
 
-RegisterNetEvent('LXRCore:Client:OnPlayerLoaded', function()
+-- Legacy event names are re-fired locally for old resources that listen to them.
+-- `mirroring` stops the alias handlers from re-entering the native handler.
+local mirroring = false
+local function mirror(name, ...)
+    if not Config.Compat.legacy.enabled or mirroring then return end
+    mirroring = true
+    TriggerEvent(name, ...)
+    mirroring = false
+end
+local function alias(name, fn)
+    RegisterNetEvent(name, function(...) if not mirroring then fn(...) end end)
+end
+
+-- Native: lxr:client:loaded — fired by spawn resources once the character stands in the world.
+local function onLoaded()
+    if LXRCore.IsLoggedIn then return end
     ShutdownLoadingScreenNui()
     LocalPlayer.state:set('isLoggedIn', true, false)
     LXRCore.IsLoggedIn = true
     LXRCore.Cache.ped = PlayerPedId()
     applyWorldSettings()
+    TriggerEvent('lxr:client:loaded:done')
+    mirror('LXRCore:Client:OnPlayerLoaded')
     if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Client:OnPlayerLoaded') end
-end)
+end
+RegisterNetEvent('lxr:client:loaded', onLoaded)
+alias('LXRCore:Client:OnPlayerLoaded', onLoaded)
 
-RegisterNetEvent('LXRCore:Client:OnPlayerUnload', function()
+local function onUnloaded()
+    if not LXRCore.IsLoggedIn then return end
     LocalPlayer.state:set('isLoggedIn', false, false)
     LXRCore.IsLoggedIn = false
     LXRCore.PlayerData = {}
-end)
+    TriggerEvent('lxr:client:unloaded:done')
+    mirror('LXRCore:Client:OnPlayerUnload')
+end
+RegisterNetEvent('lxr:client:unloaded', onUnloaded)
+alias('LXRCore:Client:OnPlayerUnload', onUnloaded)
 
-RegisterNetEvent('LXRCore:Player:SetPlayerData', function(data)
+local function onData(data)
     if type(data) ~= 'table' then return end
     LXRCore.PlayerData = data
-    TriggerEvent('LXRCore:Client:OnPlayerDataUpdate', data)
-end)
+    TriggerEvent('lxr:client:data:done', data)
+    mirror('LXRCore:Player:SetPlayerData', data)
+    if Config.Compat.legacy.enabled then TriggerEvent('LXRCore:Client:OnPlayerDataUpdate', data) end
+end
+RegisterNetEvent('lxr:client:data', onData)
+alias('LXRCore:Player:SetPlayerData', onData)
 
 RegisterNetEvent('LXRCore:Player:UpdatePlayerData', function()
     TriggerServerEvent('LXRCore:UpdatePlayer')
 end)
 
-RegisterNetEvent('LXRCore:Client:PvpHasToggled', function(state)
+local function onPvp(state)
     Config.General.enablePVP = state == true
     Citizen.InvokeNative(0xF808475FA571D823, state == true)
     SetRelationshipBetweenGroups(state and 5 or 1, joaat('PLAYER'), joaat('PLAYER'))
-end)
+end
+RegisterNetEvent('lxr:client:pvp', onPvp)
+RegisterNetEvent('LXRCore:Client:PvpHasToggled', onPvp) -- legacy name
 
 -- Ped handle changes on respawn / model swap; refresh the cache lazily.
 AddEventHandler('playerSpawned', function()
@@ -64,24 +94,36 @@ end)
 -- 📚 SHARED DATA SYNC
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-RegisterNetEvent('LXRCore:Client:OnSharedUpdate', function(tbl, key, value)
+local function sharedChanged()
+    TriggerEvent('lxr:client:shared:done')
+    if Config.Compat.legacy.enabled then TriggerEvent('LXRCore:Client:UpdateObject') end
+    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Client:UpdateObject') end
+end
+
+local function onSharedOne(tbl, key, value)
     if type(tbl) ~= 'string' or LXRShared[tbl] == nil then return end
     LXRShared[tbl][key] = value
-    TriggerEvent('LXRCore:Client:UpdateObject')
-end)
+    sharedChanged()
+end
+RegisterNetEvent('lxr:client:shared', onSharedOne)
+RegisterNetEvent('LXRCore:Client:OnSharedUpdate', onSharedOne) -- legacy name
 
-RegisterNetEvent('LXRCore:Client:OnSharedUpdateMultiple', function(tbl, values)
+local function onSharedMany(tbl, values)
     if type(tbl) ~= 'string' or LXRShared[tbl] == nil or type(values) ~= 'table' then return end
     for k, v in pairs(values) do LXRShared[tbl][k] = v end
-    TriggerEvent('LXRCore:Client:UpdateObject')
-end)
+    sharedChanged()
+end
+RegisterNetEvent('lxr:client:sharedMany', onSharedMany)
+RegisterNetEvent('LXRCore:Client:OnSharedUpdateMultiple', onSharedMany) -- legacy name
 
-RegisterNetEvent('LXRCore:Client:SharedUpdate', function(shared)
+local function onSharedAll(shared)
     if type(shared) ~= 'table' then return end
     for k, v in pairs(shared) do LXRShared[k] = v end
     LXRCore.Shared = LXRShared
-    TriggerEvent('LXRCore:Client:UpdateObject')
-end)
+    sharedChanged()
+end
+RegisterNetEvent('lxr:client:sharedAll', onSharedAll)
+RegisterNetEvent('LXRCore:Client:SharedUpdate', onSharedAll) -- legacy name
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- 🛠️ ADMIN COMMAND HELPERS (server-initiated only)
@@ -92,7 +134,7 @@ local function placeOnGround(entity, coords)
     SetEntityCoordsNoOffset(entity, coords.x, coords.y, found and groundZ or coords.z, true, true, true)
 end
 
-RegisterNetEvent('LXRCore:Command:TeleportToCoords', function(coords)
+local function teleport(coords)
     if type(coords) ~= 'vector3' and type(coords) ~= 'table' then return end
     local ped = PlayerPedId()
     local mount = GetMount(ped)
@@ -101,9 +143,11 @@ RegisterNetEvent('LXRCore:Command:TeleportToCoords', function(coords)
         SetEntityCoords(mount, coords.x, coords.y, coords.z, false, false, false, false)
         Citizen.InvokeNative(0x028F76B6E78246EB, ped, mount, -1) -- TaskMountAnimal
     end
-end)
+end
+RegisterNetEvent('lxr:client:teleport', teleport)
+RegisterNetEvent('LXRCore:Command:TeleportToCoords', teleport) -- legacy name
 
-RegisterNetEvent('LXRCore:Command:GoToMarker', function()
+local function teleportMarker()
     if not IsWaypointActive() then
         return LXRCore.Functions.Notify(Lang:t('error.no_waypoint'), 'error')
     end
@@ -113,18 +157,22 @@ RegisterNetEvent('LXRCore:Command:GoToMarker', function()
     SetEntityCoords(ped, wp.x, wp.y, z + 3.0, false, false, false, false)
     placeOnGround(ped, vector3(wp.x, wp.y, z + 3.0))
     LXRCore.Functions.Notify(Lang:t('success.teleported_waypoint'), 'success')
-end)
+end
+RegisterNetEvent('lxr:client:teleportMarker', teleportMarker)
+RegisterNetEvent('LXRCore:Command:GoToMarker', teleportMarker) -- legacy name
 
-RegisterNetEvent('LXRCore:Command:SpawnVehicle', function(model)
+local function spawnVehicle(model)
     local ped = PlayerPedId()
     local hash = joaat(model)
     if not IsModelInCdimage(hash) then return LXRCore.Functions.Notify(Lang:t('error.vehicle_not_driveable'), 'error') end
     local current = GetVehiclePedIsIn(ped, false)
     if current ~= 0 then LXRCore.Functions.DeleteVehicle(current) end
     LXRCore.Functions.SpawnVehicle(hash, nil, LXRCore.Functions.GetCoords(ped), true, true)
-end)
+end
+RegisterNetEvent('lxr:client:vehicle:spawn', spawnVehicle)
+RegisterNetEvent('LXRCore:Command:SpawnVehicle', spawnVehicle) -- legacy name
 
-RegisterNetEvent('LXRCore:Command:DeleteVehicle', function()
+local function deleteVehicle()
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)
     if veh ~= 0 then return LXRCore.Functions.DeleteVehicle(veh) end
@@ -132,9 +180,11 @@ RegisterNetEvent('LXRCore:Command:DeleteVehicle', function()
     for _, v in ipairs(GetGamePool('CVehicle')) do
         if #(pos - GetEntityCoords(v)) <= 5.0 then LXRCore.Functions.DeleteVehicle(v) end
     end
-end)
+end
+RegisterNetEvent('lxr:client:vehicle:delete', deleteVehicle)
+RegisterNetEvent('LXRCore:Command:DeleteVehicle', deleteVehicle) -- legacy name
 
-RegisterNetEvent('LXRCore:Command:ShowMe3D', function(senderId, msg)
+local function showMe(senderId, msg)
     local sender = GetPlayerFromServerId(senderId)
     if sender == -1 then return end
     CreateThread(function()
@@ -147,7 +197,9 @@ RegisterNetEvent('LXRCore:Command:ShowMe3D', function(senderId, msg)
             Wait(0)
         end
     end)
-end)
+end
+RegisterNetEvent('lxr:client:me', showMe)
+RegisterNetEvent('LXRCore:Command:ShowMe3D', showMe) -- legacy name
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- 🏷️ OVERHEAD NAMES — refreshed on demand, not every 5 s
@@ -162,7 +214,7 @@ if Config.General.hidePlayerNames then
             end
         end
     end
-    AddEventHandler('LXRCore:Client:OnPlayerLoaded', hideNames)
+    AddEventHandler('lxr:client:loaded:done', hideNames)
     AddStateBagChangeHandler('isLoggedIn', nil, function(bagName, _, value)
         if value == true then SetTimeout(1000, hideNames) end
     end)
