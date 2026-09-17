@@ -1,0 +1,53 @@
+-- jobs / gangs / registry
+local Shim = ...
+T.suite('roles')
+
+T.test('BuildJob normalises grade, payment, boss flag', function()
+    local job = LXRCore.Roles.BuildJob('vallaw', 2)
+    T.eq(job.name, 'vallaw')
+    T.eq(job.grade.level, 2)
+    T.eq(job.isboss, true)
+    T.eq(job.payment, 50)
+    T.eq(job.type, 'leo')
+    T.eq(job.onduty, false, 'defaultDuty respected')
+end)
+
+T.test('BuildJob rejects unknown job, falls back to grade 0 for unknown grade', function()
+    local job, err = LXRCore.Roles.BuildJob('astronaut', 0)
+    T.eq(job, nil)
+    T.eq(err, 'invalid_job')
+    local j2 = LXRCore.Roles.BuildJob('medic', 99)
+    T.eq(j2.grade.level, 0)
+end)
+
+T.test('ValidateJob restores defaults when stored job vanished', function()
+    local job = LXRCore.Roles.ValidateJob({ name = 'gone', grade = { level = 3 } })
+    T.eq(job.name, 'unemployed')
+end)
+
+T.test('registry add/update/remove broadcasts to clients', function()
+    Shim.clientEvents = {}
+    local ok = LXRCore.Functions.AddJob('miner', { label = 'Miner', grades = { ['0'] = { name = 'Digger', payment = 5 } } })
+    T.eq(ok, true)
+    T.eq(LXRShared.Jobs.miner.name, 'miner')
+    T.eq(#Shim.clientEventsNamed('LXRCore:Client:OnSharedUpdate'), 1)
+    T.eq(#Shim.clientEventsNamed('RSGCore:Client:OnSharedUpdate'), 1, 'RSG mirror when compat on')
+    local dup = select(2, LXRCore.Functions.AddJob('miner', {}))
+    T.eq(dup, 'job_exists')
+    T.eq(LXRCore.Functions.RemoveJob('miner'), true)
+    T.eq(LXRShared.Jobs.miner, nil)
+end)
+
+T.test('AddJobs is all-or-nothing', function()
+    local ok, msg = LXRCore.Functions.AddJobs({ a = { grades = {} }, unemployed = { grades = {} } })
+    T.eq(ok, false)
+    T.eq(msg, 'job_exists')
+    T.eq(LXRShared.Jobs.a, nil, 'nothing partially added')
+end)
+
+T.test('BuildGang', function()
+    local g = LXRCore.Roles.BuildGang('odriscoll', 3)
+    T.eq(g.isboss, true)
+    T.eq(g.grade.name, 'Boss')
+    T.eq(select(2, LXRCore.Roles.BuildGang('nope')), 'invalid_gang')
+end)

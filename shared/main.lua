@@ -1,158 +1,207 @@
 --[[
     ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
     ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝
     ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Shared Main Functions
-    
-    Core shared utility functions used by both client and server including
-    random string/integer generation, string manipulation, and common exports.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Server:      The Land of Wolves 🐺
-    Developer:   iBoss21 / The Lux Empire
-    Website:     https://www.wolves.land
-    Discord:     https://discord.gg/CrKcWdfd3A
-    Store:       https://theluxempire.tebex.io
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Version: 2.0.0
-    
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
+
+    🐺 LXR Core - Shared Bootstrap
+
+    First file loaded on both sides. Creates the LXRCore namespace, the shared
+    data container (items, jobs, gangs, weapons, horses, vehicles) and the pure
+    utility functions that every other module relies on. No natives are called
+    here, which keeps this file unit-testable outside the game.
+
+    Developer:   iBoss21 / LXRCore
+    Website:     https://www.lxrcore.com
+    © 2026 iBoss21 / LXRCore | lxrcore.com | All Rights Reserved
 ]]
 
+LXRCore = LXRCore or {}
+LXRCore.Version = '3.0.0'
+LXRCore.ApiLevel = 3
+LXRCore.ResourceName = (GetCurrentResourceName and GetCurrentResourceName()) or 'lxr-core'
+LXRCore.IsServer = (IsDuplicityVersion and IsDuplicityVersion()) or false
+
+-- Shared data tables. Populated by shared/*.lua, mutated at runtime only through
+-- the server-side registry functions (AddJob/AddItem/…) so clients stay in sync.
+LXRShared = LXRShared or {}
+LXRShared.Items = LXRShared.Items or {}
+LXRShared.Jobs = LXRShared.Jobs or {}
+LXRShared.Gangs = LXRShared.Gangs or {}
+LXRShared.Weapons = LXRShared.Weapons or {}
+LXRShared.Horses = LXRShared.Horses or {}
+LXRShared.Vehicles = LXRShared.Vehicles or {}
+LXRShared.StarterItems = LXRShared.StarterItems or {}
+LXRShared.ForceJobDefaultDutyAtLogin = true
+LXRCore.Shared = LXRShared
+
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 🐺 LXR CORE - SHARED MAIN FUNCTIONS
+-- 🔧 STRING / NUMBER UTILITIES
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-LXRShared = {}
+local ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+local DIGITS = '0123456789'
 
--- Performance: Pre-build character sets at module load time
-local StringCharset = {}
-local NumberCharset = {}
-
-for i = 48,  57 do NumberCharset[#NumberCharset+1] = string.char(i) end
-for i = 65,  90 do StringCharset[#StringCharset+1] = string.char(i) end
-for i = 97, 122 do StringCharset[#StringCharset+1] = string.char(i) end
-
--- Cache charset lengths for performance (calculated after population)
-local stringCharsetLen = #StringCharset
-local numberCharsetLen = #NumberCharset
-
--- Performance: Optimized random string generation using table concat
-LXRShared.RandomStr = function(length)
+---Random alphabetic string of `length` characters.
+---@param length integer
+---@return string
+function LXRShared.RandomStr(length)
+    length = tonumber(length) or 0
     if length <= 0 then return '' end
-    local result = {}
+    local out = {}
     for i = 1, length do
-        result[i] = StringCharset[math.random(1, stringCharsetLen)]
+        local n = math.random(1, #ALPHA)
+        out[i] = ALPHA:sub(n, n)
     end
-    return table.concat(result)
+    return table.concat(out)
 end
-exports('RandomStr', LXRShared.RandomStr)
 
--- Performance: Optimized random int generation using table concat
-LXRShared.RandomInt = function(length)
+---Random numeric string of `length` digits (string, so leading zeros survive).
+---@param length integer
+---@return string
+function LXRShared.RandomInt(length)
+    length = tonumber(length) or 0
     if length <= 0 then return '' end
-    local result = {}
+    local out = {}
     for i = 1, length do
-        result[i] = NumberCharset[math.random(1, numberCharsetLen)]
+        local n = math.random(1, #DIGITS)
+        out[i] = DIGITS:sub(n, n)
     end
-    return table.concat(result)
+    return table.concat(out)
 end
-exports('RandomInt', LXRShared.RandomInt)
 
-LXRShared.SplitStr = function(str, delimiter)
-    local result = { }
+---Split `str` on a plain (non-pattern) delimiter.
+---@param str string
+---@param delimiter string
+---@return string[]
+function LXRShared.SplitStr(str, delimiter)
+    local result = {}
+    if type(str) ~= 'string' then return result end
+    delimiter = delimiter or ','
     local from = 1
-    local delim_from, delim_to = string.find(str, delimiter, from)
-    while delim_from do
-		result[#result+1] = string.sub(str, from, delim_from - 1)
-        from = delim_to + 1
-        delim_from, delim_to = string.find(str, delimiter, from)
+    local dFrom, dTo = string.find(str, delimiter, from, true)
+    while dFrom do
+        result[#result + 1] = string.sub(str, from, dFrom - 1)
+        from = dTo + 1
+        dFrom, dTo = string.find(str, delimiter, from, true)
     end
-	result[#result+1] = string.sub(str, from)
+    result[#result + 1] = string.sub(str, from)
     return result
 end
-exports('SplitStr', LXRShared.SplitStr)
 
-LXRShared.Trim = function(value)
-	if not value then return nil end
-    return (string.gsub(value, '^%s*(.-)%s*$', '%1'))
+---Trim leading/trailing whitespace. Returns nil for nil input.
+---@param value string|nil
+---@return string|nil
+function LXRShared.Trim(value)
+    if value == nil then return nil end
+    return (string.gsub(tostring(value), '^%s*(.-)%s*$', '%1'))
 end
-exports('Trim', LXRShared.Trim)
 
-LXRShared.Round = function(value, numDecimalPlaces)
-    if not numDecimalPlaces then return math.floor(value + 0.5) end
-    local power = 10 ^ numDecimalPlaces
-    return math.floor((value * power) + 0.5) / (power)
-end
-exports('Round', LXRShared.Round)
-
--- Shared
-
-exports('GetGangs', function()
-    return LXRShared.Gangs
-end)
-
-exports('GetHorses', function()
-    return LXRShared.Horses
-end)
-
-exports('GetItem', function(item)
-    if LXRShared.Items[item] then
-        return LXRShared.Items[item]
+---Round to `places` decimals (0 = integer). Half rounds away from zero.
+---@param value number
+---@param places integer|nil
+---@return number
+function LXRShared.Round(value, places)
+    value = tonumber(value) or 0
+    if not places or places <= 0 then
+        if value >= 0 then return math.floor(value + 0.5) end
+        return math.ceil(value - 0.5)
     end
-end)
+    local mult = 10 ^ places
+    if value >= 0 then return math.floor(value * mult + 0.5) / mult end
+    return math.ceil(value * mult - 0.5) / mult
+end
 
-exports('GetItems', function()
-    return LXRShared.Items
-end)
+---Clamp `value` into [min, max].
+---@param value number
+---@param min number
+---@param max number
+---@return number
+function LXRShared.Clamp(value, min, max)
+    value = tonumber(value) or min
+    if value < min then return min end
+    if value > max then return max end
+    return value
+end
 
-exports('GetJobs', function()
-    return LXRShared.Jobs
-end)
+---True when `n` is a real, finite number (rejects NaN, ±inf, strings).
+---@param n any
+---@return boolean
+function LXRShared.IsFiniteNumber(n)
+    if type(n) ~= 'number' then return false end
+    if n ~= n then return false end                      -- NaN
+    if n == math.huge or n == -math.huge then return false end
+    return true
+end
 
-exports('GetVehicles', function()
-    return LXRShared.Vehicles
-end)
+---Number of entries in any table (hash or array).
+---@param t table
+---@return integer
+function LXRShared.TableSize(t)
+    if type(t) ~= 'table' then return 0 end
+    local n = 0
+    for _ in pairs(t) do n = n + 1 end
+    return n
+end
 
-exports('GetWeapons', function()
-    return LXRShared.Weapons
-end)
+---Deep copy (tables only; functions/userdata copied by reference).
+---@param src any
+---@return any
+function LXRShared.DeepCopy(src)
+    if type(src) ~= 'table' then return src end
+    local out = {}
+    for k, v in pairs(src) do
+        out[k] = LXRShared.DeepCopy(v)
+    end
+    return out
+end
 
--- LXRShared.ChangeVehicleExtra = function (vehicle, extra, enable)
--- 	if DoesExtraExist(vehicle, extra) then
--- 		if enable then
--- 			SetVehicleExtra(vehicle, extra, false)
--- 			if not IsVehicleExtraTurnedOn(vehicle, extra) then
--- 				LXRShared.ChangeVehicleExtra(vehicle, extra, enable)
--- 			end
--- 		else
--- 			SetVehicleExtra(vehicle, extra, true)
--- 			if IsVehicleExtraTurnedOn(vehicle, extra) then
--- 				LXRShared.ChangeVehicleExtra(vehicle, extra, enable)
--- 			end
--- 		end
--- 	end
--- end
--- exports('', )
+---Recursively fill missing keys of `target` from `defaults`. Function values in
+---`defaults` are invoked lazily so per-player unique ids are only generated when
+---actually needed. Existing values are never overwritten.
+---@param target table
+---@param defaults table
+---@return table
+function LXRShared.ApplyDefaults(target, defaults)
+    target = target or {}
+    for key, value in pairs(defaults) do
+        if type(value) == 'function' then
+            if target[key] == nil then target[key] = value() end
+        elseif type(value) == 'table' then
+            if type(target[key]) ~= 'table' then target[key] = {} end
+            LXRShared.ApplyDefaults(target[key], value)
+        elseif target[key] == nil then
+            target[key] = value
+        end
+    end
+    return target
+end
 
--- LXRShared.SetDefaultVehicleExtras = function (vehicle, config)
---     -- Clear Extras
---     for i=1,20 do
---         if DoesExtraExist(vehicle, i) then
---             SetVehicleExtra(vehicle, i, 1)
---         end
---     end
+---Format 1234567.5 → "1,234,567.5".
+---@param amount number
+---@return string
+function LXRShared.Commas(amount)
+    local s = tostring(amount)
+    local int, frac = s:match('^(-?%d+)(%.?%d*)$')
+    if not int then return s end
+    local formatted = int:reverse():gsub('(%d%d%d)', '%1,'):reverse():gsub('^(-?),', '%1')
+    return formatted .. frac
+end
 
---     for id, enabled in pairs(config) do
---         LXRShared.ChangeVehicleExtra(vehicle, tonumber(id), true)
---     end
--- end
+---Safe JSON decode: returns fallback (default {}) on nil/invalid input.
+---@param str string|nil
+---@param fallback any
+---@return any
+function LXRShared.JsonDecode(str, fallback)
+    if fallback == nil then fallback = {} end
+    if type(str) == 'table' then return str end
+    if type(str) ~= 'string' or str == '' then return fallback end
+    local ok, result = pcall(json.decode, str)
+    if ok and result ~= nil then return result end
+    return fallback
+end
+
+-- Backwards-compatible aliases (legacy LXR resources call these through exports).
+LXRCore.Utils = LXRShared

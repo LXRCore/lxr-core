@@ -1,39 +1,27 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Vehicles Data
-    
-    All vehicle and mount definitions for the LXR Core framework including
-    wagons, carts, and other period-appropriate transportation.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION  |  Developer: iBoss21 / The Lux Empire
-    Website: https://www.wolves.land  |  Store: https://theluxempire.tebex.io
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-    ═══════════════════════════════════════════════════════════════════════════════
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Shared Data: Vehicles (wagons, carts, boats)
+     ═══════════════════════════════════════════════════════════════════════════
+     model = { name, brand, model, price, category, hash, type }
+     ═══════════════════════════════════════════════════════════════════════════
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
 
 LXRShared = LXRShared or {}
+
+local function vehicle(model, label, price, category, kind)
+    return { name = label, brand = 'Wagon', model = model, price = price, category = category, type = kind or 'wagon', hash = joaat(model) }
+end
+
 LXRShared.Vehicles = {
-	{ model = 'CART01', name = 'Wooden Cart 1', brand = '?', price = 10, category = 'carts', hash = -824257932, shop = 'cart' },
-	{ model = 'CART02', name = 'Wooden Cart 2', brand = '?', price = 10, category = 'carts', hash = -2053881888, shop = 'cart' },
-	{ model = 'CART03', name = 'Wooden Cart 3', brand = '?', price = 10, category = 'carts', hash = -1347283941, shop = 'cart' },
-	{ model = 'CART04', name = 'Wooden Cart 4', brand = '?', price = 10, category = 'carts', hash = -570691410, shop = 'cart' },
-	{ model = 'CART05', name = 'Wooden Cart 5', brand = '?', price = 10, category = 'carts', hash = 374792535, shop = 'cart' },
-	{ model = 'CART06', name = 'Wooden Cart 6', brand = '?', price = 10, category = 'carts', hash = 219205323, shop = 'cart' },
-	{ model = 'CART07', name = 'Wooden Cart 7', brand = '?', price = 10, category = 'carts', hash = 47200842, shop = 'cart' },
-	{ model = 'CART08', name = 'Wooden Cart 8', brand = '?', price = 10, category = 'carts', hash = -377157708, shop = 'cart' },
-	{ model = 'BUGGY01', name = 'Luxurious Buggy 1', brand = '?', price = 10, category = 'Buggies', hash = -1278978750, shop = 'cart' },
-	{ model = 'BUGGY02', name = 'Luxurious Buggy 2', brand = '?', price = 10, category = 'Buggies', hash = -1100387700, shop = 'cart' },
-	{ model = 'BUGGY03', name = 'Luxurious Buggy 3', brand = '?', price = 10, category = 'Buggies', hash = -1861840953, shop = 'cart' },
-	{ model = 'COACH2', name = 'Special Transport 1', brand = '?', price = 10, category = 'Specials', hash = 1761016051, shop = 'cart' },
-	{ model = 'COACH3', name = 'Special Transport 2', brand = '?', price = 10, category = 'Specials', hash = -136833353, shop = 'cart' },
-	{ model = 'COACH4', name = 'Special Transport 3', brand = '?', price = 10, category = 'Specials', hash = 93893176, shop = 'cart' },
-	{ model = 'COACH5', name = 'Special Transport 4', brand = '?', price = 10, category = 'Specials', hash = -1826304690, shop = 'cart' },
-	{ model = 'COACH6', name = 'Special Transport 5', brand = '?', price = 10, category = 'Specials', hash = -1544786211, shop = 'cart' },	
+    cart01        = vehicle('cart01', 'Small Cart', 40, 'cart'),
+    cart03        = vehicle('cart03', 'Cart', 60, 'cart'),
+    wagon02x      = vehicle('wagon02x', 'Farm Wagon', 150, 'wagon'),
+    wagon03x      = vehicle('wagon03x', 'Supply Wagon', 175, 'wagon'),
+    wagon04x      = vehicle('wagon04x', 'Hay Wagon', 175, 'wagon'),
+    wagontraveller01x = vehicle('wagontraveller01x', 'Traveller Wagon', 300, 'wagon'),
+    coach3        = vehicle('coach3', 'Stagecoach', 400, 'coach'),
+    stagecoach001x = vehicle('stagecoach001x', 'Fine Stagecoach', 500, 'coach'),
+    buggy01       = vehicle('buggy01', 'Buggy', 120, 'buggy'),
+    canoe         = vehicle('canoe', 'Canoe', 40, 'boat', 'boat'),
+    rowboat       = vehicle('rowboat', 'Rowboat', 60, 'boat', 'boat'),
 }

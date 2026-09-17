@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, 'feat/**', 'fix/**']
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Lua 5.4 syntax + offline tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4
+
+      - name: Syntax check every Lua file
+        run: |
+          set -e
+          find . -name '*.lua' -not -path './.git/*' -print0 | xargs -0 -n1 luac5.4 -p
+
+      - name: Run offline test suite
+        run: lua5.4 tests/run.lua
+
+      - name: Validate notify.js
+        run: node --check client/notify.js
+
+  luacheck:
+    name: Luacheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install luacheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.4 liblua5.4-dev luarocks
+          sudo luarocks install luacheck
+      - name: Lint
+        run: luacheck . --config .luacheckrc --no-color

@@ -1,436 +1,126 @@
-# 🐺 LXR Core Framework
+<!--
+    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
+    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗
+    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝
+    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
+    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 
+    🐺 lxr-core — LXRCore RedM Framework Core
+    Developer: iBoss21 / LXRCore · https://www.lxrcore.com
+    © 2026 iBoss21 / LXRCore | lxrcore.com | All Rights Reserved
+-->
+
+# 🐺 lxr-core — LXRCore Framework Core (v3)
+
+![Version](https://img.shields.io/badge/version-3.0.0-c4a574)
+![API](https://img.shields.io/badge/API_level-3-1a1512)
+![Platform](https://img.shields.io/badge/platform-RedM-100e0c)
+![Lua](https://img.shields.io/badge/Lua-5.4-blue)
+![Tests](https://img.shields.io/badge/offline_tests-69_passing-brightgreen)
+![Compat](https://img.shields.io/badge/adapters-RSG_%7C_VORP_%7C_QBR-a83a3a)
+
+`lxr-core` is the framework layer for LXRCore servers: player and character
+lifecycle, accounts, jobs, gangs, permissions, callbacks, usable items, an
+inventory abstraction, and compatibility adapters that let resources written
+for **RSG-Core**, **VORP** and **QBR / old LXR** run on the same server.
+
+v3 is a complete, independent rewrite. The v2 code base (a QBR-Core fork with
+bolted-on modules) is gone; see [`CHANGELOG.md`](CHANGELOG.md) and
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+---
+
+## What you get
+
+| Area | What is actually in the code |
+|---|---|
+| **Player lifecycle** | race-safe `Login` / `Logout` / character switch, ownership checks on citizen ids, synchronous save on drop, dirty-tracked batched periodic saves, offline player objects |
+| **Economy** | validated accounts (finite numbers, integer accounts, floors, caps), atomic `Transfer`, batched **ledger** table, `OnMoneyChange` events + RSG mirrors |
+| **Roles** | jobs / gangs validated against the shared registry, runtime `AddJob/AddGang/AddItem` broadcast to clients, no hard-coded job names |
+| **Permissions** | ACE groups `lxrcore.<group>`; RSG `rsgcore.<group>` principals aliased; command aces per command |
+| **Callbacks** | request ids, timeouts, per-player rate limit, `Await` in both directions, legacy protocols still answered |
+| **Inventory** | one API over `core` (built-in), `lxr-inventory`, `rsg-inventory`, `vorp_inventory`; usable items re-verify ownership |
+| **Database** | migration runner with checksums, `RegisterMigration` for resources, slow-query log, schema safety net on upgrade |
+| **Security** | no client event can add money/items/xp; client metadata whitelist; exploit logging; spoofed callback responses rejected |
+| **Client** | 0.00 ms idle: state-bag login flag, event-driven data, adaptive prompt thread, native RedM feed notifications |
+| **Observability** | structured logs forwarded as `lxr-log:server:CreateLog`, metrics via `/lxr:metrics` |
+| **Compatibility** | RSG / VORP / QBR adapters + shim resources in [`bridges/`](bridges/) |
+| **Tests** | `lua tests/run.lua` — 69 tests through an FX runtime shim with an in-memory database |
+
+## Quick start
+
+```cfg
+set onesync on
+set mysql_connection_string "mysql://user:pass@127.0.0.1/lxrcore?charset=utf8mb4"
+ensure oxmysql
+ensure lxr-core
+add_principal identifier.license:XXXX lxrcore.god
 ```
-██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-```
+The database is migrated automatically on first start. Full guide:
+[`docs/installation.md`](docs/installation.md).
 
-<div align="center">
-
-**🐺 The Land of Wolves - RedM Framework 🐺**
-
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg?style=for-the-badge)](https://github.com/LXRCore/lxr-core)
-[![License](https://img.shields.io/badge/license-GPLv3-green.svg?style=for-the-badge)](LICENSE)
-[![RedM](https://img.shields.io/badge/RedM-Compatible-red.svg?style=for-the-badge)](https://redm.net)
-[![Framework](https://img.shields.io/badge/Multi--Framework-Compatible-purple.svg?style=for-the-badge)](docs/frameworks.md)
-
-[![Performance](https://img.shields.io/badge/Performance-Optimized-brightgreen?style=for-the-badge)](docs/PERFORMANCE.md)
-[![Security](https://img.shields.io/badge/Security-Hardened-orange?style=for-the-badge)](docs/SECURITY.md)
-[![Support](https://img.shields.io/badge/Support-Discord-7289DA?style=for-the-badge&logo=discord)](https://discord.gg/CrKcWdfd3A)
-
-[🌐 Website](https://www.wolves.land) • [📚 Documentation](docs/overview.md) • [⚙️ Installation](docs/installation.md) • [🔄 Multi-Framework](docs/frameworks.md)
-
-**ისტორია ცოცხლდება აქ! (History Lives Here!)**
-
-</div>
-
----
-
-## Credits & Lineage
-
-LXRCore is structurally inspired by [QBCore](https://github.com/qbcore-framework) (FiveM).
-We adapt its API philosophy to RedM while building custom systems around it.
-
-We respect and acknowledge the original work by the QBCore contributors.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🎯 WHAT IS LXR CORE?
-## ═══════════════════════════════════════════════════════════════════════════════
-
-**LXR Core** is a RedM roleplay framework adapted from QBCore and re-architected for RedM. It is actively developed by a single operator and production-tested on wolves.land. LXR Core focuses on **performance**, **security**, and **control**.
-
-### 🏆 Production-Tested
-
-Actively running on **The Land of Wolves** 🐺 (wolves.land) — a Georgian RP server with whitelist access. The framework is tested and iterated on in this real-world production environment.
-
-### ⚡ Performance That Matters
-
-- **70% faster** than standard frameworks
-- **<1ms** average server tick time
-- **60-80%** reduction in database queries
-- **Optimization** with intelligent caching
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## ✨ KEY FEATURES
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### 🚀 Performance
-
-| Metric | Standard Framework | LXR Core | Improvement |
-|--------|-------------------|----------|-------------|
-| **Server Tick Time** | 3.2ms | 0.9ms | **71% faster** |
-| **Database Queries** | 1,200/min | 480/min | **60% reduction** |
-| **Client FPS Impact** | -15 FPS | -4 FPS | **73% less** |
-| **Memory Usage** | 210 MB | 145 MB | **31% less** |
-
-### 🔒 Security
-
-- **Rate Limiting** - Event spam protection & DDoS mitigation
-- **Anti-Cheat** - Client and server-side detection systems
-- **Anti-Duplication** - Prevents item/money exploits
-- **Audit Logging** - Complete transaction tracking
-- **Input Validation** - Server-side validation of all client data
-- **SQL Injection Protection** - Prepared statements only
-
-### 🔄 Multi-Framework Compatibility
-
-**Unified adapter layer** provides compatibility with:
-- **LXR-Core** (Primary - Native) ✓
-- **RSG-Core** (Primary - Compatible) ✓
-- **VORP Core** (Supported - Compatible) ✓
-- **RedEM:RP** (Optional) ✓
-- **QBR-Core** (Optional) ✓
-- **QR-Core** (Optional) ✓
-- **Standalone** (Fallback) ✓
-
-### 🎮 Complete Roleplay Systems
-
-- **Player Management** - Character creation, data persistence
-- **Economy System** - 15+ currency types (cash, bank, gold, coins, tokens, etc.)
-- **Job System** - Dynamic jobs with grades and paychecks
-- **Gang System** - Territory control, reputation, gang wars
-- **Vehicle & Horse Systems** - Complete transportation management
-- **Inventory System** - Weight-based with backpack support
-- **Weapon System** - Durability, jamming, damage multipliers
-- **Crafting System** - Multi-station crafting with recipes
-- **Progression System** - Skills, XP, reputation, leveling
-
-### 📊 Professional Monitoring
-
-- **Real-Time Metrics** - Track every function and event
-- **Performance Reports** - Automatic insights every 5 minutes
-- **Admin Commands** - Live system monitoring
-- **Resource Analytics** - CPU, memory, database tracking
-- **Discord Webhooks** - Real-time alerts and logging
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📦 REQUIRED EXTERNAL RESOURCES
-## ═══════════════════════════════════════════════════════════════════════════════
-
-LXRCore provides the core framework. Some gameplay systems require additional resources:
-
-| Resource | Status | Notes |
-|----------|--------|-------|
-| lxr-inventory | Available | Inventory system |
-| lxr-multicharacter | Available | Character selection |
-| lxr-banking | Planned | Banking system |
-| lxr-housing | Planned | Housing system |
-
-> Check the [LXRCore GitHub organization](https://github.com/LXRCore) for available resources.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📦 QUICK START
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Prerequisites
-
-- **RedM Server** (latest build)
-- **MySQL/MariaDB** (8.0+ / 10.5+)
-- **oxmysql** resource
-
-### Installation (5 Steps)
-
-1. **Clone Repository**
-   ```bash
-   cd resources
-   git clone https://github.com/LXRCore/lxr-core.git
-   ```
-
-2. **Import Database**
-   ```bash
-   mysql -u username -p database_name < lxr-core/database/lxrcore.sql
-   mysql -u username -p database_name < lxr-core/database/lxrcore_tables.sql
-   ```
-
-3. **Configure Database** (server.cfg)
-   ```cfg
-   set mysql_connection_string "mysql://username:password@localhost/database_name?charset=utf8mb4"
-   ```
-
-4. **Add to server.cfg**
-   ```cfg
-   ensure oxmysql
-   ensure lxr-core
-   ```
-
-5. **Configure Settings** (lxr-core/config.lua)
-   - Set server name, Discord, spawn locations
-   - Configure economy and money types
-   - Adjust gameplay settings
-
-### Full Documentation
-
-See [📖 Installation Guide](docs/installation.md) for complete step-by-step instructions.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📚 DOCUMENTATION
-## ═══════════════════════════════════════════════════════════════════════════════
-
-| Document | Description |
-|----------|-------------|
-| [🚀 Getting Started](docs/getting-started.md) | Quick start guide (under 15 minutes) |
-| [📋 Overview](docs/overview.md) | Framework overview and features |
-| [⚙️ Installation](docs/installation.md) | Complete installation instructions |
-| [🔧 Configuration](docs/DOCUMENTATION.md) | Configuration guide |
-| [🏗️ Architecture](docs/framework-architecture.md) | Technical architecture overview |
-| [🔄 Frameworks](docs/frameworks.md) | Multi-framework support & compatibility |
-| [📊 Compatibility Matrix](docs/compatibility-matrix.md) | Framework compatibility test results |
-| [📡 API Reference](docs/API.md) | Complete API reference |
-| [🔒 Security](docs/SECURITY.md) | Security features and best practices |
-| [⚡ Performance](docs/PERFORMANCE.md) | Performance optimization guide |
-| [🔀 RSG → LXR Migration](docs/migration/rsg-to-lxr.md) | Migration guide from RSG-Core |
-| [🔀 VORP → LXR Migration](docs/migration/vorp-to-lxr.md) | Migration guide from VORP |
-| [🔧 Troubleshooting](docs/troubleshooting.md) | Common issues and solutions |
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🏗️ ARCHITECTURE
-## ═══════════════════════════════════════════════════════════════════════════════
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CLIENT LAYER (8 Files)                    │
-│  Performance • Anti-Cheat • Functions • Events • UI          │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│              FRAMEWORK ADAPTER LAYER (Unified API)            │
-│   Auto-Detection • Multi-Framework Support • Consistent API   │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   SERVER LAYER (16 Files)                    │
-│  Security • Database • Player Mgmt • Events • Commands       │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    DATABASE LAYER (MySQL)                    │
-│      Players • Items • Vehicles • Jobs • Logs • Tebex        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Directory Structure
-
-```
-lxr-core/
-├── client/          # Client-side scripts (8 files)
-├── server/          # Server-side scripts (16 files)
-├── shared/          # Shared data & framework adapter (9 files)
-├── database/        # SQL schemas
-├── docs/            # Complete documentation
-├── html/            # NUI interface
-├── locale/          # 14+ language files
-├── config.lua       # Main configuration
-└── fxmanifest.lua   # Resource manifest
-```
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🔄 MULTI-FRAMEWORK ADAPTER
-## ═══════════════════════════════════════════════════════════════════════════════
-
-LXR Core includes a **unified framework adapter** that provides a consistent API across multiple frameworks:
+## Using the core
 
 ```lua
--- Works with LXR-Core, RSG-Core, VORP, and more!
-LXRFramework.Notify(source, 'success', 'Action completed!', 5000)
-LXRFramework.AddMoney(source, 'cash', 100, 'Reward')
-LXRFramework.AddItem(source, 'bread', 5, {}, 'Quest reward')
+local LXRCore = exports['lxr-core']:GetCoreObject()
 
--- Auto-detection at startup
-LXRFramework.ActiveFramework      -- Returns: 'lxr-core', 'rsg-core', 'vorp_core', etc.
+-- server
+LXRCore.Functions.CreateUseableItem('bread', function(source, item)
+    local Player = LXRCore.Functions.GetPlayer(source)
+    if Player.Functions.RemoveItem('bread', 1, item.slot, 'consumed') then
+        Player.Functions.SetMetaData('hunger', Player.PlayerData.metadata.hunger + 25)
+        TriggerClientEvent('LXRCore:Notify', source, 'You ate some bread', 'success')
+    end
+end)
+
+LXRCore.Callback.Register('shop:buy', function(source, name, amount)
+    local Player = LXRCore.Functions.GetPlayer(source)
+    local price = 2 * amount
+    if not Player.Functions.RemoveMoney('cash', price, 'shop:' .. name) then return false, 'not_enough_money' end
+    return Player.Functions.AddItem(name, amount, nil, nil, 'shop')
+end)
+
+-- client
+local ok, err = LXRCore.Callback.Await('shop:buy', 'bread', 2)
+LXRCore.Functions.Notify(ok and 'Bought bread' or ('Failed: ' .. tostring(err)), ok and 'success' or 'error')
 ```
 
-See [🔄 Framework Documentation](docs/frameworks.md) for complete adapter API reference.
+Legacy style still works: `exports['lxr-core']:GetPlayer(src)`,
+`exports['lxr-core']:CreateCallback(...)`, `exports['lxr-core']:Notify(...)`.
 
----
+## Documentation
 
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🛡️ SECURITY FEATURES
-## ═══════════════════════════════════════════════════════════════════════════════
+| Document | Content |
+|---|---|
+| [`docs/api.md`](docs/api.md) | core object, player object, accounts, callbacks, inventory, permissions, database, client helpers |
+| [`docs/events.md`](docs/events.md) | every event, argument list, validation, state bags |
+| [`docs/exports.md`](docs/exports.md) | all 111 server / 62 client exports (generated from source) |
+| [`docs/configuration.md`](docs/configuration.md) | every `config.lua` key |
+| [`docs/compatibility.md`](docs/compatibility.md) | RSG / VORP / QBR matrix, what is and is not emulated, bridge resources |
+| [`docs/database.md`](docs/database.md) | tables, migration runner, save pipeline, JSON shapes |
+| [`docs/migration.md`](docs/migration.md) | v2 → v3, RSG → LXR, VORP → LXR, QBR → LXR |
+| [`docs/development.md`](docs/development.md) | layout, tests, conventions, releasing |
 
-### Built-In Protection Layers
+## Compatibility matrix
 
-1. **Rate Limiting** - Prevents event spam and DDoS attacks
-2. **Server-Side Validation** - Never trust client data
-3. **Anti-Duplication** - Prevents item/money duplication exploits
-4. **Anti-Cheat Detection** - Detects teleporting, speed hacks, god mode
-5. **Audit Logging** - Tracks all transactions and admin actions
-6. **SQL Injection Protection** - Parameterized queries only
+| System | Native | Adapter | Offline suite | In-game |
+|---|---:|---:|---:|---:|
+| LXRCore v3 | YES | N/A | YES | NOT TESTED |
+| RSG-Core resources | NO | YES | YES | NOT TESTED |
+| VORP resources | NO | PARTIAL | YES | NOT TESTED |
+| QBR / LXR v1-v2 resources | NO | YES | YES | NOT TESTED |
 
-### Configuration
+"In-game" flips to tested only after a real server run; nothing here is
+marked working without having been executed.
 
-All security features configurable in `config.lua`:
+## Support
 
-```lua
-LXRConfig.Security = {
-    rateLimits = { enabled = true, default = 10 },
-    antiCheat = { enabled = true },
-    validation = { validateCoordinates = true },
-    logging = { enabled = true, logToDiscord = false }
-}
-```
+| | |
+|---|---|
+| 🌐 Website | [lxrcore.com](https://www.lxrcore.com) |
+| 🛠 Dev Discord | [discord.gg/ZHMKVYyhBa](https://discord.gg/ZHMKVYyhBa) |
+| 🐺 Community | [discord.gg/wolvesland](https://discord.gg/wolvesland) |
+| 🐙 GitHub | [github.com/LXRCore](https://github.com/LXRCore) |
 
-See [🔒 Security Documentation](docs/security.md) for complete guide.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## ⚡ PERFORMANCE OPTIMIZATIONS
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Core Optimizations
-
-- **Pre-Computation** - Character sets and tables built at startup
-- **Intelligent Caching** - Player data, items, vehicles cached with TTL
-- **Query Optimization** - Prepared statements, batch operations, indexing
-- **FPS-Aware Loops** - Client loops adjust to player FPS
-- **Lazy Loading** - Load data only when needed
-- **Memory Management** - Proper garbage collection and cleanup
-
-### Benchmark Results
-
-- **71% faster** server tick time (3.2ms → 0.9ms)
-- **60% reduction** in database queries
-- **73% less** client FPS impact
-- **31% less** memory usage
-
-See [⚡ Performance Documentation](docs/performance.md) for optimization guide.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🌍 COMMUNITY & SUPPORT
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### 🐺 The Land of Wolves
-
-- **Website:** https://www.wolves.land
-- **Discord:** https://discord.gg/CrKcWdfd3A
-- **Server Listing:** https://servers.redm.net/servers/detail/8gj7eb
-- **Store:** https://theluxempire.tebex.io
-
-### Developer
-
-**iBoss21 / The Lux Empire**
-- **GitHub:** [@iBoss21](https://github.com/iboss21)
-- **Discord:** The Land of Wolves Community
-
-### Contributing
-
-We welcome contributions! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### 🏗️ Production Status
-
-wolves.land currently runs a hybrid RSG + LXR architecture.
-Full LXRCore migration is in progress. The framework is under active solo development.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🌐 SERVERS RUNNING LXRCORE
-## ═══════════════════════════════════════════════════════════════════════════════
-
-| Server | Region | Status |
-|--------|--------|--------|
-| [wolves.land](https://www.wolves.land) (Official) | Georgia 🇬🇪 | ✅ Live |
-
-> If you run LXRCore on your server and want to be listed here, open an issue or pull request.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📄 LICENSE
-## ═══════════════════════════════════════════════════════════════════════════════
-
-© 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-
-LXR Core is built on top of QBCore (GPLv3) and is licensed under GPLv3.  
-See [LICENSE](LICENSE) file for complete details.
-
-### Credits
-
-- **Lead Developer:** iBoss21 / The Lux Empire
-- **Original Framework:** QBCore Team (FiveM/QBCore)
-- **Performance Optimization:** iBoss21
-- **Security Hardening:** iBoss21
-- **Georgian Localization:** wolves.land Community
-- **Testing & Feedback:** The Land of Wolves Community
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🌟 WHY LXR CORE?
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### For Server Owners
-
-✅ **Easy Installation** - 5 simple steps to get started  
-✅ **Low Maintenance** - Stable, tested, production-ready  
-✅ **Performance** - Handles high player counts with ease  
-✅ **Security** - Protected against exploits and cheats  
-✅ **Support** - Active Discord community  
-
-### For Developers
-
-✅ **Clean Code** - Well-documented and organized  
-✅ **Unified API** - Works with multiple frameworks  
-✅ **Extensible** - Easy to add custom features  
-✅ **Best Practices** - Consistent code patterns  
-✅ **Active Development** - Regular updates and improvements  
-
-### For Players
-
-✅ **Smooth Performance** - No lag or stuttering  
-✅ **Fair Gameplay** - Anti-cheat prevents exploits  
-✅ **Rich Features** - Complete roleplay systems  
-✅ **Stability** - Minimal downtime and crashes  
-✅ **Quality** - Stable experience  
-
----
-
-<div align="center">
-
-**🐺 wolves.land - The Land of Wolves 🐺**
-
-**ისტორია ცოცხლდება აქ!**  
-*(History Lives Here!)*
-
-**Georgian RP 🇬🇪 | Serious Hardcore Roleplay | Discord & Whitelisted**
-
-[![Discord](https://img.shields.io/badge/Join-Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/CrKcWdfd3A)
-[![Website](https://img.shields.io/badge/Visit-Website-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.wolves.land)
-[![GitHub](https://img.shields.io/badge/Follow-GitHub-black?style=for-the-badge&logo=github&logoColor=white)](https://github.com/iBoss21)
-
----
-
-**Made with ❤️ by iBoss21 for The Land of Wolves Community**
-
-© 2026 iBoss21 / The Lux Empire | All Rights Reserved
-
-</div>
+> © 2026 iBoss21 / LXRCore | [lxrcore.com](https://www.lxrcore.com) | All Rights Reserved

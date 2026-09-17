@@ -1,494 +1,74 @@
-# 🐺 LXR Core - Installation Guide
+# 🐺 LXR-CORE — Installation
 
-```
-██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-```
+## Requirements
 
-**🐺 The Land of Wolves - Georgian RP**  
-**Complete Installation Instructions**
+| Requirement | Version | Why |
+|---|---|---|
+| FXServer (RedM) | build 7290 or newer | declared in `fxmanifest.lua` |
+| OneSync | on (infinity) | state bags, routing buckets, server-side entities |
+| oxmysql | current release | database access (`@oxmysql/lib/MySQL.lua`) |
+| MariaDB 10.6+ / MySQL 8 | | `JSON_*` functions used by the migration scripts |
 
----
+Optional: `ox_lib` (only if RSG resources you run need it), `progressbar`
+(client progress bars), an inventory resource (`lxr-inventory`, `rsg-inventory`
+or `vorp_inventory` — without one the core provider keeps items headless).
 
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📋 TABLE OF CONTENTS
-## ═══════════════════════════════════════════════════════════════════════════════
+## Fresh install (txAdmin recipe)
 
-1. [Prerequisites](#prerequisites)
-2. [Fresh Installation](#fresh-installation)
-3. [Database Setup](#database-setup)
-4. [Configuration](#configuration)
-5. [Starting the Server](#starting-the-server)
-6. [Verification](#verification)
-7. [Troubleshooting](#troubleshooting)
+Use the LXRCore recipe (`txAdminRecipe` repository). It downloads this
+resource, oxmysql and the official resources, imports `database/schema.sql`,
+places `server.cfg` and orders the `ensure` lines correctly.
 
----
+## Manual install
 
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🔧 PREREQUISITES
-## ═══════════════════════════════════════════════════════════════════════════════
-
-Before installing LXR Core, ensure you have:
-
-### Required Software
-
-- **RedM Server** (Latest Build)
-  - Download: https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/
-  - RedM build 1355.0 or higher recommended
-
-- **MySQL/MariaDB Database**
-  - MySQL 8.0+ or MariaDB 10.5+
-  - Recommended: MariaDB 10.6.x for best performance
-
-- **oxmysql Resource**
-  - Download: https://github.com/overextended/oxmysql/releases
-  - Required for database operations
-
-### System Requirements
-
-**Minimum:**
-- CPU: 4 cores @ 3.0 GHz
-- RAM: 8 GB
-- Storage: 10 GB free space
-- Network: 100 Mbps upload
-
-**Recommended:**
-- CPU: 8+ cores @ 3.5+ GHz
-- RAM: 16 GB+
-- Storage: 20 GB+ SSD
-- Network: 1 Gbps upload
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📦 FRESH INSTALLATION
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Step 1: Download LXR Core
-
-**Option A: Git Clone (Recommended)**
-```bash
-cd /path/to/your/server/resources
-git clone https://github.com/LXRCore/lxr-core.git
-```
-
-**Option B: Manual Download**
-1. Visit https://github.com/LXRCore/lxr-core
-2. Click "Code" → "Download ZIP"
-3. Extract to your resources folder
-4. **IMPORTANT:** Rename folder to `lxr-core` (lowercase, hyphen)
-
-### Step 2: Verify Folder Name
-
-**⚠️ CRITICAL: The folder MUST be named `lxr-core`**
-
-The framework has runtime name protection. If the folder name doesn't match, you'll see:
-
-```
-❌ CRITICAL ERROR: RESOURCE NAME MISMATCH ❌
-Expected: lxr-core
-Got: lxr-core-main (or other name)
-
-Rename the folder to "lxr-core" to continue.
-```
-
-### Step 3: Install oxmysql
-
-```bash
-cd /path/to/your/server/resources
-git clone https://github.com/overextended/oxmysql.git
-```
-
-Or download the latest release from GitHub.
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🗄️ DATABASE SETUP
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Step 1: Create Database
-
-Create a new MySQL/MariaDB database:
-
-```sql
-CREATE DATABASE IF NOT EXISTS `lxrcore` 
-DEFAULT CHARACTER SET utf8mb4 
-COLLATE utf8mb4_unicode_ci;
-```
-
-### Step 2: Import SQL Files
-
-Import the SQL files in this order:
-
-1. **Main Schema**
-   ```bash
-   mysql -u username -p lxrcore < database/lxrcore.sql
-   ```
-
-2. **Tables Schema**
-   ```bash
-   mysql -u username -p lxrcore < database/lxrcore_tables.sql
-   ```
-
-3. **Tebex Integration (Optional)**
-   ```bash
-   mysql -u username -p lxrcore < database/tebex_tables.sql
-   ```
-
-### Step 3: Configure oxmysql
-
-Edit your `server.cfg`:
+1. `resources/[framework]/lxr-core` ← this repository (folder name must be `lxr-core`).
+2. `resources/[standalone]/oxmysql` ← oxmysql release zip.
+3. Database: nothing to import by hand — the core applies
+   `database/migrations/*.sql` at first start (`Config.Database.autoMigrate`).
+   For a manual import use `database/schema.sql`.
+4. `server.cfg`:
 
 ```cfg
-# MySQL Connection String
-# IMPORTANT: Set connectionLimit for high player counts (default is 10, far too low for 100+ players).
-# Recommended: connectionLimit = max(50, expectedPlayers / 10)
-set mysql_connection_string "mysql://username:password@localhost/lxrcore?charset=utf8mb4&waitForConnections=true&connectionLimit=80&queueLimit=0"
+set onesync on
+set mysql_connection_string "mysql://user:pass@127.0.0.1/lxrcore?charset=utf8mb4"
 
-# Alternative: Individual parameters
-set mysql_connection_string "user=username;password=yourpassword;host=localhost;database=lxrcore;waitForConnections=true;connectionLimit=80;queueLimit=0"
-```
-
-**Performance Note:** The `connectionLimit` parameter controls the oxmysql connection pool size.
-At 200+ players with staggered saves, the default 10 connections will bottleneck all DB writes.
-Set `connectionLimit=80` (or higher for 500+ player servers) to prevent query queuing.
-`queueLimit=0` means queries fail immediately if all connections are busy (fail-fast).
-Set `queueLimit` to a positive number (e.g., `100`) if you prefer queries to wait in a queue instead.
-
-**Security Note:** Use a dedicated database user with limited permissions, not root!
-
-### Step 4: Grant Permissions
-
-```sql
-CREATE USER 'lxrcore_user'@'localhost' IDENTIFIED BY 'strong_password_here';
-GRANT SELECT, INSERT, UPDATE, DELETE ON lxrcore.* TO 'lxrcore_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## ⚙️ CONFIGURATION
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Step 1: Edit config.lua
-
-Open `lxr-core/config.lua` and configure:
-
-#### Server Information
-
-```lua
-LXRConfig.ServerInfo = {
-    name = 'Your Server Name',
-    tagline = 'Your Server Tagline',
-    description = 'Your Server Description',
-    -- ... update website, discord, etc.
-}
-```
-
-#### Basic Settings
-
-```lua
--- Maximum players
-LXRConfig.MaxPlayers = 48  -- Match your sv_maxclients
-
--- Default spawn location
-LXRConfig.DefaultSpawn = vector4(-1035.71, -2731.87, 12.86, 0.0)
-
--- Discord invite
-LXRConfig.Discord = "https://discord.gg/yourserver"
-
--- Language
-LXRConfig.Lang = 'en'  -- Available: en, es, fr, de, ru, pt, it, etc.
-```
-
-#### Economy
-
-```lua
--- Starting money (already configured)
-LXRConfig.Money.MoneyTypes.cash.startAmount = 2
-LXRConfig.Money.MoneyTypes.bank.startAmount = 5
-```
-
-#### Spawn Locations
-
-```lua
-LXRConfig.Player.SpawnLocations = {
-    {label = 'Valentine', coords = vector4(-275.46, 805.17, 119.38, 0.0)},
-    {label = 'Blackwater', coords = vector4(-813.97, -1324.19, 43.88, 0.0)},
-    -- Add your custom locations...
-}
-```
-
-### Step 2: Configure server.cfg
-
-Add to your `server.cfg`:
-
-```cfg
-# Server Name
-sv_hostname "Your Server Name ^2[LXR Core]"
-
-# Max Players
-sv_maxclients 48
-
-# Server Description
-sets sv_projectName "RedM RP Server"
-sets sv_projectDesc "Powered by LXR Core Framework"
-
-# Tags (for server listing)
-sets tags "roleplay, redm, lxrcore, whitelist, serious"
-
-# Locale
-sets locale "en-US"
-
-# License Key (from Cfx.re)
-sv_licenseKey "your_cfx_license_key_here"
-
-# Resources
 ensure oxmysql
 ensure lxr-core
+# optional bridges (only when the real resource is NOT installed)
+# ensure rsg-core
+# ensure vorp_core
+# ensure qbr-core
+# ensure vorp_inventory
 
-# Optional: Other resources
-# ensure lxr-inventory
-# ensure lxr-multicharacter
-# ensure lxr-admin
+# permissions
+add_principal identifier.license:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX lxrcore.god
 ```
 
----
+5. Start the server. The console shows the LXRCore banner followed by
+   `ready in <n>ms`. Before that line no player can load a character.
 
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🚀 STARTING THE SERVER
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Step 1: Start Order
-
-Resources must start in this order:
-1. `oxmysql` (database)
-2. `lxr-core` (framework)
-3. Other LXR resources
-4. Third-party resources
-
-### Step 2: First Start
-
-```bash
-./run.sh   # Linux
-# or
-run.cmd    # Windows
-```
-
-### Step 3: Watch Console Output
-
-You should see:
+## Start order
 
 ```
-═══════════════════════════════════════════════════════════════════════════════
-
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-    
-    ███████╗██████╗  █████╗ ███╗   ███╗███████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
-    ██╔════╝██╔══██╗██╔══██╗████╗ ████║██╔════╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
-    █████╗  ██████╔╝███████║██╔████╔██║█████╗  ██║ █╗ ██║██║   ██║██████╔╝█████╔╝ 
-    ██╔══╝  ██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ██║███╗██║██║   ██║██╔══██╗██╔═██╗ 
-    ██║     ██║  ██║██║  ██║██║ ╚═╝ ██║███████╗╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
-    ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
-
-═══════════════════════════════════════════════════════════════════════════════
-🐺 LXR CORE FRAMEWORK - SUCCESSFULLY LOADED
-═══════════════════════════════════════════════════════════════════════════════
-
-Version:          2.0.0
-Server:           Your Server Name
-
-Framework:        LXR-Core (Primary)
-Language:         en
-Max Players:      48
-
-Currency Types:   15 configured
-Skills System:    6 skills available
-Progression:      ENABLED ✓
-
-PVP:              ENABLED ✓
-Security:         ACTIVE ✓
-Performance:      OPTIMIZED ✓
-Debug Mode:       DISABLED
+oxmysql → lxr-core → [bridges] → inventory → multicharacter / spawn / appearance → everything else
 ```
+`lxr-core` re-detects the inventory provider when an inventory resource starts
+later, so a wrong order degrades to the core provider instead of failing.
 
----
+## Upgrading from lxr-core v1 / v2
 
-## ═══════════════════════════════════════════════════════════════════════════════
-## ✅ VERIFICATION
-## ═══════════════════════════════════════════════════════════════════════════════
+* Replace the folder; keep your database. Missing `players` columns
+  (`weight`, `slots`, `outlawstatus`, `created_at`) are added at boot.
+* Move your `LXRConfig` values into `config.lua` sections (`LXRConfig` still
+  aliases `Config`, so old references keep resolving).
+* The v2 `logs`, `anticheat_logs`, `tebex_*`, `query_cache`, … tables are not
+  used any more and can be dropped after you archive them.
+* Resources that triggered `LXRCore:Server:AddItem` / `LXRCore:Player:GiveXp`
+  from the client must move that logic server-side (those events are now
+  rejected and logged).
 
-### Check Console
+## Verifying an install
 
-1. **No Red Errors** - Framework loaded without errors
-2. **Boot Banner Displayed** - ASCII art banner shows
-3. **Framework Detected** - Shows "LXR-Core (Primary)"
-4. **Database Connected** - oxmysql shows connection success
-
-### Test In-Game
-
-1. **Connect to Server**
-   - Open RedM
-   - Connect to your server
-   - Watch for loading screens
-
-2. **Create Character**
-   - Character creation should load
-   - Can set firstname, lastname, etc.
-
-3. **Spawn In-World**
-   - Should spawn at configured location
-   - HUD elements visible
-   - Can move and interact
-
-4. **Test Commands**
-   ```
-   /help          - Show available commands
-   /adminmenu     - Open admin menu (if admin)
-   /inventory     - Open inventory
-   ```
-
-### Check Database
-
-```sql
--- Check if player was created
-SELECT * FROM players ORDER BY id DESC LIMIT 1;
-
--- Check if tables exist
-SHOW TABLES;
-```
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🔧 TROUBLESHOOTING
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Error: "RESOURCE NAME MISMATCH"
-
-**Problem:** Folder is not named `lxr-core`
-
-**Solution:**
-```bash
-cd resources
-mv lxr-core-main lxr-core
-# or whatever the current name is
-```
-
-### Error: "oxmysql not found"
-
-**Problem:** oxmysql not installed or not started
-
-**Solution:**
-1. Install oxmysql: `git clone https://github.com/overextended/oxmysql.git`
-2. Add to server.cfg: `ensure oxmysql`
-3. Ensure it's before lxr-core
-
-### Error: "Could not connect to database"
-
-**Problem:** Database connection string incorrect
-
-**Solution:**
-1. Check `server.cfg` mysql_connection_string
-2. Verify database exists: `SHOW DATABASES;`
-3. Verify user has permissions
-4. Test connection: `mysql -u username -p database_name`
-
-### Error: "Table 'lxrcore.players' doesn't exist"
-
-**Problem:** Database tables not imported
-
-**Solution:**
-```bash
-mysql -u username -p lxrcore < database/lxrcore.sql
-mysql -u username -p lxrcore < database/lxrcore_tables.sql
-```
-
-### Error: "Framework not loading"
-
-**Problem:** Dependencies not started
-
-**Solution:**
-Check server.cfg load order:
-```cfg
-ensure oxmysql          # 1. Database first
-ensure lxr-core         # 2. Framework second
-ensure other-resources  # 3. Everything else
-```
-
-### Performance Issues
-
-**Problem:** Server lagging or slow
-
-**Solutions:**
-1. Check `config.lua` performance settings
-2. Enable database caching: `LXRConfig.Performance.caching.enabled = true`
-3. Reduce player count if needed
-4. Check MySQL/MariaDB is optimized
-5. Use SSD storage for database
-
-### Character Not Saving
-
-**Problem:** Player data not persisting
-
-**Solutions:**
-1. Check database connection
-2. Verify player table exists
-3. Check logs for SQL errors
-4. Increase save interval: `LXRConfig.UpdateInterval = 5`
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 📞 SUPPORT
-## ═══════════════════════════════════════════════════════════════════════════════
-
-### Need Help?
-
-- **Discord:** https://discord.gg/CrKcWdfd3A
-- **GitHub Issues:** https://github.com/LXRCore/lxr-core/issues
-- **Documentation:** https://www.wolves.land/docs
-- **Website:** https://www.wolves.land
-
-### Before Asking for Help
-
-Please provide:
-1. Server console output (full log)
-2. Client F8 console errors
-3. Your server.cfg (remove sensitive info)
-4. Your config.lua settings
-5. Steps to reproduce the issue
-
----
-
-## ═══════════════════════════════════════════════════════════════════════════════
-## 🎯 NEXT STEPS
-## ═══════════════════════════════════════════════════════════════════════════════
-
-After successful installation:
-
-1. **Read Configuration Guide** - Customize your server
-2. **Install Additional Resources** - Add jobs, scripts, maps
-3. **Configure Permissions** - Set up admin/mod roles
-4. **Test Gameplay** - Create test accounts and verify systems
-5. **Setup Whitelist** - Configure application process
-6. **Configure Discord Bot** - Link your Discord server
-7. **Add Custom Content** - Jobs, vehicles, items, etc.
-
----
-
-**🐺 wolves.land - The Land of Wolves**  
-*ისტორია ცოცხლდება აქ! (History Lives Here!)*
-
-© 2026 iBoss21 / The Lux Empire | All Rights Reserved
+* `/lxr:metrics` (admin) prints counters and DB timings.
+* `LXRCore:Server:Ready` fires once boot is done; `GlobalState.LXRCoreReady == true`.
+* `exports['lxr-core']:IsReady()` / `IsDatabaseReady()` from any resource.

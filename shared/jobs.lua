@@ -1,481 +1,78 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Jobs Configuration (1899 Era)
-    
-    Historically accurate jobs for the Red Dead Redemption 2 era.
-    All payments reflect 1899 economy standards.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Server:      The Land of Wolves 🐺
-    Developer:   iBoss21 / The Lux Empire
-    Website:     https://www.wolves.land
-    Discord:     https://discord.gg/CrKcWdfd3A
-    Store:       https://theluxempire.tebex.io
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Version: 2.0.0
-    
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Shared Data: Jobs
+     ═══════════════════════════════════════════════════════════════════════════
+     Shape (RSG/QBR compatible, consumed by every job resource):
+       name        = { label, type, defaultDuty, offDutyPay,
+                       grades = { ['0'] = { name, payment, isboss } } }
+     Grades are string keys ('0', '1', …). The framework never hard-codes a job
+     name; resources check `job.type` (leo, medical, …) or `job.name`.
+     Add jobs here or at runtime: LXRCore.Functions.AddJob(name, data)
+     ═══════════════════════════════════════════════════════════════════════════
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
 
 LXRShared = LXRShared or {}
-LXRShared.ForceJobDefaultDutyAtLogin = true
+LXRShared.ForceJobDefaultDutyAtLogin = true -- true: duty state reset to defaultDuty on login; false: keep saved duty
 
 LXRShared.Jobs = {
-    -- ============================================
-    -- UNEMPLOYED / CIVILIAN
-    -- ============================================
     unemployed = {
-        label = 'Civilian',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Citizen', payment = 0 }
-        }
+        name = 'unemployed', label = 'Civilian', type = 'none', defaultDuty = true, offDutyPay = false,
+        grades = { ['0'] = { name = 'Freelancer', payment = 3 } },
     },
-    
-    -- ============================================
-    -- LAW ENFORCEMENT
-    -- ============================================
-    police = {
-        label = 'Sheriff Department',
-        defaultDuty = true,
-        offDutyPay = false,
+    vallaw = {
+        name = 'vallaw', label = 'Valentine Law Enforcement', type = 'leo', defaultDuty = false, offDutyPay = false,
         grades = {
-            [0] = { name = 'Deputy', payment = 2 },
-            [1] = { name = 'Senior Deputy', payment = 3 },
-            [2] = { name = 'Undersheriff', payment = 4 },
-            [3] = { name = 'Sheriff', isboss = true, payment = 6 },
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', payment = 50, isboss = true },
         },
     },
-    
-    marshal = {
-        label = 'U.S. Marshal Service',
-        defaultDuty = true,
-        offDutyPay = false,
+    rholaw = {
+        name = 'rholaw', label = 'Rhodes Law Enforcement', type = 'leo', defaultDuty = false, offDutyPay = false,
         grades = {
-            [0] = { name = 'Deputy Marshal', payment = 3 },
-            [1] = { name = 'Marshal', payment = 5 },
-            [2] = { name = 'Chief Marshal', isboss = true, payment = 8 },
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Sheriff', payment = 50, isboss = true },
         },
     },
-    
-    ranger = {
-        label = 'Texas Rangers',
-        defaultDuty = true,
-        offDutyPay = false,
+    blklaw = {
+        name = 'blklaw', label = 'Blackwater Law Enforcement', type = 'leo', defaultDuty = false, offDutyPay = false,
         grades = {
-            [0] = { name = 'Ranger', payment = 3 },
-            [1] = { name = 'Senior Ranger', payment = 5 },
-            [2] = { name = 'Captain', isboss = true, payment = 7 },
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Deputy', payment = 25 },
+            ['2'] = { name = 'Marshal', payment = 50, isboss = true },
         },
     },
-    
-    -- ============================================
-    -- MEDICAL SERVICES
-    -- ============================================
-    doctor = {
-        label = 'Medical Practice',
-        defaultDuty = true,
-        offDutyPay = false,
+    stdlaw = {
+        name = 'stdlaw', label = 'Saint Denis Police', type = 'leo', defaultDuty = false, offDutyPay = false,
         grades = {
-            [0] = { name = 'Nurse', payment = 2 },
-            [1] = { name = 'Physician', payment = 5 },
-            [2] = { name = 'Surgeon', payment = 8 },
-            [3] = { name = 'Chief Physician', isboss = true, payment = 10 },
+            ['0'] = { name = 'Recruit', payment = 10 },
+            ['1'] = { name = 'Officer', payment = 25 },
+            ['2'] = { name = 'Chief', payment = 50, isboss = true },
         },
     },
-    
-    apothecary = {
-        label = 'Apothecary',
-        defaultDuty = true,
-        offDutyPay = false,
+    medic = {
+        name = 'medic', label = 'Doctor', type = 'medical', defaultDuty = false, offDutyPay = false,
         grades = {
-            [0] = { name = 'Apprentice', payment = 1 },
-            [1] = { name = 'Pharmacist', payment = 3 },
-            [2] = { name = 'Master Apothecary', isboss = true, payment = 5 },
+            ['0'] = { name = 'Apprentice', payment = 10 },
+            ['1'] = { name = 'Doctor', payment = 25 },
+            ['2'] = { name = 'Head Doctor', payment = 50, isboss = true },
         },
     },
-    
-    -- ============================================
-    -- AGRICULTURE & RANCHING
-    -- ============================================
-    farmer = {
-        label = 'Farmer',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Farmhand', payment = 1 },
-            [1] = { name = 'Farmer', payment = 2 },
-            [2] = { name = 'Ranch Owner', isboss = true, payment = 4 },
-        },
-    },
-    
     rancher = {
-        label = 'Cattle Rancher',
-        defaultDuty = true,
-        offDutyPay = false,
+        name = 'rancher', label = 'Rancher', type = 'civ', defaultDuty = true, offDutyPay = false,
         grades = {
-            [0] = { name = 'Wrangler', payment = 1 },
-            [1] = { name = 'Cattle Hand', payment = 2 },
-            [2] = { name = 'Foreman', payment = 3 },
-            [3] = { name = 'Ranch Owner', isboss = true, payment = 5 },
+            ['0'] = { name = 'Ranch Hand', payment = 8 },
+            ['1'] = { name = 'Foreman', payment = 15 },
+            ['2'] = { name = 'Ranch Owner', payment = 25, isboss = true },
         },
     },
-    
-    -- ============================================
-    -- TRANSPORTATION
-    -- ============================================
-    stagecoach = {
-        label = 'Stagecoach Company',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Driver', payment = 2 },
-            [1] = { name = 'Guard', payment = 2 },
-            [2] = { name = 'Station Manager', isboss = true, payment = 4 },
-        },
-    },
-    
-    railroad = {
-        label = 'Railroad Company',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Track Worker', payment = 1 },
-            [1] = { name = 'Engineer', payment = 3 },
-            [2] = { name = 'Conductor', payment = 3 },
-            [3] = { name = 'Station Master', isboss = true, payment = 5 },
-        },
-    },
-    
-    ferryman = {
-        label = 'Ferry Service',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Deckhand', payment = 1 },
-            [1] = { name = 'Captain', payment = 3 },
-            [2] = { name = 'Harbor Master', isboss = true, payment = 5 },
-        },
-    },
-    
-    -- ============================================
-    -- TRADES & CRAFTS
-    -- ============================================
     blacksmith = {
-        label = 'Blacksmith',
-        defaultDuty = true,
-        offDutyPay = false,
+        name = 'blacksmith', label = 'Blacksmith', type = 'civ', defaultDuty = true, offDutyPay = false,
         grades = {
-            [0] = { name = 'Apprentice', payment = 1 },
-            [1] = { name = 'Blacksmith', payment = 3 },
-            [2] = { name = 'Master Smith', isboss = true, payment = 5 },
-        },
-    },
-    
-    gunsmith = {
-        label = 'Gunsmith',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Apprentice', payment = 2 },
-            [1] = { name = 'Gunsmith', payment = 4 },
-            [2] = { name = 'Master Gunsmith', isboss = true, payment = 6 },
-        },
-    },
-    
-    tailor = {
-        label = 'Tailor Shop',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Seamstress', payment = 1 },
-            [1] = { name = 'Tailor', payment = 2 },
-            [2] = { name = 'Master Tailor', isboss = true, payment = 4 },
-        },
-    },
-    
-    carpenter = {
-        label = 'Carpenter',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Apprentice', payment = 1 },
-            [1] = { name = 'Carpenter', payment = 2 },
-            [2] = { name = 'Master Carpenter', isboss = true, payment = 4 },
-        },
-    },
-    
-    -- ============================================
-    -- ENTERTAINMENT & SERVICES
-    -- ============================================
-    saloon = {
-        label = 'Saloon',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Barback', payment = 1 },
-            [1] = { name = 'Bartender', payment = 2 },
-            [2] = { name = 'Saloon Girl', payment = 2 },
-            [3] = { name = 'Pianist', payment = 2 },
-            [4] = { name = 'Saloon Owner', isboss = true, payment = 5 },
-        },
-    },
-    
-    hotel = {
-        label = 'Hotel',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Porter', payment = 1 },
-            [1] = { name = 'Clerk', payment = 2 },
-            [2] = { name = 'Manager', isboss = true, payment = 4 },
-        },
-    },
-    
-    theater = {
-        label = 'Theater',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Stagehand', payment = 1 },
-            [1] = { name = 'Performer', payment = 3 },
-            [2] = { name = 'Director', isboss = true, payment = 5 },
-        },
-    },
-    
-    photographer = {
-        label = 'Photography Studio',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Assistant', payment = 1 },
-            [1] = { name = 'Photographer', isboss = true, payment = 3 },
-        },
-    },
-    
-    -- ============================================
-    -- RETAIL & MERCHANTS
-    -- ============================================
-    general = {
-        label = 'General Store',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Clerk', payment = 1 },
-            [1] = { name = 'Shop Keep', payment = 2 },
-            [2] = { name = 'Store Owner', isboss = true, payment = 4 },
-        },
-    },
-    
-    butcher = {
-        label = 'Butcher Shop',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Apprentice', payment = 1 },
-            [1] = { name = 'Butcher', isboss = true, payment = 3 },
-        },
-    },
-    
-    -- ============================================
-    -- RESOURCE GATHERING
-    -- ============================================
-    miner = {
-        label = 'Mining Company',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Laborer', payment = 1 },
-            [1] = { name = 'Miner', payment = 2 },
-            [2] = { name = 'Foreman', payment = 3 },
-            [3] = { name = 'Mine Boss', isboss = true, payment = 5 },
-        },
-    },
-    
-    lumberjack = {
-        label = 'Logging Company',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Feller', payment = 1 },
-            [1] = { name = 'Logger', payment = 2 },
-            [2] = { name = 'Mill Foreman', isboss = true, payment = 4 },
-        },
-    },
-    
-    fisher = {
-        label = 'Fisherman',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Deckhand', payment = 1 },
-            [1] = { name = 'Fisherman', payment = 2 },
-            [2] = { name = 'Boat Captain', isboss = true, payment = 3 },
-        },
-    },
-    
-    hunter = {
-        label = 'Hunter & Trapper',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Trapper', payment = 1 },
-            [1] = { name = 'Hunter', payment = 2 },
-            [2] = { name = 'Master Hunter', isboss = true, payment = 4 },
-        },
-    },
-    
-    -- ============================================
-    -- PROFESSIONAL SERVICES
-    -- ============================================
-    lawyer = {
-        label = 'Law Firm',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Clerk', payment = 2 },
-            [1] = { name = 'Attorney', payment = 6 },
-            [2] = { name = 'Senior Partner', isboss = true, payment = 10 },
-        },
-    },
-    
-    banker = {
-        label = 'Bank',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Teller', payment = 2 },
-            [1] = { name = 'Accountant', payment = 4 },
-            [2] = { name = 'Bank Manager', isboss = true, payment = 8 },
-        },
-    },
-    
-    journalist = {
-        label = 'Newspaper',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Reporter', payment = 2 },
-            [1] = { name = 'Editor', payment = 4 },
-            [2] = { name = 'Publisher', isboss = true, payment = 6 },
-        },
-    },
-    
-    telegram = {
-        label = 'Telegraph Office',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Messenger', payment = 1 },
-            [1] = { name = 'Operator', payment = 2 },
-            [2] = { name = 'Station Manager', isboss = true, payment = 3 },
-        },
-    },
-    
-    postman = {
-        label = 'Post Office',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Mail Carrier', payment = 1 },
-            [1] = { name = 'Clerk', payment = 2 },
-            [2] = { name = 'Postmaster', isboss = true, payment = 4 },
-        },
-    },
-    
-    -- ============================================
-    -- RELIGIOUS & EDUCATION
-    -- ============================================
-    priest = {
-        label = 'Church',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Deacon', payment = 1 },
-            [1] = { name = 'Priest', payment = 2 },
-            [2] = { name = 'Bishop', isboss = true, payment = 3 },
-        },
-    },
-    
-    teacher = {
-        label = 'School House',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Assistant', payment = 2 },
-            [1] = { name = 'Teacher', payment = 3 },
-            [2] = { name = 'Headmaster', isboss = true, payment = 5 },
-        },
-    },
-    
-    -- ============================================
-    -- GOVERNMENT & JUDICIARY
-    -- ============================================
-    mayor = {
-        label = 'Town Government',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Clerk', payment = 2 },
-            [1] = { name = 'Council Member', payment = 4 },
-            [2] = { name = 'Mayor', isboss = true, payment = 8 },
-        },
-    },
-    
-    judge = {
-        label = 'Judiciary',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Bailiff', payment = 2 },
-            [1] = { name = 'Magistrate', payment = 6 },
-            [2] = { name = 'Judge', isboss = true, payment = 10 },
-        },
-    },
-    
-    -- ============================================
-    -- MISC JOBS
-    -- ============================================
-    undertaker = {
-        label = 'Undertaker',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Assistant', payment = 1 },
-            [1] = { name = 'Undertaker', isboss = true, payment = 3 },
-        },
-    },
-    
-    stable = {
-        label = 'Livery Stable',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Stable Boy', payment = 1 },
-            [1] = { name = 'Stable Hand', payment = 2 },
-            [2] = { name = 'Stable Owner', isboss = true, payment = 4 },
-        },
-    },
-    
-    barber = {
-        label = 'Barber Shop',
-        defaultDuty = true,
-        offDutyPay = false,
-        grades = {
-            [0] = { name = 'Apprentice', payment = 1 },
-            [1] = { name = 'Barber', isboss = true, payment = 2 },
+            ['0'] = { name = 'Apprentice', payment = 8 },
+            ['1'] = { name = 'Smith', payment = 15 },
+            ['2'] = { name = 'Master Smith', payment = 25, isboss = true },
         },
     },
 }

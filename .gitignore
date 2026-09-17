@@ -1,7 +1,12 @@
-# Ignore any IDE derived project configs
-.idea
-.vscode
-
-# Ignore backup files
-*.backup
+# LXRCore — ignore local junk, never framework files
+*.log
 *.bak
+*.backup
+*.zip
+*.rar
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
+/tmp/

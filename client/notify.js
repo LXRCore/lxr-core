@@ -1,115 +1,119 @@
-exports('ShowAdvancedLeftNotification', (title, subTitle, dict, icon, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true);
+/*  ═══════════════════════════════════════════════════════════════════════════
+    🐺 LXR-CORE — Native RedM UI Feed Notifications (client, JavaScript)
+    ═══════════════════════════════════════════════════════════════════════════
+    The RDR3 feed natives take pointer structs, which Lua cannot build without a
+    DataView shim; JavaScript has one natively, so this file owns the struct
+    marshalling and exposes plain exports consumed by client/notify.lua:
 
-	const string1 = CreateVarString(10, "LITERAL_STRING", title);
-	const string2 = CreateVarString(10, "LITERAL_STRING", subTitle);
-	const struct2 = new DataView(new ArrayBuffer(56));
-	struct2.setBigInt64(8, BigInt(string1), true);
-	struct2.setBigInt64(16, BigInt(string2), true);
-	struct2.setBigInt64(32, BigInt(GetHashKey(dict)), true);
-	struct2.setBigInt64(40, BigInt(GetHashKey(icon)), true);
-	struct2.setBigInt64(48, BigInt(GetHashKey("COLOR_WHITE")), true);
+      ShowTooltip(text, duration)                      top-left tip
+      DisplayRightText(text, duration)                 right-hand tip
+      ShowObjective(text, duration)                    bottom objective
+      ShowBasicTopNotification(text, duration)         top banner
+      ShowSimpleCenterText(text, duration)             center text
+      ShowTopNotification(title, subtitle, duration)   top banner with subtitle
+      ShowLocationNotification(text, location, duration)
+      ShowAdvancedLeftNotification(title, subtitle, dict, icon, duration)
+      ShowAdvancedRightNotification(text, dict, icon, color, duration)
 
-	Citizen.invokeNative("0x26E87218390E6729", struct1, struct2, 1, 1);
-});
+    Struct layouts follow the public RDR3 native documentation.
+    ═══════════════════════════════════════════════════════════════════════════
+    © 2026 iBoss21 / LXRCore — All Rights Reserved
+    ═══════════════════════════════════════════════════════════════════════════ */
 
-exports('ShowLocationNotification', (text, location, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true);
-	
-	const string = CreateVarString(10, "LITERAL_STRING", location);
-	const string2 = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(24));
-	struct2.setBigInt64(8, BigInt(string), true);
-	struct2.setBigInt64(16, BigInt(string2), true);
+(() => {
+  'use strict';
 
-	Citizen.invokeNative("0xD05590C1AB38F068", struct1, struct2, 1, 1);
-});
+  const str = (v) => CreateVarString(10, 'LITERAL_STRING', String(v ?? ''));
+  const hash = (v) => BigInt(GetHashKey(String(v ?? '')));
+  const ms = (v, d = 4000) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.floor(n) : d; };
 
-exports('ShowTooltip', (text, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setUint32(0, duration, true);
-	
-	const str = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(16));
-	struct2.setBigUint64(8, BigInt(str), true);
+  const duration = (d) => {
+    const s = new DataView(new ArrayBuffer(48));
+    s.setInt32(0, ms(d), true);
+    return s;
+  };
 
-	Citizen.invokeNative("0x049D5C615BD38BAD", struct1, struct2, 1);
-});
+  const body = (size, writer) => {
+    const s = new DataView(new ArrayBuffer(size));
+    writer(s);
+    return s;
+  };
 
-exports('DisplayRightText', (text, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true); // duration
-	
-	const string = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(16));
-	struct2.setBigInt64(8, BigInt(string), true);
+  // 0x049D5C615BD38BAD  UiFeedPostSampleNshTooltip
+  exports('ShowTooltip', (text, d) => {
+    const b = body(16, (s) => s.setBigInt64(8, BigInt(str(text)), true));
+    Citizen.invokeNative('0x049D5C615BD38BAD', duration(d), b, 1);
+  });
 
-	Citizen.invokeNative("0xB2920B9760F0F36B", struct1, struct2, 1);
-});
+  // 0xB2920B9760F0F36B  UiFeedPostSampleNshRightText
+  exports('DisplayRightText', (text, d) => {
+    const b = body(16, (s) => s.setBigInt64(8, BigInt(str(text)), true));
+    Citizen.invokeNative('0xB2920B9760F0F36B', duration(d), b, 1);
+  });
 
-exports('ShowObjective', (text, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true); // duration 
-	
-	const string = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(16));
-	struct2.setBigInt64(8, BigInt(string), true);
+  // 0xCEDBF17EFCC0E4A4  UiFeedPostObjective
+  exports('ShowObjective', (text, d) => {
+    const b = body(16, (s) => s.setBigInt64(8, BigInt(str(text)), true));
+    Citizen.invokeNative('0xCEDBF17EFCC0E4A4', duration(d), b, 1);
+  });
 
-	Citizen.invokeNative("0xCEDBF17EFCC0E4A4", struct1, struct2, 1);
-});
+  // 0x860DDFE97CC94DF0  UiFeedPostOneTextShard
+  exports('ShowBasicTopNotification', (text, d) => {
+    const b = body(48, (s) => s.setBigInt64(8, BigInt(str(text)), true));
+    Citizen.invokeNative('0x860DDFE97CC94DF0', duration(d), b, 1);
+  });
 
-exports('ShowTopNotification', (title, subtext, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true); // duration
+  // 0x893128CDB4B81FBB  UiFeedPostSimpleText (center)
+  exports('ShowSimpleCenterText', (text, d, color) => {
+    const b = body(24, (s) => {
+      s.setBigInt64(8, BigInt(str(text)), true);
+      s.setBigInt64(16, hash(color || 'COLOR_PURE_WHITE'), true);
+    });
+    Citizen.invokeNative('0x893128CDB4B81FBB', duration(d), b, 1);
+  });
 
-	const string = CreateVarString(10, "LITERAL_STRING", title);
-	const string2 = CreateVarString(10, "LITERAL_STRING", subtext);
-	const struct2 = new DataView(new ArrayBuffer(48));
-	struct2.setBigInt64(8, BigInt(string), true);
-	struct2.setBigInt64(16, BigInt(string2), true);
+  // 0xA6F4216AB10EB08E  UiFeedPostTwoTextShard
+  exports('ShowTopNotification', (title, subtitle, d) => {
+    const b = body(48, (s) => {
+      s.setBigInt64(8, BigInt(str(title)), true);
+      s.setBigInt64(16, BigInt(str(subtitle)), true);
+    });
+    Citizen.invokeNative('0xA6F4216AB10EB08E', duration(d), b, 1, 1);
+  });
 
-	Citizen.invokeNative("0xA6F4216AB10EB08E", struct1, struct2, 1, 1);
-});
+  // 0xD05590C1AB38F068  UiFeedPostSampleNshLocation
+  exports('ShowLocationNotification', (text, location, d) => {
+    const b = body(24, (s) => {
+      s.setBigInt64(8, BigInt(str(location)), true);
+      s.setBigInt64(16, BigInt(str(text)), true);
+    });
+    Citizen.invokeNative('0xD05590C1AB38F068', duration(d), b, 1, 1);
+  });
 
-exports('ShowAdvancedRightNotification', (text, dict, icon, text_color, duration) => {
-	const _text = CreateVarString(10, "LITERAL_STRING", text);
-	const _dict = CreateVarString(10, "LITERAL_STRING", dict);
-	const sdict = CreateVarString(10, "LITERAL_STRING", "Transaction_Feed_Sounds");
-	const sound = CreateVarString(10, "LITERAL_STRING", "Transaction_Positive");
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true);
-	struct1.setBigInt64(8, BigInt(sdict), true);
-	struct1.setBigInt64(16, BigInt(sound), true);
-	const struct2 = new DataView(new ArrayBuffer(76));
-	struct2.setBigInt64(8, BigInt(_text), true);
-	struct2.setBigInt64(16, BigInt(_dict), true);
-	struct2.setBigInt64(24, BigInt(GetHashKey(icon)), true);
-	struct2.setBigInt64(40, BigInt(GetHashKey(text_color)), true);
-	struct2.setInt32(48, 0, true); // quality stars or something works without icon
-	Citizen.invokeNative("0xB249EBCB30DD88E0", struct1, struct2, 1);
-});
+  // 0x26E87218390E6729  UiFeedPostSampleNshMessage (left, with texture)
+  exports('ShowAdvancedLeftNotification', (title, subtitle, dict, icon, d, color) => {
+    const b = body(56, (s) => {
+      s.setBigInt64(8, BigInt(str(title)), true);
+      s.setBigInt64(16, BigInt(str(subtitle)), true);
+      s.setBigInt64(32, hash(dict || 'generic_textures'), true);
+      s.setBigInt64(40, hash(icon || 'tick'), true);
+      s.setBigInt64(48, hash(color || 'COLOR_WHITE'), true);
+    });
+    Citizen.invokeNative('0x26E87218390E6729', duration(d), b, 1, 1);
+  });
 
-exports('ShowBasicTopNotification', (text, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true); // duration 
-	
-	const string = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(48));
-	struct2.setBigInt64(8, BigInt(string), true);
-
-	Citizen.invokeNative("0x860DDFE97CC94DF0", struct1, struct2, 1);
-});
-
-exports('ShowSimpleCenterText', (text, duration) => {
-	const struct1 = new DataView(new ArrayBuffer(48));
-	struct1.setInt32(0, duration, true); // duration 
-	
-	const string = CreateVarString(10, "LITERAL_STRING", text);
-	const struct2 = new DataView(new ArrayBuffer(24));
-	struct2.setBigInt64(8, BigInt(string), true);
-	struct2.setBigInt64(16, BigInt(GetHashKey("COLOR_PURE_WHITE")), true);
-
-	Citizen.invokeNative("0x893128CDB4B81FBB", struct1, struct2, 1);
-});
+  // 0xB249EBCB30DD88E0  UiFeedPostSampleNshRight (with texture + sound)
+  exports('ShowAdvancedRightNotification', (text, dict, icon, color, d) => {
+    const s1 = duration(d);
+    s1.setBigInt64(8, BigInt(str('Transaction_Feed_Sounds')), true);
+    s1.setBigInt64(16, BigInt(str('Transaction_Positive')), true);
+    const b = body(80, (s) => {
+      s.setBigInt64(8, BigInt(str(text)), true);
+      s.setBigInt64(16, BigInt(str(dict || 'generic_textures')), true);
+      s.setBigInt64(24, hash(icon || 'tick'), true);
+      s.setBigInt64(40, hash(color || 'COLOR_WHITE'), true);
+      s.setInt32(48, 0, true);
+    });
+    Citizen.invokeNative('0xB249EBCB30DD88E0', s1, b, 1);
+  });
+})();

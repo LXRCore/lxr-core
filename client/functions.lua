@@ -1,372 +1,304 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Client Functions
-    
-    Client-side utility functions, blip management, player data handling,
-    callback system, and core client API for LXR Core.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Server:      The Land of Wolves 🐺
-    Developer:   iBoss21 / The Lux Empire
-    Website:     https://www.wolves.land
-    Discord:     https://discord.gg/CrKcWdfd3A
-    Store:       https://theluxempire.tebex.io
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Version: 2.0.0
-    
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Client Helper Functions
+     ═══════════════════════════════════════════════════════════════════════════
+     RedM-native helpers exposed on LXRCore.Functions and as exports. No loops;
+     every function does its work and returns. Entity pools use GetGamePool.
+     ═══════════════════════════════════════════════════════════════════════════
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
+
+local F = LXRCore.Functions
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 🐺 LXR CORE - CLIENT FUNCTIONS
+-- 📍 POSITIONS & DISTANCES
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-LXRCore = {}
-LXRCore.Blips = {}
-LXRCore.Peds = {}
-LXRCore.PlayerData = {}
-LXRCore.ServerCallbacks = {}
-
--- Player
-
-exports('GetPlayerData', function(cb)
-    if cb then
-        cb(LXRCore.PlayerData)
-    else
-        return LXRCore.PlayerData
-    end
-end)
-
-exports('GetCoords', function(entity)
-    local coords = GetEntityCoords(entity, false)
-    local heading = GetEntityHeading(entity)
-    return vector4(coords.x, coords.y, coords.z, heading)
-end)
-
-exports('HasItem', function(item)
-    local p = promise.new()
-    TriggerCallback('LXRCore:HasItem', function(result)
-        p:resolve(result)
-    end, item)
-    return Citizen.Await(p)
-end)
-
--- Utility
-
-exports('Debug', function(resource, obj, depth)
-    TriggerServerEvent('LXRCore:DebugSomething', resource, obj, depth)
-end)
-
--- function TriggerCallback(event, ...)
--- 	local id = math.random(0, 100000)
--- 	event = ('__cb_%s'):format(event)
--- 	TriggerServerEvent(event, id, ...)
--- 	return event..id
--- end
-
-function TriggerCallback(name, cb, ...)
-    LXRCore.ServerCallbacks[name] = cb
-    TriggerServerEvent('LXRCore:Server:TriggerCallback', name, ...)
+function F.GetCoords(entity)
+    entity = entity or PlayerPedId()
+    local c = GetEntityCoords(entity, false)
+    return vector4(c.x, c.y, c.z, GetEntityHeading(entity))
 end
-exports('TriggerCallback', TriggerCallback)
 
--- Peds
+local function toVec3(coords)
+    if coords == nil then return GetEntityCoords(PlayerPedId()) end
+    if type(coords) == 'table' then return vector3(coords.x, coords.y, coords.z) end
+    return vector3(coords.x, coords.y, coords.z)
+end
 
-local function LoadModel(model)
+function F.GetPlayers() return GetActivePlayers() end
+function F.GetVehicles() return GetGamePool('CVehicle') end
+function F.GetObjects() return GetGamePool('CObject') end
+
+function F.GetPeds(ignoreList)
+    local ignore = {}
+    for _, v in ipairs(ignoreList or {}) do ignore[v] = true end
+    local out = {}
+    for _, ped in ipairs(GetGamePool('CPed')) do
+        if not ignore[ped] then out[#out + 1] = ped end
+    end
+    return out
+end
+
+function F.GetPlayersFromCoords(coords, distance)
+    coords = toVec3(coords)
+    distance = tonumber(distance) or 5.0
+    local out = {}
+    for _, player in ipairs(GetActivePlayers()) do
+        local ped = GetPlayerPed(player)
+        if #(GetEntityCoords(ped) - coords) <= distance then out[#out + 1] = player end
+    end
+    return out
+end
+
+local function closestOf(pool, coords, skip)
+    local best, bestDist = -1, -1
+    for _, ent in ipairs(pool) do
+        if ent ~= skip then
+            local d = #(GetEntityCoords(ent) - coords)
+            if bestDist == -1 or d < bestDist then best, bestDist = ent, d end
+        end
+    end
+    return best, bestDist
+end
+
+function F.GetClosestPlayer(coords)
+    coords = toVec3(coords)
+    local me = PlayerPedId()
+    local best, bestDist = -1, -1
+    for _, player in ipairs(GetActivePlayers()) do
+        local ped = GetPlayerPed(player)
+        if ped ~= me then
+            local d = #(GetEntityCoords(ped) - coords)
+            if bestDist == -1 or d < bestDist then best, bestDist = player, d end
+        end
+    end
+    return best, bestDist
+end
+
+function F.GetClosestPed(coords, ignoreList)
+    return closestOf(F.GetPeds(ignoreList), toVec3(coords), PlayerPedId())
+end
+
+function F.GetClosestVehicle(coords)
+    return closestOf(GetGamePool('CVehicle'), toVec3(coords), nil)
+end
+
+function F.GetClosestObject(coords)
+    return closestOf(GetGamePool('CObject'), toVec3(coords), nil)
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 📦 ASSETS
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+function F.LoadModel(model)
+    model = type(model) == 'string' and joaat(model) or model
+    if not IsModelValid(model) then return false end
+    if HasModelLoaded(model) then return true end
     RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(50)
-    end
+    local tries = 0
+    while not HasModelLoaded(model) and tries < 500 do Wait(10) tries = tries + 1 end
+    return HasModelLoaded(model)
 end
-exports('LoadModel', LoadModel)
 
-exports('SpawnPed', function(name, model, x, y, z, w)
-    if type(model) == 'string' then model = joaat(model) end
-    LoadModel(model)
-    LXRCore.Peds[name] = CreatePed(model, x, y, z, w, true, true, 0, 0)
-    Citizen.InvokeNative(0x283978A15512B2FE, LXRCore.Peds[name], true)
-    FreezeEntityPosition(LXRCore.Peds[name], true)
-    SetEntityInvincible(LXRCore.Peds[name], true)
-    SetBlockingOfNonTemporaryEvents(LXRCore.Peds[name], true)
-    SetEntityCanBeDamagedByRelationshipGroup(LXRCore.Peds[name], false, `PLAYER`)
-    SetEntityAsMissionEntity(LXRCore.Peds[name], true, true)
-end)
+function F.RequestAnimDict(dict)
+    if HasAnimDictLoaded(dict) then return true end
+    RequestAnimDict(dict)
+    local tries = 0
+    while not HasAnimDictLoaded(dict) and tries < 500 do Wait(10) tries = tries + 1 end
+    return HasAnimDictLoaded(dict)
+end
+F.LoadAnimDict = F.RequestAnimDict
 
-exports('RemovePed', function(name)
-    DeletePed(LXRCore.Peds[name])
-    LXRCore.Peds[name] = nil
-end)
+function F.PlayAnim(dict, name, upperbodyOnly, duration)
+    if not F.RequestAnimDict(dict) then return false end
+    local flag = upperbodyOnly and 16 or 0
+    TaskPlayAnim(PlayerPedId(), dict, name, 8.0, -8.0, duration or -1, flag, 0, false, false, false)
+    RemoveAnimDict(dict)
+    return true
+end
 
--- Getters
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🧍 PEDS, PROPS, VEHICLES
+-- ═══════════════════════════════════════════════════════════════════════════════
 
-exports('GetPeds', function(ignoreList)
-    local pedPool = GetGamePool('CPed')
-    local ignoreList = ignoreList or {}
-    local peds = {}
-    for i = 1, #pedPool, 1 do
-        local found = false
-        for j = 1, #ignoreList, 1 do
-            if ignoreList[j] == pedPool[i] then
-                found = true
-            end
-        end
-        if not found then
-            peds[#peds + 1] = pedPool[i]
-        end
-    end
-    return peds
-end)
-
-exports('GetClosestPed', function(coords, ignoreList)
-    local ped = PlayerPedId()
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    local ignoreList = ignoreList or {}
-    local peds = exports['lxr-core']:GetPeds(ignoreList)
-    local closestDistance = -1
-    local closestPed = -1
-    for i = 1, #peds, 1 do
-        local pedCoords = GetEntityCoords(peds[i])
-        local distance = #(pedCoords - coords)
-
-        if closestDistance == -1 or closestDistance > distance then
-            closestPed = peds[i]
-            closestDistance = distance
-        end
-    end
-    return closestPed, closestDistance
-end)
-
-exports('GetClosestPlayer', function(coords)
-    local ped = PlayerPedId()
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    local closestPlayers = exports['lxr-core']:GetPlayersFromCoords(coords)
-    local closestDistance = -1
-    local closestPlayer = -1
-    for i = 1, #closestPlayers, 1 do
-        if closestPlayers[i] ~= PlayerId() and closestPlayers[i] ~= -1 then
-            local pos = GetEntityCoords(GetPlayerPed(closestPlayers[i]))
-            local distance = #(pos - coords)
-
-            if closestDistance == -1 or closestDistance > distance then
-                closestPlayer = closestPlayers[i]
-                closestDistance = distance
-            end
-        end
-    end
-    return closestPlayer, closestDistance
-end)
-
-exports('GetPlayersFromCoords', function(coords, distance)
-    local players = GetActivePlayers()
-    local ped = PlayerPedId()
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    local distance = distance or 5
-    local closePlayers = {}
-    for _, player in pairs(players) do
-        local target = GetPlayerPed(player)
-        local targetCoords = GetEntityCoords(target)
-        local targetdistance = #(targetCoords - coords)
-        if targetdistance <= distance then
-            closePlayers[#closePlayers + 1] = player
-        end
-    end
-    return closePlayers
-end)
-
-exports('GetClosestVehicle', function(coords)
-    local ped = PlayerPedId()
-    local vehicles = GetGamePool('CVehicle')
-    local closestDistance = -1
-    local closestVehicle = -1
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    for i = 1, #vehicles, 1 do
-        local vehicleCoords = GetEntityCoords(vehicles[i])
-        local distance = #(vehicleCoords - coords)
-
-        if closestDistance == -1 or closestDistance > distance then
-            closestVehicle = vehicles[i]
-            closestDistance = distance
-        end
-    end
-    return closestVehicle, closestDistance
-end)
-
-exports('GetClosestObject', function(coords)
-    local ped = PlayerPedId()
-    local objects = GetGamePool('CObject')
-    local closestDistance = -1
-    local closestObject = -1
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    for i = 1, #objects, 1 do
-        local objectCoords = GetEntityCoords(objects[i])
-        local distance = #(objectCoords - coords)
-        if closestDistance == -1 or closestDistance > distance then
-            closestObject = objects[i]
-            closestDistance = distance
-        end
-    end
-    return closestObject, closestDistance
-end)
-
-exports('AttachProp', function(ped, model, boneId, x, y, z, xR, yR, zR, Vertex)
-    local modelHash = joaat(model)
-    local bone = GetPedBoneIndex(ped, boneId)
-    LoadModel(modelHash)
-    local prop = CreateObject(modelHash, 1.0, 1.0, 1.0, 1, 1, 0)
-    AttachEntityToEntity(prop, ped, bone, x, y, z, xR, yR, zR, 1, 1, 0, 1, not Vertex and 2 or 0, 1)
-    SetModelAsNoLongerNeeded(modelHash)
-    return prop
-end)
-
--- Vehicle
-
-exports('SpawnVehicle', function(model, cb, coords, isnetworked)
-    local hash = joaat(model)
-    local ped = PlayerPedId()
-    if coords then
-        coords = type(coords) == 'table' and vec3(coords.x, coords.y, coords.z) or coords
-    else
-        coords = GetEntityCoords(ped)
-    end
-    local isnetworked = isnetworked or true
-    if not IsModelInCdimage(hash) then return end
-    LoadModel(hash)
-    local veh = CreateVehicle(model, coords.x, coords.y, coords.z, coords.w, isnetworked, false)
-    local netid = NetworkGetNetworkIdFromEntity(veh)
-    SetNetworkIdExistsOnAllMachines(netid, true)
-    SetVehicleHasBeenOwnedByPlayer(veh, true)
+---Spawn a named, persistent ped (registry LXRCore.Peds[name]).
+function F.SpawnPed(name, model, x, y, z, heading, networked)
+    if LXRCore.Peds[name] and DoesEntityExist(LXRCore.Peds[name]) then return LXRCore.Peds[name] end
+    local hash = type(model) == 'string' and joaat(model) or model
+    if not F.LoadModel(hash) then return nil end
+    local ped = CreatePed(hash, x, y, z, heading or 0.0, networked == true, false, false, false)
+    Citizen.InvokeNative(0x283978A15512B2FE, ped, true) -- SetRandomOutfitVariation
+    SetEntityAsMissionEntity(ped, true, true)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+    FreezeEntityPosition(ped, true)
+    SetEntityInvincible(ped, true)
     SetModelAsNoLongerNeeded(hash)
-    if cb then
-        cb(veh)
+    LXRCore.Peds[name] = ped
+    return ped
+end
+
+function F.RemovePed(name)
+    local ped = LXRCore.Peds[name]
+    if ped and DoesEntityExist(ped) then DeleteEntity(ped) end
+    LXRCore.Peds[name] = nil
+end
+
+function F.AttachProp(ped, model, boneId, x, y, z, xR, yR, zR, vertex)
+    local hash = type(model) == 'string' and joaat(model) or model
+    if not F.LoadModel(hash) then return nil end
+    local c = GetEntityCoords(ped)
+    local prop = CreateObject(hash, c.x, c.y, c.z + 0.2, true, true, true)
+    local bone = GetEntityBoneIndexByName(ped, boneId)
+    AttachEntityToEntity(prop, ped, bone, x, y, z, xR, yR, zR, true, true, false, true, vertex and 0 or 2, true)
+    SetModelAsNoLongerNeeded(hash)
+    return prop
+end
+
+---Client-side vehicle spawn (networked by default). cb(vehicle) optional.
+function F.SpawnVehicle(model, cb, coords, isnetworked, teleportInto)
+    local hash = type(model) == 'string' and joaat(model) or model
+    local ped = PlayerPedId()
+    coords = coords or F.GetCoords(ped)
+    if not F.LoadModel(hash) then if cb then cb(nil) end return nil end
+    local veh = CreateVehicle(hash, coords.x, coords.y, coords.z, coords.w or 0.0, isnetworked ~= false, false)
+    SetModelAsNoLongerNeeded(hash)
+    if isnetworked ~= false then
+        local netId = NetworkGetNetworkIdFromEntity(veh)
+        SetNetworkIdCanMigrate(netId, true)
+        SetEntityAsMissionEntity(veh, true, true)
     end
-end)
+    if teleportInto then TaskWarpPedIntoVehicle(ped, veh, -1) end
+    if cb then cb(veh) end
+    return veh
+end
 
-exports('GetPlate',function(vehicle)
-    if vehicle == 0 then return end
-    return exports['lxr-core']:Trim(Citizen.InvokeNative(0xE8522D58,vehicle))
-end)
-
-exports("DeleteVehicle",function(vehicle)
+function F.DeleteVehicle(vehicle)
+    if not vehicle or not DoesEntityExist(vehicle) then return end
     SetEntityAsMissionEntity(vehicle, true, true)
     DeleteVehicle(vehicle)
-end)
-
-
-
--- Notification Function (can use direct export)
--- Function for Progressbar ( Missing Function export )
-exports('Progressbar', function(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel)
-    exports['progressbar']:Progress({
-        name = name:lower(),
-        duration = duration,
-        label = label,
-        useWhileDead = useWhileDead,
-        canCancel = canCancel,
-        controlDisables = disableControls,
-        animation = animation,
-        prop = prop,
-        propTwo = propTwo,
-    }, function(cancelled)
-        if not cancelled then
-            if onFinish then
-                onFinish()
-            end
-        else
-            if onCancel then
-                onCancel()
-            end
-        end
-    end)
-end)
-
-local function LoadTexture(dict)
-    if Citizen.InvokeNative(0x7332461FC59EB7EC, dict) then
-        RequestStreamedTextureDict(dict, true)
-        while not HasStreamedTextureDictLoaded(dict) do
-            Wait(1)
-        end
-        return true
-    else
-        return false
-    end
 end
 
-function Notify(id, text, duration, subtext, dict, icon, color)
-    local display = tostring(text) or 'Placeholder'
-	local subdisplay = tostring(subtext) or 'Placeholder'
-	local length = tonumber(duration) or 4000
-	local dictionary = tostring(dict) or 'generic_textures'
-	local image = tostring(icon) or 'tick'
-	local colour = tostring(color) or 'COLOR_WHITE'
-
-    local notifications = {
-        [1] = function() return exports['lxr-core']:ShowTooltip(display, length) end,
-        [2] = function() return exports['lxr-core']:DisplayRightText(display, length) end,
-        [3] = function() return exports['lxr-core']:ShowObjective(display, length) end,
-        [4] = function() return exports['lxr-core']:ShowBasicTopNotification(display, length) end,
-        [5] = function() return exports['lxr-core']:ShowSimpleCenterText(display, length) end,
-        [6] = function() return exports['lxr-core']:ShowLocationNotification(display, subdisplay, length) end,
-        [7] = function() return exports['lxr-core']:ShowTopNotification(display, subdisplay, length) end,
-        [8] = function() if not LoadTexture(dictionary) then LoadTexture('generic_textures') end
-            return exports['lxr-core']:ShowAdvancedLeftNotification(display, subdisplay, dictionary, image, length) end,
-        [9] = function() if not LoadTexture(dictionary) then LoadTexture('generic_textures') end
-            return exports['lxr-core']:ShowAdvancedRightNotification(display, dictionary, image, colour, length) end
-    }
-
-    if not notifications[id] then
-        print('Invalid Notify ID: ', id)
-        return nil
-    else
-        return notifications[id]()
-    end
+function F.GetPlate(vehicle)
+    if not vehicle or vehicle == 0 then return nil end
+    return LXRShared.Trim(Citizen.InvokeNative(0xE8522D58, vehicle)) -- GetVehicleNumberPlateText
 end
-exports('Notify', Notify)
 
--- Blip Functions
-exports('CreateBlip', function(uniqueId, label, x, y, z, sprite, scale, rotation, radius)
+function F.GetVehicleLabel(vehicle)
+    if not vehicle or vehicle == 0 then return nil end
+    return GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🗺️ BLIPS
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+function F.CreateBlip(uniqueId, label, x, y, z, sprite, scale, rotation, radius)
     if type(sprite) == 'string' then sprite = joaat(sprite) end
+    F.DeleteBlip(uniqueId)
+    local blip
     if radius then
-        LXRCore.Blips[uniqueId] = Citizen.InvokeNative(0x45F13B7E0A15C880, 1664425300, x, y, z, radius)
+        blip = Citizen.InvokeNative(0x45F13B7E0A15C880, 1664425300, x, y, z, radius) -- BlipAddForRadius
     else
-        LXRCore.Blips[uniqueId] = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, x, y, z)
+        blip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, x, y, z)         -- BlipAddForCoords
     end
-    if label then Citizen.InvokeNative(0x9CB1A1623062F402, LXRCore.Blips[uniqueId], label) end
-    if sprite then SetBlipSprite(LXRCore.Blips[uniqueId], sprite) end
-    if scale then SetBlipScale(LXRCore.Blips[uniqueId], scale) end
-    if rotation then SetBlipRotation(LXRCore.Blips[uniqueId], rotation) end
-end)
+    if sprite then SetBlipSprite(blip, sprite, true) end
+    if scale then SetBlipScale(blip, scale) end
+    if rotation then Citizen.InvokeNative(0x24A5F8A3A5CDF2E7, blip, rotation) end
+    if label then Citizen.InvokeNative(0x9CB1A1623062F402, blip, label) end          -- SetBlipNameFromPlayerString
+    LXRCore.Blips[uniqueId] = blip
+    return blip
+end
 
-exports('DeleteBlip', function(uniqueId)
-    RemoveBlip(LXRCore.Blips[uniqueId])
-end)
+function F.DeleteBlip(uniqueId)
+    local blip = LXRCore.Blips[uniqueId]
+    if blip then RemoveBlip(blip) end
+    LXRCore.Blips[uniqueId] = nil
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🎒 ITEMS (client-side view of replicated PlayerData)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+---HasItem(name, amount) · HasItem({ 'a', 'b' }, amount) · HasItem({ a = 2, b = 1 })
+function F.HasItem(items, amount)
+    local inv = LXRCore.PlayerData.items or {}
+    local function count(name)
+        local n = 0
+        for _, it in pairs(inv) do
+            if it and it.name == name then n = n + (it.amount or 0) end
+        end
+        return n
+    end
+    amount = tonumber(amount) or 1
+    if type(items) == 'string' then return count(items) >= amount end
+    if type(items) ~= 'table' then return false end
+    for k, v in pairs(items) do
+        if type(k) == 'string' then
+            if count(k) < (tonumber(v) or 1) then return false end
+        elseif count(v) < amount then
+            return false
+        end
+    end
+    return true
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ⏳ PROGRESS BAR (delegates to the progressbar resource when present)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+function F.Progressbar(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel)
+    if GetResourceState('progressbar') == 'started' then
+        exports['progressbar']:Progress({
+            name = name:lower(), duration = duration, label = label, useWhileDead = useWhileDead,
+            canCancel = canCancel, controlDisables = disableControls, animation = animation, prop = prop, propTwo = propTwo,
+        }, function(cancelled)
+            if not cancelled then if onFinish then onFinish() end else if onCancel then onCancel() end end
+        end)
+        return
+    end
+    -- headless fallback: wait, then finish
+    CreateThread(function()
+        Wait(tonumber(duration) or 0)
+        if onFinish then onFinish() end
+    end)
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 📤 EXPORTS (legacy export-per-function surface)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+exports('GetPlayerData', F.GetPlayerData)
+exports('IsLoggedIn', F.IsLoggedIn)
+exports('GetCoords', F.GetCoords)
+exports('HasItem', F.HasItem)
+exports('LoadModel', F.LoadModel)
+exports('SpawnPed', F.SpawnPed)
+exports('RemovePed', F.RemovePed)
+exports('GetPeds', F.GetPeds)
+exports('GetClosestPed', F.GetClosestPed)
+exports('GetClosestPlayer', F.GetClosestPlayer)
+exports('GetClosestVehicle', F.GetClosestVehicle)
+exports('GetClosestObject', F.GetClosestObject)
+exports('GetPlayersFromCoords', F.GetPlayersFromCoords)
+exports('AttachProp', F.AttachProp)
+exports('SpawnVehicle', F.SpawnVehicle)
+exports('DeleteVehicle', F.DeleteVehicle)
+exports('GetPlate', F.GetPlate)
+exports('Progressbar', F.Progressbar)
+exports('CreateBlip', F.CreateBlip)
+exports('DeleteBlip', F.DeleteBlip)
+exports('PlayAnim', F.PlayAnim)
+exports('GetConfig', function() return Config end)
+exports('GetItems', function() return LXRShared.Items end)
+exports('GetJobs', function() return LXRShared.Jobs end)
+exports('GetGangs', function() return LXRShared.Gangs end)
+exports('GetWeapons', function() return LXRShared.Weapons end)
+exports('GetHorses', function() return LXRShared.Horses end)
+exports('GetVehicles', function() return LXRShared.Vehicles end)
+exports('RandomStr', LXRShared.RandomStr)
+exports('RandomInt', LXRShared.RandomInt)
+exports('SplitStr', LXRShared.SplitStr)
+exports('Trim', LXRShared.Trim)
+exports('Round', LXRShared.Round)
+exports('Debug', function(_, obj) print(json.encode(obj)) end)

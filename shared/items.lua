@@ -1,147 +1,117 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Items Data
-    
-    All item definitions for the LXR Core framework including weapons, consumables,
-    crafting materials, valuables, and special items.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION  |  Developer: iBoss21 / The Lux Empire
-    Website: https://www.wolves.land  |  Store: https://theluxempire.tebex.io
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-    ═══════════════════════════════════════════════════════════════════════════════
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Shared Data: Items
+     ═══════════════════════════════════════════════════════════════════════════
+     Shape (RSG/QBR compatible, read by inventory resources):
+       key = { name, label, weight (grams), type ('item'|'weapon'), image,
+               unique, useable, shouldClose, description, category?, decay?,
+               combinable? }
+     Keys must equal `name` and be lowercase. Add items here or at runtime:
+       LXRCore.Functions.AddItem(name, data) / AddItems({ ... })
+     Starter items given on character creation live in LXRShared.StarterItems.
+     ═══════════════════════════════════════════════════════════════════════════
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
 
-LXRShared                              = LXRShared or {}
-LXRShared.Items                        = {
-    --Items 
-    water_bottle                           = { name = 'water_bottle', label = 'Bottle of Water', weight = 500, type = 'item', image = 'generic_bottle.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'For all the thirsty out there' },
-    bread                                  = { name = 'bread', label = 'Bread Roll', weight = 125, type = 'item', image = 'consumable_bread_roll.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'A small bread roll' },
-    chocolate                              = { name = 'chocolate', label = 'Chocolate Bar', weight = 100, type = 'item', image = 'consumable_chocolate_bar.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'A nice little comfort snack' },
-    sandwich                               = { name = 'sandwich', label = 'Sandwich', weight = 125, type = 'item', image = 'bread.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'A sandwich with toppings.' },
-    beer                                   = { name = 'beer', label = 'Beer', weight = 500, type = 'item', image = 'consumable_whiskey.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'For all the thirsty out there' },
-    whiskey                                = { name = 'whiskey', label = 'Whiskey', weight = 500, type = 'item', image = 'consumable_whiskey.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'For all the thirsty out there' },
-    vodka                                  = { name = 'vodka', label = 'Vodka', weight = 500, type = 'item', image = 'consumable_whiskey.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'For all the thirsty out there' },
-    coffee                                 = { name = 'coffee', label = 'Coffee', weight = 200, type = 'item', image = 'consumable_coffee.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'S rustic pick me up' },
-    cigarette                              = { name = 'cigarette', label = 'Cigarette', weight = 1, type = 'item', image = 'consumable_cigarette_box.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'A little bit of goodness' },
-    cigar                                  = { name = 'cigar', label = 'Cigar', weight = 1, type = 'item', image = 'consumable_cigar.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'A relief from stress' },
-    lighter                                = { name = 'lighter', label = 'Lighter', weight = 0, type = 'item', image = 'lighter.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'On new years eve a nice fire to stand next to' },
-    apple                                  = { name = 'apple', label = 'Apple', weight = 100, type = 'item', image = 'consumable_apple.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'An apple a day keeps my stomach filled. No worries about a fricking scurvy. It is only natural that it keeps the doctor away' },
-    bandage                                = { name = 'bandage', label = 'Bandage', weight = 0, type = 'item', image = 'bandage.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'bandage.' },
-    painkillers                            = { name = 'painkillers', label = 'painkillers', weight = 0, type = 'item', image = 'painkillers.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'painkillers.' },
-    firstaid                               = { name = 'firstaid', label = 'firstaid', weight = 0, type = 'item', image = 'firstaid.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'firstaid.' },
-    cannedbeans                            = { name = 'cannedbeans', label = 'Beans in a can', weight = 100, type = 'item', image = 'consumable_baked_beans_can.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Canned beans, not something somebody would want to eat willingly. Atleast I can now make a bean joke about it' },
-    coins1                                 = { name = 'coins1', label = '1 coins', weight = 100, type = 'item', image = 'coins.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Coins' },
-    coins5                                 = { name = 'coins5', label = '5 coins', weight = 100, type = 'item', image = 'coins.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Coins' },
-    coins10                                = { name = 'coins10', label = '5 coins', weight = 100, type = 'item', image = 'coins.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Coins' },
-    metalscrap                             = { name = 'metalscrap', label = 'Metalscrap', weight = 100, type = 'item', image = 'metalscrap.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Placeholder' },
-    plastic                                = { name = 'plastic', label = 'Plastic', weight = 100, type = 'item', image = 'plastic.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Placeholder' },
-    lockpick                               = { name = 'lockpick', label = 'Lockpick', weight = 100, type = 'item', image = 'lockpick.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Placeholder' },
-    coffeeseeds                            = { name = 'coffeeseeds', label = 'Coffeeseeds', weight = 100, type = 'item', image = 'seed_weed.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Placeholder' },
-    cash                                   = { name = 'cash', label = 'Cash', weight = 0, type = 'item', image = 'money_moneyclip.png', unique = false, useable = false, shouldClose = false, combinable = true, level = 0, description = 'Cash' },
-    satchel                                = { name = 'satchel', label = 'Satchel', weight = 0, type = 'item', image = 'clothing_satchel_001.png', unique = false, useable = false, shouldClose = false, combinable = false, level = 0, description = 'A Satchel' },
-    evidence_satchel                       = { name = 'evidence_satchel', label = 'Evidence Satchel', weight = 200, type = 'item', image = 'clothing_satchel_001.png', unique = true, useable = true, shouldClose = false, combinable = false, level = 0, description = 'A Satchel filled with evidence' },
-    moneybag                               = { name = 'moneybag', label = 'Moneybag', weight = 0, type = 'item', image = 'money_coinpurse.png', unique = true, useable = true, shouldClose = true, combinable = false, level = 0, description = 'A bag filled with money' },
+LXRShared = LXRShared or {}
 
-    --FARMING
-    huckle_berry                           = { name = 'huckle_berry', label = 'Huckle Berry', weight = 100, type = 'item', image = 'herb_huckleberry.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Huckle Berry' },
-    bay_bolete                             = { name = 'bay_bolete', label = 'Bay Bolete', weight = 100, type = 'item', image = 'herb_bay_bolete.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Bay Bolete' },
-    black_berry                            = { name = 'black_berry', label = 'Black Berry', weight = 100, type = 'item', image = 'herb_black_berry.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Black Berry' },
-    alaskan_ginseng                        = { name = 'alaskan_ginseng', label = 'Alaskan Ginseng', weight = 100, type = 'item', image = 'herb_alaskan_ginseng.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Alaskan Ginseng' },
-    black_currant                          = { name = 'black_currant', label = 'Black Currant', weight = 100, type = 'item', image = 'herb_black_currant.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Black Currant' },
-    mint                                   = { name = 'mint', label = 'Mint', weight = 100, type = 'item', image = 'herb_wild_mint.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Mint' },
-    american_ginseng                       = { name = 'american_ginseng', label = 'American Ginseng', weight = 100, type = 'item', image = 'herb_american_ginseng.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol American Ginseng' },
-    seed_huckle_berry                      = { name = 'seed_huckle_berry', label = 'Huckle Berry Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Huckle Berry' },
-    seed_bay_bolete                        = { name = 'seed_bay_bolete', label = 'Bay Bolete Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Bay Bolete' },
-    seed_black_berry                       = { name = 'seed_black_berry', label = 'Black Berry Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Black Berry' },
-    seed_alaskan_ginseng                   = { name = 'seed_alaskan_ginseng', label = 'Alaskan Ginseng Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Alaskan Ginseng' },
-    seed_black_currant                     = { name = 'seed_black_currant', label = 'Black Currant Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Black Currant' },
-    seed_mint                              = { name = 'seed_mint', label = 'Mint Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Mint' },
-    seed_american_ginseng                  = { name = 'seed_american_ginseng', label = 'American Ginseng Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol American Ginseng' },
-    seed_coffee                            = { name = 'seed_coffee', label = 'Coffee Bean', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Placeholder' },
-    seed_corn                              = { name = 'seed_corn', label = 'Corn Kernel', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Placeholder' },
-    seed_tobacco                           = { name = 'seed_tobacco', label = 'Tobacco Seed', weight = 100, type = 'item', image = 'seed.png', unique = false, useable = true, shouldClose = false, combinable = nil, level = 0, description = 'Placeholder' },
-    corn                                   = { name = 'corn', label = 'Corn', weight = 100, type = 'item', image = 'corn.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Good Ol Corn' },
-    tobacco                                = { name = 'tobacco', label = 'Tobacco', weight = 100, type = 'item', image = 'tobacco.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'A relief from stress' },
-    --HUNTING
-    feather                                = { name = 'feather', label = 'Feathers', weight = 100, type = 'item', image = 'feather.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Some Feathers' },
-    animal_heart                           = { name = 'animal_heart', label = 'Animal Heart', weight = 250, type = 'item', image = 'animal_heart.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    animal_pelt                            = { name = 'animal_pelt', label = 'Animal Pelt', weight = 300, type = 'item', image = 'animal_pelt.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    animal_wool                            = { name = 'animal_wool', label = 'Animal Wool', weight = 300, type = 'item', image = 'animal_wool.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    animal_toad                            = { name = 'animal_toad', label = 'Toad', weight = 250, type = 'item', image = 'animal_toad.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    animal_squirrel                        = { name = 'animal_squirrel', label = 'Squirrel', weight = 1000, type = 'item', image = 'animal_squirrel.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    skin_snake                             = { name = 'skin_snake', label = 'Snake Skin', weight = 200, type = 'item', image = 'animal_snakeskin.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    skin_iguana                            = { name = 'skin_iguana', label = 'Iguana Skin', weight = 250, type = 'item', image = 'skin_iguana.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    skin_muskrat                           = { name = 'skin_muskrat', label = 'Muskrat Fur', weight = 325, type = 'item', image = 'skin_muskrat.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    skin_alligator                         = { name = 'skin_alligator', label = 'Alligator Skin', weight = 250, type = 'item', image = 'skin_alligator.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Hmmmmm' },
-    animal_meat                            = { name = 'animal_meat', label = 'Meat', weight = 250, type = 'item', image = 'meat.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Raw Meat Cook it Maybe' },
-    bird_meat                              = { name = 'meat_bird', label = 'Bird Meat', weight = 250, type = 'item', image = 'meat_bird.png', unique = false, useable = false, shouldClose = false, combinable = nil, level = 0, description = 'Raw Bird Meat' },
-    --MINING
-    pickaxe                                = { name = 'pickaxe', label = 'Pickaxe', weight = 2, type = 'item', image = 'pickaxe.png', unique = true, useable = true, shouldClose = true, combinable = false, level = 0, description = 'Tool for mining' },
-    iron                                   = { name = 'iron', label = 'Iron Ore', weight = 50, type = 'item', image = 'iron.png', unique = true, useable = false, shouldClose = true, combinable = false, level = 0, description = 'Iron Ore' },
-    coal                                   = { name = 'coal', label = 'Coal Ore', weight = 40, type = 'item', image = 'coal.png', unique = true, useable = false, shouldClose = true, combinable = false, level = 0, description = 'Coal Ore' },
-    copper                                 = { name = 'copper', label = 'Copper Ore', weight = 60, type = 'item', image = 'copper.png', unique = true, useable = false, shouldClose = true, combinable = false, level = 0, description = 'Copper Ore' },
-    gold                                   = { name = 'gold', label = 'Gold Ore', weight = 70, type = 'item', image = 'gold.png', unique = true, useable = false, shouldClose = true, combinable = false, level = 0, description = 'Gold Ore' },
-    --AMMO
-    ammo_repeater                          = { name = 'ammo_repeater', label = 'Ammo Repeater', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Repeater Ammo' },
-    ammo_revolver                          = { name = 'ammo_revolver', label = 'Ammo Revolver', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Revolver Ammo' },
-    ammo_rifle                             = { name = 'ammo_rifle', label = 'Ammo Rifle', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Rifle Ammo' },
-    ammo_pistol                            = { name = 'ammo_pistol', label = 'Ammo Pistol', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Pistol Ammo' },
-    ammo_shotgun                           = { name = 'ammo_shotgun', label = 'Ammo Shotgun', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Shotgun Ammo' },
-    ammo_22                                = { name = 'ammo_22', label = 'Ammo .22', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = '.22 Ammo' },
-    ammo_arrow                             = { name = 'ammo_arrow', label = 'Arrow', weight = 200, type = 'item', image = 'ammo_bullet_normal.png', unique = false, useable = true, shouldClose = true, combinable = nil, level = 0, description = 'Arrow' },
+local function item(name, label, weight, opts)
+    opts = opts or {}
+    return {
+        name = name,
+        label = label,
+        weight = weight or 100,
+        type = opts.type or 'item',
+        image = opts.image or (name .. '.png'),
+        unique = opts.unique == true,
+        useable = opts.useable ~= false,
+        shouldClose = opts.shouldClose ~= false,
+        description = opts.description or '',
+        category = opts.category,
+        decay = opts.decay,
+        combinable = opts.combinable,
+    }
+end
 
-    --WEAPONS
-    weapon_revolver_cattleman              = { name = 'weapon_revolver_cattleman', attachPoint = 2, label = 'Colt M1873 Single Action', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_cattleman.png', unique = true, useable = true, level = 0, description = 'Every cowboy has a first. And this revolver will probably be it' },
-    weapon_revolver_cattleman_mexican      = { name = 'weapon_revolver_cattleman_mexican', attachPoint = 2, label = 'Steel Colt M1873', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_cattleman_mexican.png', unique = true, useable = true, level = 0, description = 'Every cowboy has a first. And this revolver will probably be it, for the rich cowboys atleast' },
-    weapon_revolver_doubleaction_gambler   = { name = 'weapon_revolver_doubleaction_gambler', attachPoint = 2, label = 'Colt M1892 Double-action', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_doubleaction_gambler.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_revolver_schofield              = { name = 'weapon_revolver_schofield', attachPoint = 2, label = 'Smith & Wesson No. 3', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_schofield.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_revolver_lemat                  = { name = 'weapon_revolver_lemat', attachPoint = 2, label = 'LeMat Revolver', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_lemat.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_revolver_navy                   = { name = 'weapon_revolver_navy', attachPoint = 2, label = 'Navy Revolver 1851', weight = 1000, type = 'weapon', ammotype = 'AMMO_REVOLVER', image = 'weapon_revolver_navy.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_pistol_volcanic                 = { name = 'weapon_pistol_volcanic', attachPoint = 2, label = 'Volcanic Pistol', weight = 1000, type = 'weapon', ammotype = 'AMMO_PISTOL', image = 'weapon_pistol_volcanic.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_pistol_m1899                    = { name = 'weapon_pistol_m1899', attachPoint = 2, label = 'FN Browning M1900', weight = 1000, type = 'weapon', ammotype = 'AMMO_PISTOL', image = 'weapon_pistol_m1899.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_pistol_mauser                   = { name = 'weapon_pistol_mauser', attachPoint = 2, label = 'Mauser C96', weight = 1000, type = 'weapon', ammotype = 'AMMO_PISTOL', image = 'weapon_pistol_mauser.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_pistol_semiauto                 = { name = 'weapon_pistol_semiauto', attachPoint = 2, label = 'Borchardt C-93', weight = 1000, type = 'weapon', ammotype = 'AMMO_PISTOL', image = 'weapon_pistol_semiauto.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_repeater_carbine                = { name = 'weapon_repeater_carbine', attachPoint = 9, label = 'Spencer Model 1865', weight = 1000, type = 'weapon', ammotype = 'AMMO_REPEATER', image = 'weapon_repeater_carbine.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_repeater_winchester             = { name = 'weapon_repeater_winchester', attachPoint = 9, label = 'Winchester Model 1866', weight = 1000, type = 'weapon', ammotype = 'AMMO_REPEATER', image = 'weapon_repeater_winchester.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_repeater_henry                  = { name = 'weapon_repeater_henry', attachPoint = 9, label = 'Henry Model 1860', weight = 1000, type = 'weapon', ammotype = 'AMMO_REPEATER', image = 'weapon_repeater_henry.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_repeater_evans                  = { name = 'weapon_repeater_evans', attachPoint = 9, label = 'Evans Repeating Rifle', weight = 1000, type = 'weapon', ammotype = 'AMMO_REPEATER', image = 'weapon_repeater_evans.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_rifle_varmint                   = { name = 'weapon_rifle_varmint', attachPoint = 9, label = 'Winchester Model 1890', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_rifle_varmint.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_rifle_springfield               = { name = 'weapon_rifle_springfield', attachPoint = 9, label = 'Springfield Model 1873', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_rifle_springfield.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_rifle_boltaction                = { name = 'weapon_rifle_boltaction', attachPoint = 9, label = 'Springfield Model 1892', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_rifle_boltaction.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_rifle_elephant                  = { name = 'weapon_rifle_elephant', attachPoint = 9, label = 'Elephant Rifle', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_rifle_elephant.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_shotgun_doublebarrel            = { name = 'weapon_shotgun_doublebarrel', attachPoint = 9, label = 'Colt Hammer Shotgun 1878', weight = 1000, type = 'weapon', ammotype = 'AMMO_SHOTGUN', image = 'weapon_shotgun_doublebarrel.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_shotgun_doublebarrel_exotic     = { name = 'weapon_shotgun_doublebarrel_exotic', attachPoint = 9, label = 'Steel Hammer Shotgun 1878', weight = 1000, type = 'weapon', ammotype = 'AMMO_SHOTGUN', image = 'weapon_shotgun_doublebarrel_exotic.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_shotgun_sawedoff                = { name = 'weapon_shotgun_sawedoff', attachPoint = 9, label = 'Hamerless Shotgun 1883', weight = 1000, type = 'weapon', ammotype = 'AMMO_SHOTGUN', image = 'weapon_shotgun_sawedoff.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_shotgun_semiauto                = { name = 'weapon_shotgun_semiauto', attachPoint = 9, label = 'Browning Auto-5', weight = 1000, type = 'weapon', ammotype = 'AMMO_SHOTGUN', image = 'weapon_shotgun_semiauto.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_sniperrifle_rollingblock        = { name = 'weapon_sniperrifle_rollingblock', attachPoint = 10, label = 'Remington M1867', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_sniperrifle_rollingblock.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_sniperrifle_rollingblock_exotic = { name = 'weapon_sniperrifle_rollingblock_exotic', attachPoint = 10, label = 'Steel Remington M1867', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_sniperrifle_rollingblock_exotic.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_sniperrifle_carcano             = { name = 'weapon_sniperrifle_carcano', attachPoint = 10, label = 'Carcano 1891 Short Rifle', weight = 1000, type = 'weapon', ammotype = 'AMMO_RIFLE', image = 'weapon_sniperrifle_carcano.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_bow                             = { name = 'weapon_bow', attachPoint = 7, label = 'Flatbow', weight = 100, type = 'weapon', ammotype = 'AMMO_ARROW', image = 'weapon_bow.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_bow_improved                    = { name = 'weapon_bow_improved', attachPoint = 7, label = 'Sturdy Flatbow', weight = 100, type = 'weapon', ammotype = 'AMMO_ARROW', image = 'weapon_bow_improved.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_lasso                           = { name = 'weapon_lasso', attachPoint = 5, label = 'Lasso', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_lasso.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_lasso_reinforced                = { name = 'weapon_lasso_reinforced', attachPoint = 5, label = 'Sturdy Lasso', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_lasso_reinforced.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_knife                     = { name = 'weapon_melee_knife', attachPoint = 4, label = 'Knife', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_knife.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_knife_jawbone             = { name = 'weapon_melee_knife_jawbone', attachPoint = 4, label = 'Jawbone Knife', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_knife_jawbone.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_hammer                    = { name = 'weapon_melee_hammer', attachPoint = 13, label = 'Hammer', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_hammer.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_dynamite                 = { name = 'weapon_thrown_dynamite', attachPoint = 6, label = 'Throwable Dynamite', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_dynamite.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_molotov                  = { name = 'weapon_thrown_molotov', attachPoint = 6, label = 'Throwable Molotov', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_molotov.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_throwing_knives          = { name = 'weapon_thrown_throwing_knives', attachPoint = 6, label = 'Throwing Knives', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_throwing_knives.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_tomahawk                 = { name = 'weapon_thrown_tomahawk', attachPoint = 6, label = 'Throwable Axe', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_tomahawk.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_tomahawk_ancient         = { name = 'weapon_thrown_tomahawk_ancient', attachPoint = 6, label = 'Throwable Old Axe', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_tomahawk_ancient.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_thrown_bolas                    = { name = 'weapon_thrown_bolas', attachPoint = 6, label = 'Throwable Bolas', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_thrown_bolas.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_cleaver                   = { name = 'weapon_melee_cleaver', attachPoint = 3, label = 'Throwable Cleaver', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_cleaver.png', unique = false, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_lantern                   = { name = 'weapon_melee_lantern', attachPoint = 11, label = 'Silver Lantern', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_lantern.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_davy_lantern              = { name = 'weapon_melee_davy_lantern', attachPoint = 11, label = 'Golden Lantern', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_davy_lantern.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_torch                     = { name = 'weapon_melee_torch', attachPoint = 13, label = 'Wooden Torch', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_torch.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_hatchet                   = { name = 'weapon_melee_hatchet', attachPoint = 13, label = 'Hatchet', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_hatchet.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_melee_machete                   = { name = 'weapon_melee_machete', attachPoint = 13, label = 'Machete', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_melee_machete.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
-    weapon_kit_binoculars                  = { name = 'weapon_kit_binoculars', attachPoint = 13, label = 'Binoculars', weight = 100, type = 'weapon', ammotype = nil, image = 'weapon_kit_binoculars.png', unique = true, useable = true, level = 0, description = 'Placeholder' },
+LXRShared.Items = {
+    -- ═══ Money as items (only used when Config.Money.EnableMoneyItems) ═══
+    dollar        = item('dollar', 'Dollar', 0, { useable = false, category = 'money', description = 'Cash dollar' }),
+    cent          = item('cent', 'Cent', 0, { useable = false, category = 'money', description = 'Cash cent' }),
+    blood_dollar  = item('blood_dollar', 'Blood Dollar', 0, { useable = false, category = 'money', description = 'Tainted money' }),
+    blood_cent    = item('blood_cent', 'Blood Cent', 0, { useable = false, category = 'money', description = 'Tainted money' }),
+    gold          = item('gold', 'Gold', 100, { useable = false, category = 'money', description = 'Gold nugget' }),
 
+    -- ═══ Consumables ═══
+    water         = item('water', 'Water', 200, { category = 'drink', description = 'Fresh water', decay = 0 }),
+    coffee        = item('coffee', 'Coffee', 200, { category = 'drink', description = 'Hot coffee' }),
+    beer          = item('beer', 'Beer', 300, { category = 'drink', description = 'Cold beer' }),
+    whiskey       = item('whiskey', 'Whiskey', 300, { category = 'drink', description = 'Strong whiskey' }),
+    bread         = item('bread', 'Bread', 200, { category = 'food', description = 'A loaf of bread' }),
+    apple         = item('apple', 'Apple', 100, { category = 'food', description = 'A crisp apple' }),
+    cooked_meat   = item('cooked_meat', 'Cooked Meat', 300, { category = 'food', description = 'Cooked game meat' }),
+    raw_meat      = item('raw_meat', 'Raw Meat', 300, { category = 'food', description = 'Raw game meat', useable = false }),
+    stew          = item('stew', 'Stew', 400, { category = 'food', description = 'Hearty stew' }),
+    canned_beans  = item('canned_beans', 'Canned Beans', 300, { category = 'food', description = 'Canned beans' }),
+
+    -- ═══ Medical ═══
+    bandage       = item('bandage', 'Bandage', 100, { category = 'medical', description = 'Stops bleeding' }),
+    health_cure   = item('health_cure', 'Health Cure', 200, { category = 'medical', description = 'Restores health' }),
+    tonic         = item('tonic', 'Tonic', 200, { category = 'medical', description = 'Restores stamina' }),
+
+    -- ═══ Tools ═══
+    lantern       = item('lantern', 'Lantern', 500, { category = 'tool', description = 'Portable lantern' }),
+    lockpick      = item('lockpick', 'Lockpick', 100, { category = 'tool', description = 'Opens locks, sometimes' }),
+    pickaxe       = item('pickaxe', 'Pickaxe', 2000, { category = 'tool', description = 'Mining tool' }),
+    axe           = item('axe', 'Axe', 2000, { category = 'tool', description = 'Wood cutting axe' }),
+    fishingrod    = item('fishingrod', 'Fishing Rod', 800, { category = 'tool', description = 'Fishing rod' }),
+    binoculars    = item('binoculars', 'Binoculars', 400, { category = 'tool', description = 'See far away' }),
+    bedroll       = item('bedroll', 'Bedroll', 1500, { category = 'tool', description = 'Sleep anywhere' }),
+    rope          = item('rope', 'Rope', 500, { category = 'tool', description = 'Sturdy rope' }),
+    lasso         = item('lasso', 'Lasso', 600, { category = 'tool', description = 'Catch animals and outlaws' }),
+    handcuffs     = item('handcuffs', 'Handcuffs', 400, { category = 'tool', description = 'Iron handcuffs' }),
+    handcuffs_key = item('handcuffs_key', 'Handcuffs Key', 50, { category = 'tool', description = 'Opens handcuffs' }),
+    campfire_kit  = item('campfire_kit', 'Campfire Kit', 1000, { category = 'tool', description = 'Build a campfire' }),
+
+    -- ═══ Documents ═══
+    id_card       = item('id_card', 'Identification', 50, { unique = true, category = 'document', description = 'Personal papers' }),
+    wanted_poster = item('wanted_poster', 'Wanted Poster', 50, { unique = true, category = 'document', description = 'Bounty notice' }),
+    telegram      = item('telegram', 'Telegram', 20, { unique = true, category = 'document', description = 'A telegram' }),
+
+    -- ═══ Materials ═══
+    wood          = item('wood', 'Wood', 500, { useable = false, category = 'material', description = 'Firewood' }),
+    iron_ore      = item('iron_ore', 'Iron Ore', 800, { useable = false, category = 'material', description = 'Raw iron ore' }),
+    iron_bar      = item('iron_bar', 'Iron Bar', 1000, { useable = false, category = 'material', description = 'Smelted iron' }),
+    gold_ore      = item('gold_ore', 'Gold Ore', 800, { useable = false, category = 'material', description = 'Raw gold ore' }),
+    coal          = item('coal', 'Coal', 500, { useable = false, category = 'material', description = 'Coal' }),
+    leather       = item('leather', 'Leather', 400, { useable = false, category = 'material', description = 'Tanned leather' }),
+    pelt_deer     = item('pelt_deer', 'Deer Pelt', 1500, { useable = false, category = 'pelt', description = 'Deer pelt' }),
+    pelt_wolf     = item('pelt_wolf', 'Wolf Pelt', 1500, { useable = false, category = 'pelt', description = 'Wolf pelt' }),
+    herb_yarrow   = item('herb_yarrow', 'Yarrow', 50, { useable = false, category = 'herb', description = 'Medicinal herb' }),
+    herb_ginseng  = item('herb_ginseng', 'Ginseng', 50, { useable = false, category = 'herb', description = 'Restorative root' }),
+
+    -- ═══ Ammunition ═══
+    ammo_revolver = item('ammo_revolver', 'Revolver Ammo', 50, { category = 'ammo', description = 'Box of revolver rounds' }),
+    ammo_pistol   = item('ammo_pistol', 'Pistol Ammo', 50, { category = 'ammo', description = 'Box of pistol rounds' }),
+    ammo_rifle    = item('ammo_rifle', 'Rifle Ammo', 80, { category = 'ammo', description = 'Box of rifle rounds' }),
+    ammo_repeater = item('ammo_repeater', 'Repeater Ammo', 80, { category = 'ammo', description = 'Box of repeater rounds' }),
+    ammo_shotgun  = item('ammo_shotgun', 'Shotgun Shells', 100, { category = 'ammo', description = 'Box of shells' }),
+    ammo_arrow    = item('ammo_arrow', 'Arrow', 200, { category = 'ammo', description = 'Arrows' }),
+
+    -- ═══ Weapons (type 'weapon' — inventory resources create serial/quality in info) ═══
+    weapon_revolver_cattleman = item('weapon_revolver_cattleman', 'Cattleman Revolver', 1000, { type = 'weapon', unique = true, category = 'weapon', description = 'Reliable sidearm' }),
+    weapon_revolver_schofield = item('weapon_revolver_schofield', 'Schofield Revolver', 1000, { type = 'weapon', unique = true, category = 'weapon', description = 'Top-break revolver' }),
+    weapon_pistol_volcanic    = item('weapon_pistol_volcanic', 'Volcanic Pistol', 1000, { type = 'weapon', unique = true, category = 'weapon', description = 'Lever-action pistol' }),
+    weapon_repeater_carbine   = item('weapon_repeater_carbine', 'Carbine Repeater', 3000, { type = 'weapon', unique = true, category = 'weapon', description = 'Fast repeater' }),
+    weapon_rifle_springfield  = item('weapon_rifle_springfield', 'Springfield Rifle', 3500, { type = 'weapon', unique = true, category = 'weapon', description = 'Single-shot rifle' }),
+    weapon_shotgun_doublebarrel = item('weapon_shotgun_doublebarrel', 'Double-Barrel Shotgun', 3500, { type = 'weapon', unique = true, category = 'weapon', description = 'Close-range power' }),
+    weapon_bow                = item('weapon_bow', 'Bow', 1500, { type = 'weapon', unique = true, category = 'weapon', description = 'Silent hunting bow' }),
+    weapon_melee_knife        = item('weapon_melee_knife', 'Hunting Knife', 500, { type = 'weapon', unique = true, category = 'weapon', description = 'Sharp knife' }),
+    weapon_melee_hatchet      = item('weapon_melee_hatchet', 'Hatchet', 800, { type = 'weapon', unique = true, category = 'weapon', description = 'Throwing hatchet' }),
+}
+
+-- Items granted once when a character is created (used by multicharacter).
+LXRShared.StarterItems = {
+    { item = 'water', amount = 2 },
+    { item = 'bread', amount = 2 },
+    { item = 'bandage', amount = 1 },
+    { item = 'id_card', amount = 1 },
 }

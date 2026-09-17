@@ -6,1075 +6,847 @@
     ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
 
-    LXR Core - Player Management System
+    🐺 LXR Core - Player & Character Lifecycle
 
-    Architecture:
-    - Metatable/prototype OOP: All players share one function table (vs 15+ closures/player)
-    - O(1) citizenid lookups via LXRCore.CitizenIdMap hash table
-    - Deferred batch save: Dirty-flag tracking with periodic flush (no per-setter DB writes)
-    - Normalized DB columns: Direct SQL for money/job/gang/charinfo/position (no JSON encode on save)
-    - Delta-based StateBag broadcasting: Only changed fields sent to clients
-    - Staggered save cycle: Saves spread across interval to avoid thundering-herd DB spikes
-    - Transaction-wrapped financial operations: Atomic money+item grants
-    - string.format logging: Eliminates 11+ concat operations per log entry
+    Three things are kept distinct here:
+      • platform player   — the connected RedM client (source, identifiers)
+      • player session    — the runtime object in LXRCore.Players[source]
+      • persistent character — a row in `players`, keyed by citizenid
 
-    Version: 2.0.0
+    Login / Logout / Save / Delete are serialised per source so character
+    switching, double-clicks in the multicharacter UI and disconnects during a
+    save cannot corrupt state. Saves are dirty-tracked and batched.
+
+    Developer:   iBoss21 / LXRCore
+    Website:     https://www.lxrcore.com
+    © 2026 iBoss21 / LXRCore | lxrcore.com | All Rights Reserved
 ]]
 
+LXRCore.Player = LXRCore.Player or {}
+local PlayerAPI = LXRCore.Player
+local Accounts, Roles, Inventory = LXRCore.Accounts, LXRCore.Roles, LXRCore.Inventory
+
+local loading = {}          -- source → true while Login is in progress
+local characterTables = {}  -- extra tables registered by resources for deletion
+local syncPending = {}      -- source → true while a debounced PlayerData push is scheduled
+local saveInProgress = {}   -- citizenid → true while a DB write is in flight
+
+local SAVE_SQL = [[INSERT INTO players (citizenid, cid, license, name, money, charinfo, job, gang, position, metadata, weight, slots, outlawstatus)
+VALUES (:citizenid, :cid, :license, :name, :money, :charinfo, :job, :gang, :position, :metadata, :weight, :slots, :outlawstatus)
+ON DUPLICATE KEY UPDATE cid = :cid, name = :name, money = :money, charinfo = :charinfo, job = :job, gang = :gang,
+position = :position, metadata = :metadata, weight = :weight, slots = :slots, outlawstatus = :outlawstatus]]
+
 -- ═══════════════════════════════════════════════════════════════════════════════
--- LXR CORE - PLAYER MANAGEMENT
+-- 🆔 IDENTIFIERS & ID GENERATION
 -- ═══════════════════════════════════════════════════════════════════════════════
 
--- List of all currency column names in the normalized players table
-local MONEY_COLUMNS = {
-    'cash', 'bank', 'gold', 'goldcurrency', 'coins',
-    'goldcoins', 'silvercoins', 'marshalcoins', 'trustcoins',
-    'diamonds', 'bloodmoney', 'bloodcoins', 'tokens',
-    'rewardtokens', 'promisarynotes',
-    'rhobank', 'blkbank', 'armbank', 'valbank'
-}
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- INVENTORY HELPERS (unchanged logic, cleaner structure)
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local function LoadInventory(PlayerData)
-    PlayerData.items = {}
-    local inventory = MySQL.prepare.await('SELECT inventory FROM players WHERE citizenid = ?', { PlayerData.citizenid })
-    if inventory then
-        inventory = json.decode(inventory)
-        if inventory and next(inventory) then
-            for _, item in pairs(inventory) do
-                if item then
-                    local itemInfo = LXRShared.Items[item.name:lower()]
-                    if itemInfo then
-                        PlayerData.items[item.slot] = {
-                            name = itemInfo.name,
-                            amount = item.amount,
-                            info = item.info or '',
-                            label = itemInfo.label,
-                            description = itemInfo.description or '',
-                            weight = itemInfo.weight,
-                            type = itemInfo.type,
-                            unique = itemInfo.unique,
-                            useable = itemInfo.useable,
-                            image = itemInfo.image,
-                            shouldClose = itemInfo.shouldClose,
-                            slot = item.slot,
-                            combinable = itemInfo.combinable
-                        }
-                    end
-                end
-            end
-        end
-    end
-    return PlayerData
+function LXRCore.Functions.GetIdentifier(source, idtype)
+    source = LXRCore.ToSource(source)
+    if not source then return nil end
+    return GetPlayerIdentifierByType(source, idtype or 'license')
 end
 
-local function SaveInventory(source)
-    if LXRCore.Players[source] then
-        local PlayerData = LXRCore.Players[source].PlayerData
-        local items = PlayerData.items
-        local ItemsJson = {}
-        if items and next(items) then
-            for slot, item in pairs(items) do
-                if items[slot] then
-                    ItemsJson[#ItemsJson + 1] = {
-                        name = item.name,
-                        amount = item.amount,
-                        info = item.info,
-                        type = item.type,
-                        slot = slot,
-                    }
-                end
-            end
-            MySQL.prepare.await('UPDATE players SET inventory = ? WHERE citizenid = ?', { json.encode(ItemsJson), PlayerData.citizenid })
-        else
-            MySQL.prepare.await('UPDATE players SET inventory = ? WHERE citizenid = ?', { '[]', PlayerData.citizenid })
-        end
-    end
+---Collect the identifiers we care about once per session.
+local function collectIdentifiers(source)
+    return {
+        license = GetPlayerIdentifierByType(source, 'license'),
+        license2 = GetPlayerIdentifierByType(source, 'license2'),
+        steam = GetPlayerIdentifierByType(source, 'steam'),
+        discord = GetPlayerIdentifierByType(source, 'discord'),
+        fivem = GetPlayerIdentifierByType(source, 'fivem'),
+        ip = GetPlayerIdentifierByType(source, 'ip'),
+    }
 end
 
-local function GetTotalWeight(items)
-    local weight = 0
-    if items then
-        for _, item in pairs(items) do
-            weight = weight + (item.weight * item.amount)
-        end
+---Unique citizen id (3 letters + 5 digits, verified against the database, bounded retries).
+function PlayerAPI.CreateCitizenId()
+    for _ = 1, 25 do
+        local id = (LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
+        local exists = LXRCore.DB.Scalar('SELECT EXISTS(SELECT 1 FROM players WHERE citizenid = ?) AS uniqueCheck', { id })
+        if tonumber(exists) == 0 then return id end
     end
-    return tonumber(weight)
+    -- astronomically unlikely; fall back to a longer id that cannot collide in practice
+    return (LXRShared.RandomStr(4) .. LXRShared.RandomInt(8)):upper()
 end
-exports('GetTotalWeight', GetTotalWeight)
 
-local function GetSlotsByItem(items, itemName)
-    local slotsFound = {}
-    if items then
-        for slot, item in pairs(items) do
-            if item.name:lower() == itemName:lower() then
-                slotsFound[#slotsFound + 1] = slot
-            end
-        end
-    end
-    return slotsFound
+function LXRCore.Functions.CreateAccountNumber()
+    return ('US0%d%s%s%s'):format(math.random(1, 9), 'LXR', LXRShared.RandomInt(8), LXRShared.RandomInt(2))
 end
-exports('GetSlotsByItem', GetSlotsByItem)
 
-local function GetFirstSlotByItem(items, itemName)
-    if items then
-        for slot, item in pairs(items) do
-            if item.name:lower() == itemName:lower() then
-                return tonumber(slot)
-            end
-        end
-    end
-    return nil
+function PlayerAPI.CreateFingerId()
+    return LXRShared.RandomStr(2) .. LXRShared.RandomInt(3) .. LXRShared.RandomStr(1) .. LXRShared.RandomInt(2) .. LXRShared.RandomStr(3) .. LXRShared.RandomInt(4)
 end
-exports('GetFirstSlotByItem', GetFirstSlotByItem)
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- CITIZEN ID GENERATION
--- ═══════════════════════════════════════════════════════════════════════════════
+function PlayerAPI.CreateWalletId()
+    return 'LXR-' .. LXRShared.RandomInt(8)
+end
 
-local function CreateCitizenId()
-    local UniqueFound = false
-    local CitizenId = nil
-    local attempts = 0
-    local maxAttempts = 100
-
-    while not UniqueFound and attempts < maxAttempts do
-        CitizenId = 'LXR-' .. (LXRShared.RandomStr(3) .. LXRShared.RandomInt(5)):upper()
-        local result = MySQL.prepare.await('SELECT COUNT(*) as count FROM players WHERE citizenid = ?', { CitizenId })
-        if result == 0 then
-            UniqueFound = true
-        end
-        attempts = attempts + 1
-    end
-
-    if not UniqueFound then
-        print('[LXRCore] ERROR: Failed to generate unique Citizen ID after ' .. maxAttempts .. ' attempts')
-        return nil
-    end
-
-    return CitizenId
+function PlayerAPI.ValidateCitizenId(citizenid)
+    return type(citizenid) == 'string' and #citizenid >= 6 and #citizenid <= 50 and citizenid:match('^[%w%-_]+$') ~= nil
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- NORMALIZED SAVE: Direct SQL columns instead of JSON blobs
+-- 🧾 ROW ↔ PLAYERDATA
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-local function SavePlayer(source)
-    local player = LXRCore.Players[source]
-    if not player then
-        ShowError(GetCurrentResourceName(), 'ERROR PLAYER SAVE - PLAYER NOT FOUND!')
-        return
-    end
-    local PlayerData = player.PlayerData
-    if not PlayerData then
-        ShowError(GetCurrentResourceName(), 'ERROR PLAYER SAVE - PLAYERDATA IS EMPTY!')
-        return
-    end
-
-    local ped = GetPlayerPed(source)
-    local pcoords = GetEntityCoords(ped)
-    local heading = GetEntityHeading(ped)
-
-    -- Build the normalized UPDATE query — no json.encode for money/job/gang/charinfo/position
-    local success, err = pcall(function()
-        MySQL.update.await([[
-            UPDATE players SET
-                cid = ?, name = ?,
-                cash = ?, bank = ?, gold = ?, goldcurrency = ?, coins = ?,
-                goldcoins = ?, silvercoins = ?, marshalcoins = ?, trustcoins = ?,
-                diamonds = ?, bloodmoney = ?, bloodcoins = ?, tokens = ?,
-                rewardtokens = ?, promisarynotes = ?,
-                rhobank = ?, blkbank = ?, armbank = ?, valbank = ?,
-                firstname = ?, lastname = ?, birthdate = ?, gender = ?,
-                nationality = ?, account = ?,
-                job_name = ?, job_label = ?, job_grade_name = ?, job_grade_level = ?,
-                job_payment = ?, job_onduty = ?, job_isboss = ?,
-                gang_name = ?, gang_label = ?, gang_grade_name = ?,
-                gang_grade_level = ?, gang_isboss = ?,
-                pos_x = ?, pos_y = ?, pos_z = ?, pos_heading = ?,
-                metadata = ?
-            WHERE citizenid = ?
-        ]], {
-            tonumber(PlayerData.cid), PlayerData.name,
-            -- Money columns (direct numeric, no JSON)
-            PlayerData.money.cash or 0, PlayerData.money.bank or 0,
-            PlayerData.money.gold or 0, PlayerData.money.goldcurrency or 0,
-            PlayerData.money.coins or 0, PlayerData.money.goldcoins or 0,
-            PlayerData.money.silvercoins or 0, PlayerData.money.marshalcoins or 0,
-            PlayerData.money.trustcoins or 0, PlayerData.money.diamonds or 0,
-            PlayerData.money.bloodmoney or 0, PlayerData.money.bloodcoins or 0,
-            PlayerData.money.tokens or 0, PlayerData.money.rewardtokens or 0,
-            PlayerData.money.promisarynotes or 0,
-            PlayerData.money.rhobank or 0, PlayerData.money.blkbank or 0,
-            PlayerData.money.armbank or 0, PlayerData.money.valbank or 0,
-            -- Charinfo columns (direct scalar)
-            PlayerData.charinfo.firstname, PlayerData.charinfo.lastname,
-            PlayerData.charinfo.birthdate, PlayerData.charinfo.gender or 0,
-            PlayerData.charinfo.nationality or 'USA', PlayerData.charinfo.account,
-            -- Job columns (direct scalar)
-            PlayerData.job.name or 'unemployed', PlayerData.job.label or 'Civilian',
-            (PlayerData.job.grade and PlayerData.job.grade.name) or 'Freelancer',
-            (PlayerData.job.grade and PlayerData.job.grade.level) or 0,
-            PlayerData.job.payment or 10,
-            PlayerData.job.onduty and 1 or 0,
-            PlayerData.job.isboss and 1 or 0,
-            -- Gang columns (direct scalar)
-            PlayerData.gang.name or 'none', PlayerData.gang.label or 'No Gang Affiliation',
-            (PlayerData.gang.grade and PlayerData.gang.grade.name) or 'none',
-            (PlayerData.gang.grade and PlayerData.gang.grade.level) or 0,
-            PlayerData.gang.isboss and 1 or 0,
-            -- Position columns (direct numeric)
-            pcoords.x, pcoords.y, pcoords.z, heading,
-            -- Metadata remains JSON (too variable to normalize)
-            json.encode(PlayerData.metadata),
-            PlayerData.citizenid
-        })
-        SaveInventory(source)
-    end)
-
-    if success then
-        -- Mark player as clean (no unsaved changes)
-        player._dirty = false
-    else
-        print(string.format('[LXRCore] ERROR saving player %s: %s', PlayerData.name, tostring(err)))
-    end
+local function decodeRow(row)
+    row.money = LXRShared.JsonDecode(row.money, {})
+    row.job = LXRShared.JsonDecode(row.job, {})
+    row.gang = LXRShared.JsonDecode(row.gang, {})
+    row.position = LXRShared.JsonDecode(row.position, nil)
+    row.metadata = LXRShared.JsonDecode(row.metadata, {})
+    row.charinfo = LXRShared.JsonDecode(row.charinfo, {})
+    row.inventory = nil -- loaded by the inventory provider
+    return row
 end
 
--- Insert new player record with normalized columns
-local function InsertNewPlayer(PlayerData, pcoords, heading)
-    MySQL.insert.await([[
-        INSERT INTO players (
-            citizenid, cid, license, name,
-            cash, bank, gold, goldcurrency, coins,
-            goldcoins, silvercoins, marshalcoins, trustcoins,
-            diamonds, bloodmoney, bloodcoins, tokens,
-            rewardtokens, promisarynotes,
-            rhobank, blkbank, armbank, valbank,
-            firstname, lastname, birthdate, gender, nationality, account,
-            job_name, job_label, job_grade_name, job_grade_level,
-            job_payment, job_onduty, job_isboss,
-            gang_name, gang_label, gang_grade_name, gang_grade_level, gang_isboss,
-            pos_x, pos_y, pos_z, pos_heading,
-            metadata, inventory
-        ) VALUES (
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
-            ?, ?
-        )
-    ]], {
-        PlayerData.citizenid, tonumber(PlayerData.cid), PlayerData.license, PlayerData.name,
-        PlayerData.money.cash or 0, PlayerData.money.bank or 0,
-        PlayerData.money.gold or 0, PlayerData.money.goldcurrency or 0,
-        PlayerData.money.coins or 0, PlayerData.money.goldcoins or 0,
-        PlayerData.money.silvercoins or 0, PlayerData.money.marshalcoins or 0,
-        PlayerData.money.trustcoins or 0, PlayerData.money.diamonds or 0,
-        PlayerData.money.bloodmoney or 0, PlayerData.money.bloodcoins or 0,
-        PlayerData.money.tokens or 0, PlayerData.money.rewardtokens or 0,
-        PlayerData.money.promisarynotes or 0,
-        PlayerData.money.rhobank or 0, PlayerData.money.blkbank or 0,
-        PlayerData.money.armbank or 0, PlayerData.money.valbank or 0,
-        PlayerData.charinfo.firstname, PlayerData.charinfo.lastname,
-        PlayerData.charinfo.birthdate, PlayerData.charinfo.gender or 0,
-        PlayerData.charinfo.nationality or 'USA', PlayerData.charinfo.account,
-        PlayerData.job.name or 'unemployed', PlayerData.job.label or 'Civilian',
-        (PlayerData.job.grade and PlayerData.job.grade.name) or 'Freelancer',
-        (PlayerData.job.grade and PlayerData.job.grade.level) or 0,
-        PlayerData.job.payment or 10,
-        PlayerData.job.onduty and 1 or 0,
-        PlayerData.job.isboss and 1 or 0,
-        PlayerData.gang.name or 'none', PlayerData.gang.label or 'No Gang Affiliation',
-        (PlayerData.gang.grade and PlayerData.gang.grade.name) or 'none',
-        (PlayerData.gang.grade and PlayerData.gang.grade.level) or 0,
-        PlayerData.gang.isboss and 1 or 0,
-        pcoords and pcoords.x or -1035.71, pcoords and pcoords.y or -2731.87,
-        pcoords and pcoords.z or 12.86, heading or 0.0,
-        json.encode(PlayerData.metadata), '[]'
-    })
+---Normalise raw data (from DB or a new character) into a full PlayerData table.
+---@param source integer|nil  nil = offline
+---@param PlayerData table
+function PlayerAPI.CheckPlayerData(source, PlayerData)
+    PlayerData = PlayerData or {}
+    local Offline = not source
+
+    if source then
+        PlayerData.source = source
+        PlayerData.identifiers = collectIdentifiers(source)
+        PlayerData.license = PlayerData.license or PlayerData.identifiers.license
+        PlayerData.name = GetPlayerName(source)
+    end
+
+    PlayerData.citizenid = PlayerData.citizenid or PlayerAPI.CreateCitizenId()
+    PlayerData.job = Roles.ValidateJob(PlayerData.job)
+    PlayerData.gang = Roles.ValidateGang(PlayerData.gang)
+
+    LXRShared.ApplyDefaults(PlayerData, Config.Player.defaults)
+    PlayerData.charinfo.account = PlayerData.charinfo.account or LXRCore.Functions.CreateAccountNumber()
+    PlayerData.money = Accounts.EnsureAccounts(PlayerData.money)
+
+    local md = PlayerData.metadata
+    md.bloodtype = md.bloodtype or Config.Player.bloodTypes[math.random(1, #Config.Player.bloodTypes)]
+    md.fingerprint = md.fingerprint or PlayerAPI.CreateFingerId()
+    md.walletid = md.walletid or PlayerAPI.CreateWalletId()
+    md.xp = type(md.xp) == 'table' and md.xp or {}
+    md.levels = type(md.levels) == 'table' and md.levels or {}
+    for _, skill in ipairs(Config.Player.skills or {}) do
+        md.xp[skill] = tonumber(md.xp[skill]) or 0
+        md.levels[skill] = tonumber(md.levels[skill]) or 0
+    end
+
+    PlayerData.position = PlayerData.position or Config.General.defaultSpawn
+    PlayerData.weight = tonumber(PlayerData.weight) or Config.Player.maxWeight
+    PlayerData.slots = tonumber(PlayerData.slots) or Config.Player.maxSlots
+    PlayerData.outlawstatus = tonumber(PlayerData.outlawstatus) or 0
+    PlayerData.items = PlayerData.items or {}
+    PlayerData.optin = PlayerData.optin ~= false
+
+    if not Offline then
+        PlayerData.items = Inventory.Load(source, PlayerData.citizenid)
+    end
+
+    return PlayerAPI.CreatePlayer(PlayerData, Offline)
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- METATABLE / PROTOTYPE PATTERN: Shared function table for all players
--- Replaces closure-per-player OOP. One function table, zero per-player closures.
+-- 🔐 LOGIN / LOGOUT
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-local PlayerMethods = {}
-PlayerMethods.__index = PlayerMethods
-
-function PlayerMethods:UpdatePlayerItems(slot)
-    TriggerClientEvent('lxr-inventory:client:UpdateItems', self.PlayerData.source, slot, self.PlayerData.items[slot])
-end
-
--- Delta-based state broadcasting: Sync key fields to StateBags
--- instead of sending the entire PlayerData object every time
-function PlayerMethods:UpdatePlayerData(UpdateChat)
-    local src = self.PlayerData.source
-    local state = Player(src).state
-
-    -- Sync critical data into StateBags for cross-resource access without events
-    state.job = self.PlayerData.job
-    state.gang = self.PlayerData.gang
-    state.money = self.PlayerData.money
-    state.charinfo = self.PlayerData.charinfo
-    state.citizenid = self.PlayerData.citizenid
-
-    -- Still send full PlayerData for backward compatibility with existing resources
-    TriggerClientEvent('LXRCore:Player:SetPlayerData', src, self.PlayerData)
-
-    -- Mark dirty for deferred save
-    self._dirty = true
-
-    if UpdateChat then
-        RefreshCommands(src)
+---@param source integer
+---@param citizenid string|false|nil  existing character, or falsy for a new one
+---@param newData table|nil            { cid, charinfo = {...} } for new characters
+---@return boolean
+function PlayerAPI.Login(source, citizenid, newData)
+    source = LXRCore.ToSource(source)
+    if not source then
+        LXRCore.ShowError(LXRCore.ResourceName, 'Player.Login: no source given')
+        return false
     end
-end
+    if not LXRCore.DB.Ready then
+        LXRCore.Log.warn('player', 'login refused: database not ready', { source = source })
+        return false
+    end
+    if loading[source] then
+        LXRCore.Log.warn('player', 'login ignored: already loading', { source = source })
+        return false
+    end
+    loading[source] = true
+    local started = GetGameTimer()
 
-function PlayerMethods:SetJob(job, grade)
-    job = job:lower()
-    grade = tostring(grade) or '0'
-
-    if LXRShared.Jobs[job] then
-        self.PlayerData.job.name = job
-        self.PlayerData.job.label = LXRShared.Jobs[job].label
-        self.PlayerData.job.onduty = LXRShared.Jobs[job].defaultDuty
-
-        if LXRShared.Jobs[job].grades[grade] then
-            local jobgrade = LXRShared.Jobs[job].grades[grade]
-            self.PlayerData.job.grade = {}
-            self.PlayerData.job.grade.name = jobgrade.name
-            self.PlayerData.job.grade.level = tonumber(grade)
-            self.PlayerData.job.payment = jobgrade.payment or 30
-            self.PlayerData.job.isboss = jobgrade.isboss or false
-        else
-            self.PlayerData.job.grade = {}
-            self.PlayerData.job.grade.name = 'No Grades'
-            self.PlayerData.job.grade.level = 0
-            self.PlayerData.job.payment = 30
-            self.PlayerData.job.isboss = false
+    local ok, result = pcall(function()
+        -- character switch: unload the current one first (saves synchronously)
+        if LXRCore.Players[source] then
+            PlayerAPI.Logout(source, true)
         end
 
-        self:UpdatePlayerData()
-        TriggerClientEvent('LXRCore:Client:OnJobUpdate', self.PlayerData.source, self.PlayerData.job)
-        return true
-    end
-    return false
-end
+        local license = GetPlayerIdentifierByType(source, 'license')
+        if not license then return false end
 
-function PlayerMethods:SetGang(gang, grade)
-    gang = gang:lower()
-    grade = tostring(grade) or '0'
-
-    if LXRShared.Gangs[gang] then
-        self.PlayerData.gang.name = gang
-        self.PlayerData.gang.label = LXRShared.Gangs[gang].label
-        if LXRShared.Gangs[gang].grades[grade] then
-            local ganggrade = LXRShared.Gangs[gang].grades[grade]
-            self.PlayerData.gang.grade = {}
-            self.PlayerData.gang.grade.name = ganggrade.name
-            self.PlayerData.gang.grade.level = tonumber(grade)
-            self.PlayerData.gang.isboss = ganggrade.isboss or false
-        else
-            self.PlayerData.gang.grade = {}
-            self.PlayerData.gang.grade.name = 'No Grades'
-            self.PlayerData.gang.grade.level = 0
-            self.PlayerData.gang.isboss = false
-        end
-
-        self:UpdatePlayerData()
-        TriggerClientEvent('LXRCore:Client:OnGangUpdate', self.PlayerData.source, self.PlayerData.gang)
-        return true
-    end
-    return false
-end
-
-function PlayerMethods:SetJobDuty(onDuty)
-    self.PlayerData.job.onduty = onDuty
-    self:UpdatePlayerData()
-end
-
-function PlayerMethods:SetMetaData(meta, val)
-    if type(meta) == 'table' then
-        for k, v in pairs(meta) do
-            self.PlayerData.metadata[k:lower()] = v
-        end
-    else
-        self.PlayerData.metadata[meta:lower()] = val
-    end
-    self:UpdatePlayerData()
-end
-
-function PlayerMethods:AddJobReputation(amount)
-    amount = tonumber(amount)
-    self.PlayerData.metadata.jobrep[self.PlayerData.job.name] = (self.PlayerData.metadata.jobrep[self.PlayerData.job.name] or 0) + amount
-    self:UpdatePlayerData()
-end
-
-function PlayerMethods:UpdateLevelData(skill)
-    local currentXp = self.PlayerData.metadata.xp[skill] or 0
-    if LXRConfig.Levels and LXRConfig.Levels[skill] then
-        for k, v in pairs(LXRConfig.Levels[skill]) do
-            if currentXp >= v then
-                self.PlayerData.metadata.levels[skill] = k
-            end
-        end
-    end
-end
-
-function PlayerMethods:AddMoney(moneytype, amount, reason)
-    reason = reason or 'unknown'
-    moneytype = moneytype:lower()
-    amount = tonumber(amount)
-
-    if not amount or amount < 0 or amount > 999999999 then return false end
-    if not self.PlayerData.money[moneytype] then return false end
-
-    if amount > 10000 then
-        exports['lxr-core']:CheckSuspiciousActivity(self.PlayerData.source, 'rapidMoney', amount)
-    end
-
-    self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] + amount
-    self:UpdatePlayerData()
-
-    TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'AddMoney', 'lightgreen',
-        string.format('**%s (citizenid: %s | id: %s)** $%s (%s) added, new %s balance: %s | Reason: %s',
-            GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-            self.PlayerData.source, amount, moneytype, moneytype,
-            self.PlayerData.money[moneytype], reason),
-        amount > 100000)
-
-    TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, false)
-    return true
-end
-
-function PlayerMethods:RemoveMoney(moneytype, amount, reason)
-    reason = reason or 'unknown'
-    moneytype = moneytype:lower()
-    amount = tonumber(amount)
-
-    if not amount or amount < 0 or amount > 999999999 then return false end
-    if not self.PlayerData.money[moneytype] then return false end
-
-    for _, mtype in pairs(LXRConfig.Money.DontAllowMinus) do
-        if mtype == moneytype then
-            if self.PlayerData.money[moneytype] - amount < 0 then
+        local PlayerData
+        if citizenid then
+            if not PlayerAPI.ValidateCitizenId(citizenid) then
+                LXRCore.Log.exploit(source, 'login with malformed citizenid', { citizenid = tostring(citizenid) })
+                if Config.Security.kickOnExploit then DropPlayer(source, Lang:t('error.exploit_dropped')) end
                 return false
             end
+            local row = LXRCore.DB.Single('SELECT * FROM players WHERE citizenid = ?', { citizenid })
+            -- One-time re-link for rows imported from VORP (keyed by steam identifier).
+            if row and row.license ~= license and Config.Database.relinkImportedRows then
+                local steam = GetPlayerIdentifierByType(source, 'steam')
+                if steam and row.license == steam then
+                    LXRCore.DB.Update('UPDATE players SET license = ? WHERE citizenid = ? AND license = ?', { license, citizenid, steam })
+                    LXRCore.Log.info('player', 'relinked imported character to license', { citizenid = citizenid, from = steam })
+                    row.license = license
+                end
+            end
+            if not row or row.license ~= license then
+                LXRCore.Log.exploit(source, 'login with a character that is not theirs', { citizenid = citizenid })
+                if Config.Security.kickOnExploit then DropPlayer(source, Lang:t('error.exploit_dropped')) end
+                return false
+            end
+            if LXRCore.PlayersByCitizenId[citizenid] then
+                LXRCore.Log.warn('player', 'login refused: character already in use', { source = source, citizenid = citizenid })
+                return false
+            end
+            PlayerData = decodeRow(row)
+        else
+            PlayerData = type(newData) == 'table' and newData or {}
+            PlayerData.license = license
+            if newData and newData.charinfo then
+                -- new character payload from multicharacter: only accept known keys
+                local ci = {}
+                for _, k in ipairs({ 'firstname', 'lastname', 'birthdate', 'gender', 'nationality' }) do
+                    if newData.charinfo[k] ~= nil then ci[k] = newData.charinfo[k] end
+                end
+                PlayerData.charinfo = ci
+            end
         end
+
+        local player = PlayerAPI.CheckPlayerData(source, PlayerData)
+        return player ~= nil
+    end)
+
+    loading[source] = nil
+    if not ok then
+        LXRCore.Log.error('player', 'login failed', { source = source, error = tostring(result) })
+        return false
+    end
+    if result then
+        LXRCore.Metrics.Time('player.login', GetGameTimer() - started)
+    end
+    return result == true
+end
+
+---Unload the current character. `switching` = true skips the drop-side cleanup.
+function PlayerAPI.Logout(source, switching)
+    source = LXRCore.ToSource(source)
+    local player = source and LXRCore.Players[source]
+    if not player then return false end
+
+    TriggerEvent('LXRCore:Server:OnPlayerUnload', source)
+    TriggerClientEvent('LXRCore:Client:OnPlayerUnload', source)
+    if Config.Compat.rsg.enabled then
+        TriggerEvent('RSGCore:Server:OnPlayerUnload', source)
+        TriggerClientEvent('RSGCore:Client:OnPlayerUnload', source)
     end
 
-    self.PlayerData.money[moneytype] = self.PlayerData.money[moneytype] - amount
-    self:UpdatePlayerData()
+    PlayerAPI.Save(source, true)
 
-    TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'RemoveMoney', 'red',
-        string.format('**%s (citizenid: %s | id: %s)** $%s (%s) removed, new %s balance: %s | Reason: %s',
-            GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-            self.PlayerData.source, amount, moneytype, moneytype,
-            self.PlayerData.money[moneytype], reason),
-        amount > 100000)
+    LXRCore.Players[source] = nil
+    LXRCore.PlayersByCitizenId[player.PlayerData.citizenid] = nil
+    LXRCore.PlayersByLicense[player.PlayerData.license] = nil
+    syncPending[source] = nil
 
-    TriggerClientEvent('hud:client:OnMoneyChange', self.PlayerData.source, moneytype, amount, true)
+    local state = Player(source).state
+    state:set('isLoggedIn', false, true)
+    state:set('citizenid', nil, true)
+    state:set('job', nil, true)
+    if not switching then LXRCore.Callback.CleanupSource(source) end
+    LXRCore.Log.info('player', 'character unloaded', { source = source, citizenid = player.PlayerData.citizenid })
     return true
 end
 
-function PlayerMethods:SetMoney(moneytype, amount, reason)
-    reason = reason or 'unknown'
-    moneytype = moneytype:lower()
-    amount = tonumber(amount)
-    if amount < 0 then return end
-    if self.PlayerData.money[moneytype] then
-        self.PlayerData.money[moneytype] = amount
-        self:UpdatePlayerData()
-        TriggerEvent('lxr-log:server:CreateLog', 'playermoney', 'SetMoney', 'green',
-            string.format('**%s (citizenid: %s | id: %s)** $%s (%s) set, new %s balance: %s',
-                GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                self.PlayerData.source, amount, moneytype, moneytype,
-                self.PlayerData.money[moneytype]))
-        return true
-    end
-    return false
-end
-
-function PlayerMethods:GetMoney(moneytype)
-    if moneytype then
-        moneytype = moneytype:lower()
-        return self.PlayerData.money[moneytype]
-    end
-    return false
-end
-
-function PlayerMethods:AddXp(skill, amount)
-    skill = skill:lower()
-    amount = tonumber(amount)
-    if not amount or amount < 0 then return false end
-    if self.PlayerData.metadata.xp[skill] then
-        self.PlayerData.metadata.xp[skill] = self.PlayerData.metadata.xp[skill] + amount
-        self:UpdateLevelData(skill)
-        self:UpdatePlayerData()
-        TriggerEvent('lxr-log:server:CreateLog', 'levels', 'AddXp', 'lightgreen',
-            string.format('**%s (citizenid: %s | id: %s)** received %sxp in %s, current: %s',
-                GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                self.PlayerData.source, amount, skill, self.PlayerData.metadata.xp[skill]))
-        return true
-    elseif LXRConfig.Levels[skill] then
-        self.PlayerData.metadata.xp[skill] = amount
-        self:UpdateLevelData(skill)
-        self:UpdatePlayerData()
-        return true
-    end
-    return false
-end
-
-function PlayerMethods:RemoveXp(skill, amount)
-    skill = skill:lower()
-    amount = tonumber(amount)
-    if self.PlayerData.metadata.xp[skill] and amount > 0 then
-        self.PlayerData.metadata.xp[skill] = self.PlayerData.metadata.xp[skill] - amount
-        self:UpdateLevelData(skill)
-        self:UpdatePlayerData()
-        TriggerEvent('lxr-log:server:CreateLog', 'levels', 'RemoveXp', 'lightgreen',
-            string.format('**%s (citizenid: %s | id: %s)** stripped of %sxp in %s, current: %s',
-                GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                self.PlayerData.source, amount, skill, self.PlayerData.metadata.xp[skill]))
-        return true
-    end
-    return false
-end
-
-function PlayerMethods:AddItem(item, amount, slot, info)
-    local totalWeight = GetTotalWeight(self.PlayerData.items)
-    local itemInfo = LXRShared.Items[item:lower()]
-    if itemInfo == nil then
-        TriggerClientEvent('LXRCore:Notify', self.PlayerData.source, Lang:t('error.item_not_exist'), 5000, 0, 'mp_lobby_textures', 'cross', 'COLOR_WHITE')
-        return false
-    end
-    amount = tonumber(amount)
-    slot = tonumber(slot) or GetFirstSlotByItem(self.PlayerData.items, item)
-    if itemInfo.type == 'weapon' and info == nil then
-        local weaponSerial = string.format('LXR-%s%s%s%s%s%s',
-            tostring(LXRShared.RandomInt(2)), LXRShared.RandomStr(3),
-            tostring(LXRShared.RandomInt(1)), LXRShared.RandomStr(2),
-            tostring(LXRShared.RandomInt(3)), LXRShared.RandomStr(4))
-        info = { serie = weaponSerial }
-    end
-    if (totalWeight + (itemInfo.weight * amount)) <= LXRConfig.Player.MaxWeight then
-        if (slot and self.PlayerData.items[slot]) and (self.PlayerData.items[slot].name:lower() == item:lower()) and (itemInfo.type == 'item' and not itemInfo.unique) then
-            self.PlayerData.items[slot].amount = self.PlayerData.items[slot].amount + amount
-            self:UpdatePlayerItems(slot)
-            TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green',
-                string.format('**%s (citizenid: %s | id: %s)** got item [slot:%s] %s +%s (total: %s)',
-                    GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                    self.PlayerData.source, slot, self.PlayerData.items[slot].name,
-                    amount, self.PlayerData.items[slot].amount))
-            return true
-        elseif (not itemInfo.unique and slot or slot and self.PlayerData.items[slot] == nil) then
-            self.PlayerData.items[slot] = { name = itemInfo.name, amount = amount, info = info or '', label = itemInfo.label, description = itemInfo.description or '', weight = itemInfo.weight, type = itemInfo.type, unique = itemInfo.unique, useable = itemInfo.useable, image = itemInfo.image, shouldClose = itemInfo.shouldClose, slot = slot, combinable = itemInfo.combinable }
-            self:UpdatePlayerItems(slot)
-            TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green',
-                string.format('**%s (citizenid: %s | id: %s)** got item [slot:%s] %s +%s',
-                    GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                    self.PlayerData.source, slot, itemInfo.name, amount))
-            return true
-        elseif (itemInfo.unique) or (not slot or slot == nil) or (itemInfo.type == 'weapon') then
-            for i = 1, LXRConfig.Player.MaxInvSlots, 1 do
-                if self.PlayerData.items[i] == nil then
-                    self.PlayerData.items[i] = { name = itemInfo.name, amount = amount, info = info or '', label = itemInfo.label, description = itemInfo.description or '', weight = itemInfo.weight, type = itemInfo.type, unique = itemInfo.unique, useable = itemInfo.useable, image = itemInfo.image, shouldClose = itemInfo.shouldClose, slot = i, combinable = itemInfo.combinable }
-                    self:UpdatePlayerItems(i)
-                    TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'AddItem', 'green',
-                        string.format('**%s (citizenid: %s | id: %s)** got item [slot:%s] %s +%s',
-                            GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                            self.PlayerData.source, i, itemInfo.name, amount))
-                    return true
-                end
-            end
-        end
-    else
-        TriggerClientEvent('LXRCore:Notify', self.PlayerData.source, Lang:t('error.too_heavy'), 5000, 0, 'mp_lobby_textures', 'cross', 'COLOR_WHITE')
-    end
-    return false
-end
-
-function PlayerMethods:RemoveItem(item, amount, slot)
-    amount = tonumber(amount)
-    slot = tonumber(slot)
-    if slot then
-        if self.PlayerData.items[slot] and self.PlayerData.items[slot].amount > amount then
-            self.PlayerData.items[slot].amount = self.PlayerData.items[slot].amount - amount
-            self:UpdatePlayerItems(slot)
-            TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'RemoveItem', 'red',
-                string.format('**%s (citizenid: %s | id: %s)** lost item [slot:%s] %s -%s (remaining: %s)',
-                    GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                    self.PlayerData.source, slot, self.PlayerData.items[slot].name,
-                    amount, self.PlayerData.items[slot].amount))
-            return true
-        elseif self.PlayerData.items[slot] and self.PlayerData.items[slot].amount == amount then
-            self.PlayerData.items[slot] = nil
-            self:UpdatePlayerItems(slot)
-            TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'RemoveItem', 'red',
-                string.format('**%s (citizenid: %s | id: %s)** lost item [slot:%s] %s -%s (removed)',
-                    GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid,
-                    self.PlayerData.source, slot, item, amount))
-            return true
-        end
-    else
-        local slots = GetSlotsByItem(self.PlayerData.items, item)
-        local amountToRemove = amount
-        if slots then
-            for _, _slot in pairs(slots) do
-                if self.PlayerData.items[_slot].amount > amountToRemove then
-                    self.PlayerData.items[_slot].amount = self.PlayerData.items[_slot].amount - amountToRemove
-                    self:UpdatePlayerItems(_slot)
-                    return true
-                elseif self.PlayerData.items[_slot].amount == amountToRemove then
-                    self.PlayerData.items[_slot] = nil
-                    self:UpdatePlayerItems(_slot)
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end
-
-function PlayerMethods:SetInventory(data, slot)
-    if slot and tonumber(slot) then
-        self.PlayerData.items[slot] = data
-    else
-        self.PlayerData.items = data
-        self:UpdatePlayerData()
-        TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'SetInventory', 'blue',
-            string.format('**%s (citizenid: %s | id: %s)** inventory set',
-                GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid, self.PlayerData.source))
-    end
-end
-
-function PlayerMethods:ClearInventory()
-    self.PlayerData.items = {}
-    self:UpdatePlayerData()
-    TriggerEvent('lxr-log:server:CreateLog', 'playerinventory', 'ClearInventory', 'red',
-        string.format('**%s (citizenid: %s | id: %s)** inventory cleared',
-            GetPlayerName(self.PlayerData.source), self.PlayerData.citizenid, self.PlayerData.source))
-    local ped = GetPlayerPed(self.PlayerData.source)
-    RemoveAllPedWeapons(ped, true)
-    SetCurrentPedWeapon(ped, 'none', true)
-end
-
-function PlayerMethods:GetItemByName(item)
-    item = tostring(item):lower()
-    local slot = GetFirstSlotByItem(self.PlayerData.items, item)
-    if slot then
-        return self.PlayerData.items[slot]
-    end
-    return nil
-end
-
-function PlayerMethods:GetItemsByName(item)
-    item = tostring(item):lower()
-    local items = {}
-    local slots = GetSlotsByItem(self.PlayerData.items, item)
-    for _, slot in pairs(slots) do
-        if slot then
-            items[#items + 1] = self.PlayerData.items[slot]
-        end
-    end
-    return items
-end
-
-function PlayerMethods:GetItemBySlot(slot)
-    slot = tonumber(slot)
-    if self.PlayerData.items[slot] then
-        return self.PlayerData.items[slot]
-    end
-    return nil
-end
-
-function PlayerMethods:Save()
-    SavePlayer(self.PlayerData.source)
-end
-
 -- ═══════════════════════════════════════════════════════════════════════════════
--- BACKWARD COMPATIBILITY WRAPPER
--- Wraps metatable methods into a .Functions table so existing resources
--- using Player.Functions.AddMoney(...) continue to work unchanged.
+-- 🧍 PLAYER OBJECT
 -- ═══════════════════════════════════════════════════════════════════════════════
 
-local function WrapFunctions(playerObj)
-    -- Lazy wrapper: closures are created on-demand only when .Functions.X is
-    -- actually called, instead of eagerly creating one per method per player.
-    playerObj.Functions = setmetatable({}, {
-        __index = function(_, name)
-            local method = PlayerMethods[name]
-            if method then
-                -- Cache the closure on the table so __index fires only once per method
-                local fn = function(...) return method(playerObj, ...) end
-                rawset(playerObj.Functions, name, fn)
-                return fn
-            end
-        end
-    })
-end
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- CREATE PLAYER: Uses metatable prototype, registers in O(1) index
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local function CreatePlayer(PlayerData)
-    local self = setmetatable({}, PlayerMethods)
+function PlayerAPI.CreatePlayer(PlayerData, Offline)
+    local self = {}
     self.PlayerData = PlayerData
+    self.Functions = {}
+    self.Offline = Offline == true
     self._dirty = true
 
-    -- Build backward-compatible .Functions wrapper
-    WrapFunctions(self)
+    local F = self.Functions
+    local function src() return self.PlayerData.source end
 
-    -- Register in primary and secondary indexes
-    LXRCore.Players[self.PlayerData.source] = self
-    LXRCore.CitizenIdMap[self.PlayerData.citizenid] = self.PlayerData.source
-
-    -- Initial save (INSERT for new characters)
-    local existing = MySQL.scalar.await('SELECT citizenid FROM players WHERE citizenid = ?', { PlayerData.citizenid })
-    if existing then
-        SavePlayer(self.PlayerData.source)
-    else
-        local ped = GetPlayerPed(self.PlayerData.source)
-        local pcoords = GetEntityCoords(ped)
-        local heading = GetEntityHeading(ped)
-        InsertNewPlayer(PlayerData, pcoords, heading)
-    end
-
-    -- Set StateBag data for cross-resource access
-    local state = Player(self.PlayerData.source).state
-    state.citizenid = PlayerData.citizenid
-    state.job = PlayerData.job
-    state.gang = PlayerData.gang
-    state.charinfo = PlayerData.charinfo
-    state.money = PlayerData.money
-    state.isLoggedIn = true
-
-    -- Assign routing bucket via the bucket registry to scope-gate StateBag replication.
-    -- Without this, every StateBag write replicates to all connected players.
-    local bucket = (LXRConfig.Performance and LXRConfig.Performance.server and LXRConfig.Performance.server.defaultRoutingBucket) or 0
-    exports['lxr-core']:SetPlayerBucket(self.PlayerData.source, bucket)
-
-    -- Emit load event and send data to client
-    TriggerEvent('LXRCore:Server:PlayerLoaded', self)
-    self:UpdatePlayerData()
-end
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- CHECK / VALIDATE PLAYER DATA (defaults for missing fields)
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local function CheckPlayerData(source, PlayerData)
-    PlayerData = PlayerData or {}
-    PlayerData.source = source
-    PlayerData.citizenid = PlayerData.citizenid or CreateCitizenId()
-    Player(source).state.cid = PlayerData.citizenid
-    PlayerData.license = PlayerData.license or GetPlayerIdentifierByType(source, 'license')
-    PlayerData.name = GetPlayerName(source)
-    PlayerData.cid = PlayerData.cid or 1
-
-    -- Money: Initialize from config start amounts
-    PlayerData.money = PlayerData.money or {}
-    for moneytype, config in pairs(LXRConfig.Money.MoneyTypes) do
-        local startAmount = type(config) == 'table' and (config.startAmount or 0) or config
-        PlayerData.money[moneytype] = PlayerData.money[moneytype] or startAmount
-    end
-
-    -- Charinfo
-    PlayerData.charinfo = PlayerData.charinfo or {}
-    PlayerData.charinfo.firstname = PlayerData.charinfo.firstname or 'Firstname'
-    PlayerData.charinfo.lastname = PlayerData.charinfo.lastname or 'Lastname'
-    PlayerData.charinfo.birthdate = PlayerData.charinfo.birthdate or '00-00-0000'
-    PlayerData.charinfo.gender = PlayerData.charinfo.gender or 0
-    PlayerData.charinfo.nationality = PlayerData.charinfo.nationality or 'USA'
-    local accountNumber
-    local ln = (PlayerData.charinfo.lastname and #PlayerData.charinfo.lastname >= 3) and PlayerData.charinfo.lastname:sub(1, 3):upper() or 'UNK'
-    accountNumber = 'LXR' .. ln .. '-' .. math.random(1111, 9999)
-    PlayerData.charinfo.account = PlayerData.charinfo.account or accountNumber
-
-    -- Metadata
-    PlayerData.metadata = PlayerData.metadata or {}
-    PlayerData.metadata.isdead = PlayerData.metadata.isdead or false
-    PlayerData.metadata.inlaststand = PlayerData.metadata.inlaststand or false
-    PlayerData.metadata.armor = PlayerData.metadata.armor or 0
-    PlayerData.metadata.ishandcuffed = PlayerData.metadata.ishandcuffed or false
-    PlayerData.metadata.injail = PlayerData.metadata.injail or 0
-    PlayerData.metadata.jailitems = PlayerData.metadata.jailitems or {}
-    PlayerData.metadata.status = PlayerData.metadata.status or {}
-    PlayerData.metadata.commandbinds = PlayerData.metadata.commandbinds or {}
-    PlayerData.metadata.bloodtype = PlayerData.metadata.bloodtype or LXRConfig.Player.Bloodtypes[math.random(1, #LXRConfig.Player.Bloodtypes)]
-    PlayerData.metadata.dealerrep = PlayerData.metadata.dealerrep or 0
-    PlayerData.metadata.craftingrep = PlayerData.metadata.craftingrep or 0
-    PlayerData.metadata.callsign = PlayerData.metadata.callsign or 'NO CALLSIGN'
-    PlayerData.metadata.jobrep = PlayerData.metadata.jobrep or {}
-
-    PlayerData.metadata.inside = PlayerData.metadata.inside or {
-        house = nil,
-        apartment = { apartmentType = nil, apartmentId = nil }
-    }
-
-    PlayerData.metadata['xp'] = PlayerData.metadata['xp'] or {
-        ['main'] = 0, ['herbalism'] = 0, ['mining'] = 0, ['hunting'] = 0
-    }
-
-    PlayerData.metadata['licences'] = PlayerData.metadata['licences'] or {
-        ['weapon'] = false
-    }
-
-    PlayerData.metadata['levels'] = PlayerData.metadata['levels'] or {
-        ['main'] = 0, ['herbalism'] = 0, ['mining'] = 0, ['hunting'] = 0
-    }
-
-    PlayerData.metadata['optin'] = PlayerData.metadata['optin'] or true
-
-    -- Job
-    PlayerData.job = PlayerData.job or {}
-    PlayerData.job.name = PlayerData.job.name or 'unemployed'
-    PlayerData.job.label = PlayerData.job.label or 'Civilian'
-    PlayerData.job.payment = PlayerData.job.payment or 10
-    if LXRShared.ForceJobDefaultDutyAtLogin or PlayerData.job.onduty == nil then
-        PlayerData.job.onduty = LXRShared.Jobs[PlayerData.job.name].defaultDuty
-    end
-    PlayerData.job.isboss = PlayerData.job.isboss or false
-    PlayerData.job.grade = PlayerData.job.grade or {}
-    PlayerData.job.grade.name = PlayerData.job.grade.name or 'Freelancer'
-    PlayerData.job.grade.level = PlayerData.job.grade.level or 0
-
-    -- Gang
-    PlayerData.gang = PlayerData.gang or {}
-    PlayerData.gang.name = PlayerData.gang.name or 'none'
-    PlayerData.gang.label = PlayerData.gang.label or 'No Gang Affiliaton'
-    PlayerData.gang.isboss = PlayerData.gang.isboss or false
-    PlayerData.gang.grade = PlayerData.gang.grade or {}
-    PlayerData.gang.grade.name = PlayerData.gang.grade.name or 'none'
-    PlayerData.gang.grade.level = PlayerData.gang.grade.level or 0
-
-    -- Other
-    PlayerData.position = PlayerData.position or LXRConfig.DefaultSpawn
-    PlayerData.LoggedIn = true
-    PlayerData = LoadInventory(PlayerData)
-    CreatePlayer(PlayerData)
-end
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- LOGIN: Load from normalized DB columns (no JSON decode for money/job/gang/etc)
--- ═══════════════════════════════════════════════════════════════════════════════
-
-exports('Login', function(source, citizenid, newData)
-    if source then
-        if citizenid then
-            local license = GetPlayerIdentifierByType(source, 'license')
-            local row = MySQL.prepare.await('SELECT * FROM players WHERE citizenid = ?', { citizenid })
-            if row and license == row.license then
-                -- Reconstruct PlayerData from normalized columns (zero JSON decoding for structured fields)
-                local PlayerData = {}
-                PlayerData.citizenid = row.citizenid
-                PlayerData.cid = row.cid
-                PlayerData.license = row.license
-                PlayerData.name = row.name
-
-                -- Money: read directly from DECIMAL columns
-                PlayerData.money = {}
-                for _, col in ipairs(MONEY_COLUMNS) do
-                    PlayerData.money[col] = tonumber(row[col]) or 0
-                end
-
-                -- Charinfo: read from scalar columns
-                PlayerData.charinfo = {
-                    firstname = row.firstname,
-                    lastname = row.lastname,
-                    birthdate = row.birthdate,
-                    gender = row.gender,
-                    nationality = row.nationality,
-                    account = row.account
-                }
-
-                -- Job: read from scalar columns
-                PlayerData.job = {
-                    name = row.job_name or 'unemployed',
-                    label = row.job_label or 'Civilian',
-                    payment = row.job_payment or 10,
-                    onduty = (row.job_onduty == 1),
-                    isboss = (row.job_isboss == 1),
-                    grade = {
-                        name = row.job_grade_name or 'Freelancer',
-                        level = row.job_grade_level or 0
-                    }
-                }
-
-                -- Gang: read from scalar columns
-                PlayerData.gang = {
-                    name = row.gang_name or 'none',
-                    label = row.gang_label or 'No Gang Affiliation',
-                    isboss = (row.gang_isboss == 1),
-                    grade = {
-                        name = row.gang_grade_name or 'none',
-                        level = row.gang_grade_level or 0
-                    }
-                }
-
-                -- Position: read from FLOAT columns
-                PlayerData.position = vector4(
-                    row.pos_x or -1035.71,
-                    row.pos_y or -2731.87,
-                    row.pos_z or 12.86,
-                    row.pos_heading or 0.0
-                )
-
-                -- Metadata: still JSON (flexible schema)
-                PlayerData.metadata = row.metadata and json.decode(row.metadata) or {}
-
-                CheckPlayerData(source, PlayerData)
-            else
-                DropPlayer(source, 'You Have Been Kicked For Exploitation')
-                TriggerEvent('lxr-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white',
-                    GetPlayerName(source) .. ' Has Been Dropped For Character Joining Exploit', false)
+    ---Push PlayerData to the client (debounced) and fire the server-side update event.
+    function F.UpdatePlayerData()
+        self._dirty = true
+        if self.Offline then return end
+        if Config.Money.EnableMoneyItems and Accounts.SyncMoneyItems then Accounts.SyncMoneyItems(self) end
+        local s = src()
+        if syncPending[s] then return end
+        syncPending[s] = true
+        SetTimeout(Config.Performance.playerDataSyncMs or 100, function()
+            syncPending[s] = nil
+            if LXRCore.Players[s] ~= self then return end
+            TriggerEvent('LXRCore:Player:SetPlayerData', self.PlayerData)
+            TriggerEvent('LXRCore:Server:OnPlayerUpdated', self.PlayerData)
+            TriggerClientEvent('LXRCore:Player:SetPlayerData', s, self.PlayerData)
+            if Config.Compat.rsg.enabled then
+                TriggerEvent('RSGCore:Player:SetPlayerData', self.PlayerData)
+                TriggerClientEvent('RSGCore:Player:SetPlayerData', s, self.PlayerData)
             end
-        else
-            CheckPlayerData(source, newData)
+            LXRCore.Metrics.Inc('player.sync')
+        end)
+    end
+
+    function F.SetPlayerData(key, val)
+        if type(key) ~= 'string' then return false end
+        self.PlayerData[key] = val
+        F.UpdatePlayerData()
+        return true
+    end
+
+    -- ── Jobs / gangs ───────────────────────────────────────────────────────────
+    function F.SetJob(job, grade)
+        local built, err = Roles.BuildJob(job, grade)
+        if not built then return false, err end
+        self.PlayerData.job = built
+        self._dirty = true
+        if not self.Offline then
+            Player(src()).state:set('job', { name = built.name, grade = built.grade.level, onduty = built.onduty, type = built.type }, true)
+            F.UpdatePlayerData()
+            TriggerEvent('LXRCore:Server:OnJobUpdate', src(), built)
+            TriggerClientEvent('LXRCore:Client:OnJobUpdate', src(), built)
+            if Config.Compat.rsg.enabled then
+                TriggerEvent('RSGCore:Server:OnJobUpdate', src(), built)
+                TriggerClientEvent('RSGCore:Client:OnJobUpdate', src(), built)
+            end
         end
         return true
-    else
-        ShowError(GetCurrentResourceName(), 'ERROR PLAYER LOGIN - NO SOURCE GIVEN!')
-        return false
-    end
-end)
-
-exports('Logout', function(source)
-    local player = LXRCore.Players[source]
-    local cid = player and player.PlayerData.citizenid or nil
-
-    TriggerClientEvent('LXRCore:Client:OnPlayerUnload', source)
-    TriggerClientEvent('LXRCore:Player:UpdatePlayerData', source)
-    Wait(200)
-
-    if player then
-        -- Clear StateBag
-        Player(source).state.isLoggedIn = false
     end
 
-    -- ATOMIC CLEANUP: nil both indexes in the same synchronous block, no yields between
-    if cid then
-        LXRCore.CitizenIdMap[cid] = nil
-    end
-    LXRCore.Players[source] = nil
-end)
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- DELETE CHARACTER: Uses transaction for atomicity
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local playertables = {
-    { table = 'players' },
-    { table = 'bank_accounts' },
-    { table = 'playerskins' },
-    { table = 'player_outfits' },
-    { table = 'player_vehicles' }
-}
-
-exports('DeleteCharacter', function(source, citizenid)
-    local license = GetPlayerIdentifierByType(source, 'license')
-    local result = MySQL.scalar.await('SELECT license FROM players WHERE citizenid = ?', { citizenid })
-    if license == result then
-        local query = "DELETE FROM %s WHERE citizenid = ?"
-        local tableCount = #playertables
-        local queries = table.create(tableCount, 0)
-
-        for i = 1, tableCount do
-            queries[i] = { query = query:format(playertables[i].table), values = { citizenid } }
-        end
-
-        MySQL.transaction.await(queries, function(txResult)
-            if txResult then
-                -- Remove from O(1) index if online
-                LXRCore.CitizenIdMap[citizenid] = nil
-                TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Character Deleted', 'red',
-                    string.format('**%s** %s deleted **%s**', GetPlayerName(source), license, citizenid))
-            end
-        end)
-    else
-        DropPlayer(source, 'You Have Been Kicked For Exploitation')
-        TriggerEvent('lxr-log:server:CreateLog', 'anticheat', 'Anti-Cheat', 'white',
-            GetPlayerName(source) .. ' Has Been Dropped For Character Deletion Exploit', false)
-    end
-end)
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- DEFERRED BATCH SAVE: Staggered save cycle with dirty-flag tracking
--- Only saves players whose data has changed. Spreads writes across the interval.
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local SAVE_INTERVAL_MS = (LXRConfig.Performance and LXRConfig.Performance.server and LXRConfig.Performance.server.saveInterval) or 300000
-
-local MIN_STAGGER_DELAY_MS = 50
-
-CreateThread(function()
-    while true do
-        Wait(SAVE_INTERVAL_MS)
-        local players = {}
-        for src, player in pairs(LXRCore.Players) do
-            if player._dirty then
-                players[#players + 1] = src
+    function F.SetGang(gang, grade)
+        local built, err = Roles.BuildGang(gang, grade)
+        if not built then return false, err end
+        self.PlayerData.gang = built
+        self._dirty = true
+        if not self.Offline then
+            F.UpdatePlayerData()
+            TriggerEvent('LXRCore:Server:OnGangUpdate', src(), built)
+            TriggerClientEvent('LXRCore:Client:OnGangUpdate', src(), built)
+            if Config.Compat.rsg.enabled then
+                TriggerEvent('RSGCore:Server:OnGangUpdate', src(), built)
+                TriggerClientEvent('RSGCore:Client:OnGangUpdate', src(), built)
             end
         end
+        return true
+    end
 
-        if #players > 0 then
-            -- Stagger: spread saves across 80% of the interval to avoid thundering herd
-            local staggerDelay = math.max(MIN_STAGGER_DELAY_MS, math.floor((SAVE_INTERVAL_MS * 0.8) / #players))
-            for _, src in ipairs(players) do
-                if LXRCore.Players[src] then
-                    local ok, err = pcall(SavePlayer, src)
-                    if not ok then
-                        print(string.format('[LXRCore] Batch save error for source %s: %s', src, tostring(err)))
-                    end
-                end
-                Wait(staggerDelay)
+    function F.SetJobDuty(onDuty)
+        self.PlayerData.job.onduty = onDuty == true
+        self._dirty = true
+        if not self.Offline then
+            local j = self.PlayerData.job
+            Player(src()).state:set('job', { name = j.name, grade = j.grade.level, onduty = j.onduty, type = j.type }, true)
+            TriggerEvent('LXRCore:Server:SetDuty', src(), j.onduty)
+            TriggerEvent('LXRCore:Server:OnJobUpdate', src(), j)
+            TriggerClientEvent('LXRCore:Client:SetDuty', src(), j.onduty)
+            TriggerClientEvent('LXRCore:Client:OnJobUpdate', src(), j)
+            if Config.Compat.rsg.enabled then
+                TriggerEvent('RSGCore:Server:SetDuty', src(), j.onduty)
+                TriggerEvent('RSGCore:Server:OnJobUpdate', src(), j)
+                TriggerClientEvent('RSGCore:Client:SetDuty', src(), j.onduty)
+                TriggerClientEvent('RSGCore:Client:OnJobUpdate', src(), j)
             end
-            print(string.format('[LXRCore] Batch save complete: %d players saved', #players))
+            F.UpdatePlayerData()
+        end
+        return true
+    end
+
+    -- ── Metadata ───────────────────────────────────────────────────────────────
+    local function clampMeta(key, value)
+        if key == 'hunger' or key == 'thirst' or key == 'cleanliness' or key == 'stress' then
+            return LXRShared.Clamp(tonumber(value) or 0, 0, 100)
+        end
+        return value
+    end
+
+    function F.SetMetaData(meta, val)
+        if type(meta) == 'table' then
+            for k, v in pairs(meta) do
+                if type(k) == 'string' then self.PlayerData.metadata[k] = clampMeta(k, v) end
+            end
+        elseif type(meta) == 'string' then
+            self.PlayerData.metadata[meta] = clampMeta(meta, val)
+        else
+            return false
+        end
+        F.UpdatePlayerData()
+        if not self.Offline then TriggerEvent('LXRCore:Server:OnMetaDataUpdate', src(), meta, val) end
+        return true
+    end
+
+    function F.GetMetaData(meta)
+        if type(meta) ~= 'string' then return nil end
+        return self.PlayerData.metadata[meta]
+    end
+
+    -- ── Reputation & skills ────────────────────────────────────────────────────
+    function F.AddRep(rep, amount)
+        if type(rep) ~= 'string' or not tonumber(amount) then return false end
+        local r = self.PlayerData.metadata.rep
+        r[rep] = (tonumber(r[rep]) or 0) + tonumber(amount)
+        F.UpdatePlayerData()
+        return true
+    end
+
+    function F.RemoveRep(rep, amount)
+        if type(rep) ~= 'string' or not tonumber(amount) then return false end
+        local r = self.PlayerData.metadata.rep
+        r[rep] = math.max(0, (tonumber(r[rep]) or 0) - tonumber(amount))
+        F.UpdatePlayerData()
+        return true
+    end
+
+    function F.GetRep(rep)
+        return tonumber(self.PlayerData.metadata.rep[rep]) or 0
+    end
+
+    local function recalcLevel(skill)
+        local xp = tonumber(self.PlayerData.metadata.xp[skill]) or 0
+        local level = math.min(Config.Player.maxLevel or 20, math.floor(xp / (Config.Player.xpPerLevel or 50)))
+        self.PlayerData.metadata.levels[skill] = level
+        return level
+    end
+
+    function F.AddXp(skill, amount)
+        if type(skill) ~= 'string' or not tonumber(amount) or tonumber(amount) <= 0 then return false end
+        local xp = self.PlayerData.metadata.xp
+        xp[skill] = (tonumber(xp[skill]) or 0) + tonumber(amount)
+        local level = recalcLevel(skill)
+        F.UpdatePlayerData()
+        if not self.Offline then TriggerClientEvent('LXRCore:Client:OnXpChange', src(), skill, xp[skill], level) end
+        return true
+    end
+
+    function F.RemoveXp(skill, amount)
+        if type(skill) ~= 'string' or not tonumber(amount) or tonumber(amount) <= 0 then return false end
+        local xp = self.PlayerData.metadata.xp
+        xp[skill] = math.max(0, (tonumber(xp[skill]) or 0) - tonumber(amount))
+        local level = recalcLevel(skill)
+        F.UpdatePlayerData()
+        if not self.Offline then TriggerClientEvent('LXRCore:Client:OnXpChange', src(), skill, xp[skill], level) end
+        return true
+    end
+
+    function F.GetXp(skill) return tonumber(self.PlayerData.metadata.xp[skill]) or 0 end
+    function F.GetLevel(skill) return tonumber(self.PlayerData.metadata.levels[skill]) or 0 end
+    F.AddJobReputation = function(amount) return F.AddRep(self.PlayerData.job.name, amount) end
+
+    -- ── Money ──────────────────────────────────────────────────────────────────
+    function F.AddMoney(account, amount, reason) return Accounts.Add(self, account, amount, reason) end
+    function F.RemoveMoney(account, amount, reason) return Accounts.Remove(self, account, amount, reason) end
+    function F.SetMoney(account, amount, reason) return Accounts.Set(self, account, amount, reason) end
+    function F.GetMoney(account) return Accounts.Get(self, account) end
+    function F.HasMoney(account, amount) return Accounts.Has(self, account, amount) end
+
+    -- ── Items (provider-aware) ─────────────────────────────────────────────────
+    function F.AddItem(item, amount, slot, info, reason)
+        if self.Offline then return Inventory.CoreLogic.AddItem(self, item, amount, slot, info) end
+        return Inventory.AddItem(src(), item, amount, slot, info, reason)
+    end
+    function F.RemoveItem(item, amount, slot, reason)
+        if self.Offline then return Inventory.CoreLogic.RemoveItem(self, item, amount, slot) end
+        return Inventory.RemoveItem(src(), item, amount, slot, reason)
+    end
+    function F.HasItem(items, amount) return Inventory.HasItem(src(), items, amount) end
+    function F.GetItemByName(item) return Inventory.CoreLogic.GetItemByName(self.PlayerData.items, item) end
+    function F.GetItemsByName(item) return Inventory.CoreLogic.GetItemsByName(self.PlayerData.items, item) end
+    function F.GetItemBySlot(slot) return self.PlayerData.items[tonumber(slot)] end
+    function F.SetInventory(items) return Inventory.SetInventory(src(), items) end
+    function F.ClearInventory(filter) return Inventory.ClearInventory(src(), filter) end
+    function F.UpdatePlayerItems(slot)
+        if self.Offline then return end
+        TriggerClientEvent('lxr-inventory:client:UpdateItems', src(), slot, self.PlayerData.items[slot])
+    end
+
+    -- ── Lifecycle ──────────────────────────────────────────────────────────────
+    function F.Save()
+        if self.Offline then return PlayerAPI.SaveOffline(self.PlayerData) end
+        F.PersistStateBags()
+        return PlayerAPI.Save(src())
+    end
+
+    function F.Logout()
+        if self.Offline then return false end
+        return PlayerAPI.Logout(src())
+    end
+
+    function F.AddMethod(name, handler) self.Functions[name] = handler end
+    function F.AddField(name, data) self[name] = data end
+
+    -- Status values (hunger/thirst/…) are mirrored to replicated state bags so HUDs
+    -- and other resources can read them without asking the server.
+    local STATE_KEYS = { 'hunger', 'thirst', 'cleanliness', 'stress', 'health' }
+    function F.InitializeStateBags()
+        if self.Offline then return end
+        local state = Player(src()).state
+        for _, k in ipairs(STATE_KEYS) do
+            if self.PlayerData.metadata[k] ~= nil then state:set(k, self.PlayerData.metadata[k], true) end
+        end
+        local j = self.PlayerData.job
+        state:set('isLoggedIn', true, true)
+        state:set('citizenid', self.PlayerData.citizenid, true)
+        state:set('job', { name = j.name, grade = j.grade.level, onduty = j.onduty, type = j.type }, true)
+    end
+
+    function F.PersistStateBags()
+        if self.Offline then return end
+        local state = Player(src()).state
+        local md = {}
+        for _, k in ipairs(STATE_KEYS) do
+            if state[k] ~= nil then md[k] = state[k] end
+        end
+        if next(md) then
+            for k, v in pairs(md) do self.PlayerData.metadata[k] = clampMeta(k, v) end
+            self._dirty = true
         end
     end
-end)
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- PAYCHECK LOOP
--- ═══════════════════════════════════════════════════════════════════════════════
-
-local function PaycheckLoop()
-    local Players = LXRCore.Players
-    for _, Player in pairs(Players) do
-        local payment = Player.PlayerData.job.payment
-        if Player.PlayerData.job and payment > 0 and (LXRShared.Jobs[Player.PlayerData.job.name].offDutyPay or Player.PlayerData.job.onduty) then
-            if LXRConfig.Money.PayCheckSociety then
-                local account = exports['lxr-bossmenu']:GetAccount(Player.PlayerData.job.name)
-                if account ~= 0 then
-                    if account < payment then
-                        TriggerClientEvent('LXRCore:Notify', Player.PlayerData.source, 9, Lang:t('error.company_too_poor'), 5000, 0, 'mp_lobby_textures', 'cross', 'COLOR_WHITE')
-                    else
-                        Player:AddMoney('bank', payment)
-                        TriggerEvent('lxr-bossmenu:server:removeAccountMoney', Player.PlayerData.job.name, payment)
-                        TriggerClientEvent('LXRCore:Notify', Player.PlayerData.source, 9, Lang:t('info.received_paycheck', {value = payment}))
-                    end
-                else
-                    Player:AddMoney('bank', payment)
-                    TriggerClientEvent('LXRCore:Notify', Player.PlayerData.source, 9, Lang:t('info.received_paycheck', {value = payment}))
-                end
-            else
-                Player:AddMoney('bank', payment)
-                TriggerClientEvent('LXRCore:Notify', Player.PlayerData.source, 9, Lang:t('info.received_paycheck', {value = payment}))
-            end
-        end
+    if self.Offline then
+        return self
     end
-    SetTimeout(LXRConfig.Money.PayCheckTimeOut * (60 * 1000), PaycheckLoop)
+
+    -- Online: register, replicate, announce.
+    LXRCore.Players[self.PlayerData.source] = self
+    LXRCore.PlayersByCitizenId[self.PlayerData.citizenid] = self
+    LXRCore.PlayersByLicense[self.PlayerData.license] = self
+    F.InitializeStateBags()
+    PlayerAPI.Save(self.PlayerData.source) -- guarantees the row exists for new characters
+    TriggerEvent('LXRCore:Server:PlayerLoaded', self)
+    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Server:PlayerLoaded', self) end
+    F.UpdatePlayerData()
+    LXRCore.Commands.Refresh(self.PlayerData.source)
+    LXRCore.Metrics.Inc('player.loaded')
+    LXRCore.Log.info('player', 'character loaded', { source = self.PlayerData.source, citizenid = self.PlayerData.citizenid, name = self.PlayerData.name })
+    return self
 end
 
-PaycheckLoop()
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 💾 SAVE
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+local function buildSaveParams(pd, position)
+    return {
+        citizenid = pd.citizenid,
+        cid = tonumber(pd.cid) or 1,
+        license = pd.license,
+        name = pd.name or 'unknown',
+        money = json.encode(pd.money),
+        charinfo = json.encode(pd.charinfo),
+        job = json.encode(pd.job),
+        gang = json.encode(pd.gang),
+        position = json.encode(position),
+        metadata = json.encode(pd.metadata),
+        weight = tonumber(pd.weight) or Config.Player.maxWeight,
+        slots = tonumber(pd.slots) or Config.Player.maxSlots,
+        outlawstatus = tonumber(pd.outlawstatus) or 0,
+    }
+end
+
+---Save an online player. `sync` = true waits for the write (logout / drop paths).
+function PlayerAPI.Save(source, sync)
+    source = LXRCore.ToSource(source)
+    local player = source and LXRCore.Players[source]
+    if not player then
+        LXRCore.ShowError(LXRCore.ResourceName, 'Player.Save: no player for source ' .. tostring(source))
+        return false
+    end
+    local pd = player.PlayerData
+    local ped = GetPlayerPed(source)
+    local position = pd.position
+    if ped and ped > 0 then
+        local c = GetEntityCoords(ped)
+        position = { x = c.x, y = c.y, z = c.z, w = GetEntityHeading(ped) }
+        pd.position = position
+    end
+    local params = buildSaveParams(pd, position)
+    player._dirty = false
+    saveInProgress[pd.citizenid] = true
+    if sync then
+        LXRCore.DB.Insert(SAVE_SQL, params)
+        Inventory.Save(source, false)
+        saveInProgress[pd.citizenid] = nil
+    else
+        MySQL.insert(SAVE_SQL, params, function() saveInProgress[pd.citizenid] = nil end)
+        Inventory.Save(source, false)
+    end
+    LXRCore.Metrics.Inc('player.save')
+    LXRCore.Log.debug('player', 'saved', { citizenid = pd.citizenid, sync = sync == true })
+    return true
+end
+
+function PlayerAPI.SaveOffline(pd)
+    if type(pd) ~= 'table' or not pd.citizenid then return false end
+    LXRCore.DB.Insert(SAVE_SQL, buildSaveParams(pd, pd.position or Config.General.defaultSpawn))
+    Inventory.Save(pd, true)
+    LXRCore.Log.debug('player', 'offline saved', { citizenid = pd.citizenid })
+    return true
+end
+
+---Periodic save: only dirty players, spread across small batches.
+function PlayerAPI.SaveAll(force)
+    local batch, count = 0, 0
+    for source, player in pairs(LXRCore.Players) do
+        if force or player._dirty then
+            player.Functions.PersistStateBags()
+            PlayerAPI.Save(source, false)
+            count = count + 1
+            batch = batch + 1
+            if batch >= (Config.Performance.saveBatchSize or 25) then
+                batch = 0
+                Wait(Config.Performance.saveBatchDelayMs or 50)
+            end
+        end
+    end
+    if count > 0 then LXRCore.Log.debug('player', ('periodic save: %d players'):format(count)) end
+    return count
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🔎 LOOKUPS (O(1) where possible)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+function LXRCore.Functions.GetPlayer(source)
+    if type(source) == 'number' then return LXRCore.Players[source] end
+    local n = tonumber(source)
+    if n then return LXRCore.Players[n] end
+    if type(source) == 'string' then
+        -- identifier lookup (license / steam / discord …)
+        for _, player in pairs(LXRCore.Players) do
+            local ids = player.PlayerData.identifiers or {}
+            for _, id in pairs(ids) do
+                if id == source then return player end
+            end
+        end
+    end
+    return nil
+end
+
+function LXRCore.Functions.GetPlayerByCitizenId(citizenid)
+    return LXRCore.PlayersByCitizenId[citizenid]
+end
+
+function LXRCore.Functions.GetPlayerByLicense(license)
+    return LXRCore.PlayersByLicense[license] or PlayerAPI.GetOfflinePlayerByLicense(license)
+end
+
+function LXRCore.Functions.GetPlayerByAccount(account)
+    for _, player in pairs(LXRCore.Players) do
+        if player.PlayerData.charinfo.account == account then return player end
+    end
+    return nil
+end
+
+function LXRCore.Functions.GetPlayerByCharInfo(property, value)
+    for _, player in pairs(LXRCore.Players) do
+        if player.PlayerData.charinfo[property] == value then return player end
+    end
+    return nil
+end
+
+function LXRCore.Functions.GetSource(identifier)
+    local player = LXRCore.Functions.GetPlayer(identifier)
+    return player and player.PlayerData.source or 0
+end
+
+function LXRCore.Functions.GetPlayers()
+    local out = {}
+    for source in pairs(LXRCore.Players) do out[#out + 1] = source end
+    return out
+end
+
+function LXRCore.Functions.GetLXRPlayers() return LXRCore.Players end
+LXRCore.Functions.GetRSGPlayers = LXRCore.Functions.GetLXRPlayers
+LXRCore.Functions.GetQBPlayers = LXRCore.Functions.GetLXRPlayers
+
+function LXRCore.Functions.GetPlayersOnDuty(job)
+    local out, count = {}, 0
+    for source, player in pairs(LXRCore.Players) do
+        local j = player.PlayerData.job
+        if j.name == job and j.onduty then
+            out[#out + 1] = source
+            count = count + 1
+        end
+    end
+    return out, count
+end
+
+function LXRCore.Functions.GetDutyCount(job)
+    local _, count = LXRCore.Functions.GetPlayersOnDuty(job)
+    return count
+end
+
+function LXRCore.Functions.GetPlayersByJob(job)
+    local out = {}
+    for source, player in pairs(LXRCore.Players) do
+        if player.PlayerData.job.name == job then out[#out + 1] = source end
+    end
+    return out
+end
+
+function PlayerAPI.GetOfflinePlayer(citizenid)
+    if not PlayerAPI.ValidateCitizenId(citizenid) then return nil end
+    local row = LXRCore.DB.Single('SELECT * FROM players WHERE citizenid = ?', { citizenid })
+    if not row then return nil end
+    local pd = decodeRow(row)
+    local player = PlayerAPI.CheckPlayerData(nil, pd)
+    player.PlayerData.items = Inventory.CoreLogic.Deserialize(LXRCore.DB.Scalar('SELECT inventory FROM players WHERE citizenid = ?', { citizenid }))
+    return player
+end
+LXRCore.Functions.GetOfflinePlayerByCitizenId = PlayerAPI.GetOfflinePlayer
+
+function PlayerAPI.GetOfflinePlayerByLicense(license)
+    if type(license) ~= 'string' then return nil end
+    local row = LXRCore.DB.Single('SELECT * FROM players WHERE license = ? ORDER BY last_updated DESC LIMIT 1', { license })
+    if not row then return nil end
+    return PlayerAPI.CheckPlayerData(nil, decodeRow(row))
+end
+PlayerAPI.GetPlayerByLicense = LXRCore.Functions.GetPlayerByLicense
+
+---All characters for a license (multicharacter). Accepts a license string or a
+---source (then imported VORP rows keyed by steam are included). Returns decoded rows.
+function PlayerAPI.GetCharacters(licenseOrSource)
+    local license, steam = licenseOrSource, nil
+    local src = LXRCore.ToSource(licenseOrSource)
+    if src then
+        license = GetPlayerIdentifierByType(src, 'license')
+        steam = Config.Database.relinkImportedRows and GetPlayerIdentifierByType(src, 'steam') or nil
+    end
+    if type(license) ~= 'string' then return {} end
+    local rows = LXRCore.DB.Query('SELECT citizenid, cid, name, money, charinfo, job, gang, position, metadata, last_updated FROM players WHERE license = ? OR license = ? ORDER BY cid ASC', { license, steam or license }) or {}
+    for _, row in ipairs(rows) do decodeRow(row) end
+    return rows
+end
+
+function PlayerAPI.CountCharacters(license)
+    return tonumber(LXRCore.DB.Scalar('SELECT COUNT(*) FROM players WHERE license = ?', { license })) or 0
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🗑️ DELETE
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+---Let resources add their own citizenid-keyed tables to the delete transaction.
+function PlayerAPI.RegisterCharacterTable(tbl, column)
+    if type(tbl) ~= 'string' or not tbl:match('^[%w_]+$') then return false end
+    characterTables[#characterTables + 1] = { table = tbl, column = column or 'citizenid' }
+    return true
+end
+
+local function deleteQueries(citizenid)
+    local list = {}
+    for _, tbl in ipairs(Config.Database.characterTables or {}) do
+        if LXRCore.DB.TableExists(tbl) then list[#list + 1] = { table = tbl, column = 'citizenid' } end
+    end
+    for _, entry in ipairs(characterTables) do
+        if LXRCore.DB.TableExists(entry.table) then list[#list + 1] = entry end
+    end
+    local queries = {}
+    for i, entry in ipairs(list) do
+        queries[i] = { query = ('DELETE FROM `%s` WHERE `%s` = ?'):format(entry.table, entry.column), values = { citizenid } }
+    end
+    return queries
+end
+
+---Delete one of the requesting player's own characters.
+function PlayerAPI.DeleteCharacter(source, citizenid)
+    source = LXRCore.ToSource(source)
+    if not source or not PlayerAPI.ValidateCitizenId(citizenid) then return false end
+    local license = GetPlayerIdentifierByType(source, 'license')
+    local owner = LXRCore.DB.Scalar('SELECT license FROM players WHERE citizenid = ?', { citizenid })
+    if not owner or owner ~= license then
+        LXRCore.Log.exploit(source, 'delete of a character that is not theirs', { citizenid = citizenid })
+        if Config.Security.kickOnExploit then DropPlayer(source, Lang:t('error.exploit_dropped')) end
+        return false
+    end
+    if LXRCore.PlayersByCitizenId[citizenid] then
+        PlayerAPI.Logout(LXRCore.PlayersByCitizenId[citizenid].PlayerData.source, true)
+    end
+    local ok = LXRCore.DB.Transaction(deleteQueries(citizenid))
+    if ok then
+        TriggerEvent('LXRCore:Server:CharacterDeleted', source, citizenid)
+        LXRCore.Log.info('player', 'character deleted', { source = source, citizenid = citizenid })
+    end
+    return ok
+end
+
+---Admin/console deletion of any character.
+function PlayerAPI.ForceDeleteCharacter(citizenid)
+    if not PlayerAPI.ValidateCitizenId(citizenid) then return false end
+    local exists = LXRCore.DB.Scalar('SELECT license FROM players WHERE citizenid = ?', { citizenid })
+    if not exists then return false end
+    local online = LXRCore.PlayersByCitizenId[citizenid]
+    if online then
+        DropPlayer(online.PlayerData.source, 'An admin deleted the character you were playing')
+    end
+    local ok = LXRCore.DB.Transaction(deleteQueries(citizenid))
+    if ok then
+        TriggerEvent('LXRCore:Server:CharacterDeleted', 0, citizenid)
+        LXRCore.Log.warn('player', 'character force deleted', { citizenid = citizenid, by = LXRCore.Invoker() })
+    end
+    return ok
+end
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🔁 LOOPS — periodic save and paychecks (single server-side timers)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+function PlayerAPI.StartLoops()
+    CreateThread(function()
+        while true do
+            Wait((Config.General.saveInterval or 5) * 60000)
+            PlayerAPI.SaveAll(false)
+        end
+    end)
+
+    if Config.General.paycheck and Config.General.paycheck.enabled then
+        CreateThread(function()
+            local cfg = Config.General.paycheck
+            while true do
+                Wait((cfg.intervalMin or 10) * 60000)
+                for source, player in pairs(LXRCore.Players) do
+                    local job = player.PlayerData.job
+                    local def = LXRShared.Jobs[job.name]
+                    local payment = tonumber(job.grade and job.grade.payment) or tonumber(job.payment) or 0
+                    if def and payment > 0 and (def.offDutyPay or job.onduty) then
+                        local paid = true
+                        if cfg.fromSociety and GetResourceState(cfg.societyResource) == 'started' then
+                            local okBal, balance = pcall(function() return exports[cfg.societyResource][cfg.societyExports.balance](nil, job.name) end)
+                            if okBal and tonumber(balance) and balance > 0 then
+                                if balance < payment then
+                                    paid = false
+                                    TriggerClientEvent('LXRCore:Notify', source, Lang:t('error.company_too_poor'), 'error')
+                                else
+                                    pcall(function() exports[cfg.societyResource][cfg.societyExports.remove](nil, job.name, payment, 'Employee paycheck') end)
+                                end
+                            end
+                        end
+                        if paid then
+                            player.Functions.AddMoney(cfg.account or 'bank', payment, 'paycheck')
+                            TriggerClientEvent('LXRCore:Notify', source, Lang:t('info.received_paycheck', { value = payment }), 'success')
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end
+
+-- Legacy-friendly aliases
+LXRCore.Player.Login = PlayerAPI.Login
+LXRCore.Functions.Login = PlayerAPI.Login
+LXRCore.Functions.Logout = PlayerAPI.Logout
+LXRCore.Functions.GetCharacters = PlayerAPI.GetCharacters

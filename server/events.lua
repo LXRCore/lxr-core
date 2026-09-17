@@ -1,326 +1,303 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Server Event Handlers
-    
-    Server-side event handling for player connections, disconnections,
-    character loading/unloading, and all core framework network events.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Server:      The Land of Wolves 🐺
-    Developer:   iBoss21 / The Lux Empire
-    Website:     https://www.wolves.land
-    Discord:     https://discord.gg/CrKcWdfd3A
-    Store:       https://theluxempire.tebex.io
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Version: 2.0.0
-    
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Connection Handling & Validated Net Events (server)
+     ═══════════════════════════════════════════════════════════════════════════
+     • playerConnecting deferrals: closed server, database readiness, whitelist,
+       license, duplicate license, discord requirement, ban check
+     • playerDropped: synchronous save, index cleanup, callback cleanup
+     • Every client-originated event is rate-limited and validated. There is no
+       event that adds money or items; those stay server-side APIs.
+     ═══════════════════════════════════════════════════════════════════════════
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
+
+local eventBuckets = {}
+local connecting = {} -- license → true while a client is in the deferral phase
+
+local function limited(src)
+    local rl = Config.Security.eventRateLimit
+    if not rl then return false end
+    if LXRCore.RateLimit(eventBuckets, src, rl.burst, rl.windowMs) then return false end
+    LXRCore.Metrics.Inc('event.ratelimited')
+    return true
+end
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 🐺 LXR CORE - SERVER EVENT HANDLERS
+-- 🚫 BANS & KICKS
 -- ═══════════════════════════════════════════════════════════════════════════════
 
--- Event Handler
-GlobalState['Count:Players'] = 0
-
--- Per-player, per-callback-name cooldown table for callback flood prevention.
--- Structure: cbCooldowns[src][callbackName] = lastInvocationTime
--- Per-name tracking prevents high-frequency legitimate callbacks (e.g. position sync)
--- from exhausting the cooldown budget for unrelated callbacks on the same source.
-local CALLBACK_COOLDOWN_MS = 100
-local cbCooldowns = {}
-
-AddEventHandler('playerDropped', function()
-    local src = source
-    local PlayerObj = LXRCore.Players[src]
-    GlobalState['Count:Players'] = GetNumPlayerIndices()
-    if not PlayerObj then return end
-
-    local cid = PlayerObj.PlayerData.citizenid
-    TriggerEvent('lxr-log:server:CreateLog', 'joinleave', 'Dropped', 'red',
-        string.format('**%s** (%s) left..', GetPlayerName(src), PlayerObj.PlayerData.license))
-
-    -- Error-safe save: if Save() throws, fallback to raw SQL so data is not lost
-    local ok, err = pcall(function() PlayerObj:Save() end)
-    if not ok then
-        print(string.format('[LXRCore] Error saving player %s on disconnect: %s', src, tostring(err)))
-        -- Fallback: persist critical fields directly via raw SQL without Lua player layer
-        local pd = PlayerObj.PlayerData
-        pcall(function()
-            MySQL.update('UPDATE players SET cash = ?, bank = ?, metadata = ? WHERE citizenid = ?', {
-                pd.money.cash or 0, pd.money.bank or 0,
-                json.encode(pd.metadata), cid
-            })
-        end)
+---@return boolean banned, string|nil reason
+function LXRCore.Functions.IsPlayerBanned(source)
+    local license = GetPlayerIdentifierByType(source, 'license')
+    local discord = GetPlayerIdentifierByType(source, 'discord')
+    local row = LXRCore.DB.Single('SELECT id, reason, expire FROM bans WHERE license = ? OR (discord IS NOT NULL AND discord = ?) ORDER BY expire DESC LIMIT 1', { license, discord or '' })
+    if not row then return false end
+    local expire = tonumber(row.expire) or 0
+    if expire == 0 or expire >= 2147483647 then
+        return true, Lang:t('error.banned_permanent', { reason = row.reason or '' })
     end
-
-    -- ATOMIC CLEANUP: Both index entries must be nilled in the same synchronous
-    -- block with no yields between them. If Players[src] is nilled first, any
-    -- event that fires between and calls GetPlayerByCitizenId gets a dangling
-    -- citizenid pointing to a nil source.
-    LXRCore.CitizenIdMap[cid] = nil
-    LXRCore.Players[src] = nil
-
-    -- Cleanup per-player rate limit state and bucket registry
-    cbCooldowns[src] = nil
-    for _, bucket in pairs(LXRCore.Buckets) do
-        if bucket.players[src] then
-            bucket.players[src] = nil
-            break
-        end
+    if os.time() < expire then
+        return true, Lang:t('error.banned', { reason = row.reason or '', expires = os.date('%Y-%m-%d %H:%M', expire) })
     end
-end)
+    LXRCore.DB.UpdateAsync('DELETE FROM bans WHERE id = ?', { row.id })
+    return false
+end
 
-local function IsPlayerBanned(plicense)
-    local result = MySQL.single.await('SELECT * FROM bans WHERE license = ?', { plicense })
-    if not result then return false end
-    if os.time() < result.expire then
-        local timeTable = os.date('*t', tonumber(result.expire))
-        return true, 'You have been banned from the server:\n' .. result.reason .. '\nYour ban expires ' .. timeTable.day .. '/' .. timeTable.month .. '/' .. timeTable.year .. ' ' .. timeTable.hour .. ':' .. timeTable.min .. '\n'
-    else
-        MySQL.query('DELETE FROM bans WHERE id = ?', { result.id })
-        return false
+---Ban + drop a player for an exploit (permanent unless `hours` given).
+function LXRCore.Functions.ExploitBan(source, origin, hours)
+    source = LXRCore.ToSource(source)
+    if not source then return false end
+    local expire = hours and (os.time() + math.floor(hours * 3600)) or 2147483647
+    LXRCore.DB.InsertAsync('INSERT INTO bans (name, license, discord, ip, reason, expire, bannedby) VALUES (?, ?, ?, ?, ?, ?, ?)', {
+        GetPlayerName(source),
+        GetPlayerIdentifierByType(source, 'license'),
+        GetPlayerIdentifierByType(source, 'discord'),
+        GetPlayerIdentifierByType(source, 'ip'),
+        Lang:t('info.exploit_ban_reason', { origin = tostring(origin) }),
+        expire,
+        'LXRCore Anti-Exploit',
+    })
+    LXRCore.Log.exploit(source, 'banned: ' .. tostring(origin))
+    DropPlayer(source, Lang:t('error.exploit_banned', { discord = Config.ServerInfo.discord }))
+    return true
+end
+
+---Kick with a reason; safe to call during deferrals.
+function LXRCore.Functions.Kick(source, reason, setKickReason, deferrals)
+    source = LXRCore.ToSource(source)
+    reason = ('\n%s\n🔸 %s'):format(tostring(reason or ''), Config.ServerInfo.discord or '')
+    if setKickReason then setKickReason(reason) end
+    if deferrals then
+        deferrals.update(reason)
+        SetTimeout(2500, function() if source then DropPlayer(source, reason) end end)
+        return
+    end
+    if source then DropPlayer(source, reason) end
+end
+LXRCore.Functions.KickPlayer = LXRCore.Functions.Kick
+
+function LXRCore.Functions.IsLicenseInUse(license)
+    if LXRCore.PlayersByLicense[license] then return true end
+    for _, id in ipairs(GetPlayers()) do
+        if GetPlayerIdentifierByType(id, 'license') == license then return true end
     end
     return false
 end
 
-local function IsLicenseInUse(license)
-    local players = GetPlayers()
-    for _, player in pairs(players) do
-        local id = GetPlayerIdentifierByType(player, 'license')
-        if id == license then
-            return true
-        end
-    end
-    return false
-end
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🔌 CONNECTION
+-- ═══════════════════════════════════════════════════════════════════════════════
 
--- Player Connecting
-
-local function OnPlayerConnecting(name, setKickReason, deferrals)
+local function onPlayerConnecting(name, setKickReason, deferrals)
     local src = source
     deferrals.defer()
-    if LXRConfig.ServerClosed and not IsPlayerAceAllowed(src, 'whitelisted') then
-        return deferrals.done(LXRConfig.ServerClosedReason)
-    end
     Wait(0)
-    deferrals.update(string.format('Hello %s. Your license is being checked', name))
+    LXRCore.Metrics.Inc('connect.attempt')
+
+    if Config.Server.closed and not IsPlayerAceAllowed(src, 'lxrcore.join') then
+        return deferrals.done(Config.Server.closedReason or Lang:t('error.server_closed'))
+    end
+    if Config.Database.requireReady and not LXRCore.DB.Ready then
+        return deferrals.done(Lang:t('error.database_not_ready'))
+    end
+
+    deferrals.update(Lang:t('info.checking_license', { name = name }))
     local license = GetPlayerIdentifierByType(src, 'license')
     if not license then
-        return deferrals.done('No Valid Rockstar License Found')
-    elseif IsLicenseInUse(license) then
-        return deferrals.done('Duplicate Rockstar License Found')
+        return deferrals.done(Lang:t('error.no_valid_license'))
     end
+    if Config.Server.checkDuplicateLicense and (connecting[license] or LXRCore.Functions.IsLicenseInUse(license)) then
+        return deferrals.done(Lang:t('error.duplicate_license'))
+    end
+    connecting[license] = true
+    local function finish(msg)
+        connecting[license] = nil
+        deferrals.done(msg)
+    end
+
+    if Config.Server.requireDiscord and not GetPlayerIdentifierByType(src, 'discord') then
+        return finish(Lang:t('error.no_discord'))
+    end
+
+    if Config.Server.whitelist then
+        deferrals.update(Lang:t('info.checking_whitelisted', { name = name }))
+        if not LXRCore.Perms.IsWhitelisted(src) then
+            return finish(Lang:t('error.not_whitelisted'))
+        end
+    end
+
+    deferrals.update(Lang:t('info.checking_ban', { name = name }))
+    local ok, banned, reason = pcall(LXRCore.Functions.IsPlayerBanned, src)
+    if not ok then
+        LXRCore.Log.error('player', 'ban check failed', { error = tostring(banned) })
+        return finish(Lang:t('error.connecting_database_error'))
+    end
+    if banned then
+        LXRCore.Metrics.Inc('connect.banned')
+        return finish(reason)
+    end
+
+    deferrals.update(Lang:t('info.join_server', { name = name, server = Config.ServerInfo.name }))
+    -- give other resources a chance to veto (queue, whitelist systems); they may call deferrals.done(reason)
+    TriggerEvent('LXRCore:Server:PlayerConnecting', src, name, setKickReason, deferrals)
     Wait(0)
-    deferrals.update(string.format('Hello %s. We are checking if you are banned.', name))
-    local success, isBanned, reason = pcall(IsPlayerBanned, license)
-    if not success then return deferrals.done('A database error occurred while connecting to the server.') end
-    if isBanned then return deferrals.done(reason) end
-    Wait(0)
-    deferrals.update(string.format('Welcome %s to {Server Name}.', name))
-	GlobalState['Count:Players'] = GetNumPlayerIndices() + 1
-    deferrals.done()
-	if LXRConfig.UseConnectQueue then
-        Wait(1000)
-    	TriggerEvent('connectqueue:playerConnect', name, setKickReason, deferrals)
-	end
+    finish()
+    LXRCore.Metrics.Inc('connect.accepted')
+    LXRCore.Log.info('player', 'connection accepted', { source = src, name = name })
 end
+AddEventHandler('playerConnecting', onPlayerConnecting)
 
-AddEventHandler('playerConnecting', OnPlayerConnecting)
-
--- Player
-
-RegisterNetEvent('LXRCore:UpdatePlayer', function()
-    local Player = GetPlayer(source)
-	if not Player then return end
-    Player.Functions.Save()
+AddEventHandler('playerJoining', function()
+    local src = source
+    -- shared data snapshot so late-added items/jobs are present before any resource asks
+    TriggerClientEvent('LXRCore:Client:SharedUpdate', src, LXRShared)
+    if Config.Compat.rsg.enabled then TriggerClientEvent('RSGCore:Client:SharedUpdate', src, LXRShared) end
+    GlobalState['Count:Players'] = GetNumPlayerIndices()
 end)
 
+AddEventHandler('playerDropped', function(reason)
+    local src = source
+    local player = LXRCore.Players[src]
+    GlobalState['Count:Players'] = math.max(0, GetNumPlayerIndices() - 1)
+    eventBuckets[src] = nil
+    LXRCore.Callback.CleanupSource(src)
+    if not player then return end
+    TriggerEvent('LXRCore:Server:PlayerDropped', player, reason)
+    if Config.Compat.rsg.enabled then TriggerEvent('RSGCore:Server:PlayerDropped', player, reason) end
+    player.Functions.PersistStateBags()
+    LXRCore.Player.Save(src, true)
+    LXRCore.Players[src] = nil
+    LXRCore.PlayersByCitizenId[player.PlayerData.citizenid] = nil
+    LXRCore.PlayersByLicense[player.PlayerData.license] = nil
+    LXRCore.Metrics.Inc('player.dropped')
+    LXRCore.Log.info('player', 'dropped', { source = src, citizenid = player.PlayerData.citizenid, reason = reason })
+end)
+
+-- Save everything on resource stop so a restart never loses progress.
+AddEventHandler('onResourceStop', function(res)
+    if res ~= LXRCore.ResourceName then return end
+    for src in pairs(LXRCore.Players) do
+        pcall(LXRCore.Player.Save, src, true)
+    end
+    LXRCore.Accounts.FlushLedger()
+end)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 📡 CLIENT-ORIGINATED EVENTS (validated)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+-- Client asks for a save (legacy loop / logout screens). Rate-limited: one per 30s.
+local saveRequests = {}
+RegisterNetEvent('LXRCore:UpdatePlayer', function()
+    local src = source
+    local player = LXRCore.Players[src]
+    if not player then return end
+    if not LXRCore.RateLimit(saveRequests, src, 1, 30000) then return end
+    player.Functions.PersistStateBags()
+    LXRCore.Player.Save(src, false)
+end)
+
+-- Client may only set whitelisted metadata keys (hunger/thirst/…).
 RegisterNetEvent('LXRCore:Server:SetMetaData', function(meta, data)
-    local Player = GetPlayer(source)
-    if not Player then return end
-    Player.Functions.SetMetaData(meta, data)
+    local src = source
+    if limited(src) then return end
+    local player = LXRCore.Players[src]
+    if not player or type(meta) ~= 'string' then return end
+    local allowed = false
+    for _, k in ipairs(Config.Security.clientMetadataWhitelist or {}) do
+        if k == meta then allowed = true break end
+    end
+    if not allowed then
+        LXRCore.Log.exploit(src, 'client tried to set protected metadata', { key = meta })
+        return
+    end
+    if type(data) ~= 'number' then return end
+    player.Functions.SetMetaData(meta, data)
 end)
 
 RegisterNetEvent('LXRCore:ToggleDuty', function()
-    local Player = GetPlayer(source)
-    if Player.PlayerData.job.onduty then
-        Player.Functions.SetJobDuty(false)
-        TriggerClientEvent('LXRCore:Notify', source, 9, Lang:t('info.off_duty'), 5000, 0, 'hud_textures', 'check', 'COLOR_WHITE')
-    else
-        Player.Functions.SetJobDuty(true)
-        TriggerClientEvent('LXRCore:Notify', source, 9, Lang:t('info.on_duty'), 5000, 0, 'hud_textures', 'check', 'COLOR_WHITE')
-    end
-    TriggerClientEvent('LXRCore:Client:SetDuty', source, Player.PlayerData.job.onduty)
+    local src = source
+    if limited(src) then return end
+    local player = LXRCore.Players[src]
+    if not player then return end
+    local onduty = not player.PlayerData.job.onduty
+    player.Functions.SetJobDuty(onduty)
+    TriggerClientEvent('LXRCore:Notify', src, onduty and Lang:t('info.on_duty') or Lang:t('info.off_duty'))
 end)
 
--- Items
+-- Legacy spawn resources announce that the character is in the world.
+RegisterNetEvent('LXRCore:Server:OnPlayerLoaded', function()
+    local src = source
+    local player = LXRCore.Players[src]
+    if not player then return end
+    Player(src).state:set('isLoggedIn', true, true)
+    TriggerEvent('LXRCore:Server:PlayerSpawned', src, player)
+end)
 
+-- Usable item from an inventory UI. Ownership is re-verified server-side in Items.Use.
 RegisterNetEvent('LXRCore:Server:UseItem', function(item)
-    -- Security: Validate source and rate limit
-    if not exports['lxr-core']:ValidateSource(source) then return end
-    if not exports['lxr-core']:CheckRateLimit(source, 'UseItem', 5) then return end
-    
-    if item and item.amount > 0 then
-        -- Security: Validate item data
-        if type(item.name) ~= 'string' or #item.name == 0 then return end
-        
-        if LXRCore.UseableItems[item.name] then
-            LXRCore.UseableItems[item.name](source, item)
-        end
+    local src = source
+    if limited(src) then return end
+    if type(item) ~= 'table' and type(item) ~= 'string' then return end
+    LXRCore.Items.Use(src, item)
+end)
+
+RegisterNetEvent('LXRCore:Server:CloseServer', function(reason)
+    local src = source
+    if not LXRCore.Perms.Has(src, 'admin') then
+        return LXRCore.Log.exploit(src, 'CloseServer without permission')
     end
+    LXRCore.Commands.Call(src, 'closeserver', { tostring(reason or 'No reason specified') })
 end)
 
-RegisterNetEvent('LXRCore:Server:RemoveItem', function(itemName, amount, slot)
-    -- Security: Validate source and rate limit
-    if not exports['lxr-core']:ValidateSource(source) then return end
-    if not exports['lxr-core']:CheckRateLimit(source, 'RemoveItem', 20) then return end
-    
-    -- Security: Validate item data
-    if not exports['lxr-core']:ValidateItemData(itemName, amount, slot) then return end
-    
-    local Player = GetPlayer(source)
-    if not Player then return end
-    Player.Functions.RemoveItem(itemName, amount, slot)
+RegisterNetEvent('LXRCore:Server:OpenServer', function()
+    local src = source
+    if not LXRCore.Perms.Has(src, 'admin') then
+        return LXRCore.Log.exploit(src, 'OpenServer without permission')
+    end
+    Config.Server.closed = false
 end)
 
-RegisterNetEvent('LXRCore:Server:AddItem', function(itemName, amount, slot, info)
-    -- Security: Validate source and rate limit
-    if not exports['lxr-core']:ValidateSource(source) then return end
-    if not exports['lxr-core']:CheckRateLimit(source, 'AddItem', 20) then return end
-    
-    -- Security: Validate item data
-    if not exports['lxr-core']:ValidateItemData(itemName, amount, slot) then return end
-    
-    -- Security: Check for suspicious rapid item adding
-    if not exports['lxr-core']:CheckSuspiciousActivity(source, 'rapidItems', amount) then return end
-    
-    local Player = GetPlayer(source)
-    if not Player then return end
-    Player.Functions.AddItem(itemName, amount, slot, info)
-end)
-
--- Xp Events
-
-RegisterNetEvent('LXRCore:Player:SetLevel', function(source, skill)
-	local Player = GetPlayer(source)
-	local Skill = tostring(skill)
-	local currentXp = Player.PlayerData.metadata["xp"][Skill]
-	local Level = 0
-	for k, v in pairs(LXRConfig.Levels[Skill]) do
-		if currentXp >= v then
-			Player.PlayerData.metadata["levels"][Skill] = k
-		end
-	end
-end)
-
-RegisterNetEvent('LXRCore:Player:GiveXp', function(source, skill, amount) -- adding LXRCore xp if you dont want to import the playerdata or for standalone scripts
-	local Player = GetPlayer(source)
-	if Player then
-		if Player.PlayerData.metadata["xp"][skill] then
-			Player.Functions.AddXp(skill, amount)
-		end
-	end
-end)
-
-RegisterNetEvent('LXRCore:Player:RemoveXp', function(source, skill, amount) -- removing LXRCore xp if you dont want to import the playerdata or for standalone scripts
-	local Player = GetPlayer(source)
-	if Player then
-		if Player.PlayerData.metadata["xp"][skill] then
-			Player.Functions.RemoveXp(skill, amount)
-		end
-	end
-end)
-
+-- Legacy v2 callback protocol (name-keyed). Kept for resources that trigger the
+-- event manually; the v3 client uses request ids.
 RegisterNetEvent('LXRCore:Server:TriggerCallback', function(name, ...)
     local src = source
-
-    -- Per-player, per-callback-name cooldown: 100ms minimum gap per callback name
-    local now = GetGameTimer()
-    cbCooldowns[src] = cbCooldowns[src] or {}
-    if cbCooldowns[src][name] and (now - cbCooldowns[src][name]) < CALLBACK_COOLDOWN_MS then return end
-    cbCooldowns[src][name] = now
-
-    -- Security: Validate source and rate limit (broader window check)
-    if not exports['lxr-core']:ValidateSource(src) then return end
-    if not exports['lxr-core']:CheckRateLimit(src, 'TriggerCallback', 30) then return end
-
-    -- Security: Validate callback name
-    if type(name) ~= 'string' or #name == 0 or #name > 100 then return end
-
-    TriggerCallback(name, src, function(...)
+    if limited(src) or type(name) ~= 'string' then return end
+    LXRCore.Callback.Invoke(name, src, function(...)
         TriggerClientEvent('LXRCore:Client:TriggerCallback', src, name, ...)
     end, ...)
 end)
 
-CreateCallback('LXRCore:HasItem', function(source, cb, items, amount)
-    local retval = false
-    local Player = GetPlayer(source)
-    if Player then
-        if type(items) == 'table' then
-            local count = 0
-            local finalcount = 0
-            for k, v in pairs(items) do
-                if type(k) == 'string' then
-                    finalcount = 0
-                    for i, _ in pairs(items) do
-                        if i then
-                            finalcount = finalcount + 1
-                        end
-                    end
-                    local item = Player.Functions.GetItemByName(k)
-                    if item then
-                        if item.amount >= v then
-                            count = count + 1
-                            if count == finalcount then
-                                retval = true
-                            end
-                        end
-                    end
-                else
-                    finalcount = #items
-                    local item = Player.Functions.GetItemByName(v)
-                    if item then
-                        if amount then
-                            if item.amount >= amount then
-                                count = count + 1
-                                if count == finalcount then
-                                    retval = true
-                                end
-                            end
-                        else
-                            count = count + 1
-                            if count == finalcount then
-                                retval = true
-                            end
-                        end
-                    end
-                end
-            end
-        else
-            local item = Player.Functions.GetItemByName(items)
-            if item then
-                if amount then
-                    if item.amount >= amount then
-                        retval = true
-                    end
-                else
-                    retval = true
-                end
-            end
-        end
+RegisterNetEvent('LXRCore:Server:TriggerClientCallback', function(name, ...)
+    local src = source
+    local cb = LXRCore.ClientCallbacks[name]
+    if cb then
+        LXRCore.ClientCallbacks[name] = nil
+        cb(...)
     end
-    cb(retval)
+end)
+
+-- Deprecated exploitable events from the QBR era are answered with a log, never an action.
+for _, ev in ipairs({ 'LXRCore:Server:AddItem', 'LXRCore:Server:RemoveItem', 'LXRCore:Player:GiveXp', 'LXRCore:Player:RemoveXp', 'LXRCore:Player:SetLevel' }) do
+    RegisterNetEvent(ev, function()
+        LXRCore.Log.exploit(source, ('deprecated client event %s called'):format(ev), { resource = GetInvokingResource() })
+    end)
+end
+
+-- Shared data on demand (resources that start late).
+RegisterNetEvent('LXRCore:Server:RequestShared', function()
+    TriggerClientEvent('LXRCore:Client:SharedUpdate', source, LXRShared)
+end)
+
+-- Vehicle spawn helper (server-side entity creation, returns net id).
+LXRCore.Functions.CreateCallback('LXRCore:Server:SpawnVehicle', function(src, cb, model, coords, warp)
+    if type(model) ~= 'string' and type(model) ~= 'number' then return cb(nil) end
+    local ped = GetPlayerPed(src)
+    if not coords then coords = GetEntityCoords(ped) end
+    local hash = type(model) == 'string' and joaat(model) or model
+    local veh = CreateVehicle(hash, coords.x, coords.y, coords.z, coords.w or GetEntityHeading(ped), true, true)
+    local tries = 0
+    while not DoesEntityExist(veh) and tries < 100 do Wait(10) tries = tries + 1 end
+    if not DoesEntityExist(veh) then return cb(nil) end
+    if warp then TaskWarpPedIntoVehicle(ped, veh, -1) end
+    cb(NetworkGetNetworkIdFromEntity(veh))
 end)

@@ -1,129 +1,45 @@
--- LXRCore Luacheck Configuration
+-- LXRCore luacheck configuration (FXServer Lua 5.4 runtime)
+std = 'lua54'
+max_line_length = 220
+codes = true
+ignore = { '212', '213', '631' } -- unused args / loop vars, long lines
 
-std = "lua51+lua52+lua53"
+exclude_files = { 'tests/lib/json.lua', '.git/' }
 
--- Globals provided by the FXServer/RedM runtime
+-- Runtime globals (Cfx natives are declared per file via read_globals below)
 globals = {
-    "LXRCore",
-    "LXRConfig",
-    "LXRFramework",
-    "LXRShared",
-    "LXRDatabase",
-    "LXRSecurity",
-    "LXRPerformance",
-    "LXRDebug",
-    "Lang",
-    "MySQL",
-    "exports",
-    "source",
-    "Citizen",
-    "CreateThread",
-    "Wait",
-    "SetTimeout",
-    "RegisterNetEvent",
-    "AddEventHandler",
-    "TriggerEvent",
-    "TriggerServerEvent",
-    "TriggerClientEvent",
-    "RegisterServerEvent",
-    "RegisterCommand",
-    "GetPlayerIdentifiers",
-    "GetNumPlayerIdentifiers",
-    "GetPlayerIdentifierByType",
-    "GetPlayerName",
-    "GetPlayers",
-    "GetPlayer",
-    "GetIdentifier",
-    "CreateCallback",
-    "TriggerCallback",
-    "HasPermission",
-    "AddPermission",
-    "RemovePermission",
-    "DropPlayer",
-    "StopResource",
-    "GetCurrentResourceName",
-    "GetResourceState",
-    "GetResourceMetadata",
-    "PlayerPedId",
-    "Player",
-    "LocalPlayer",
-    "GlobalState",
-    "GetEntityCoords",
-    "GetEntityHeading",
-    "DoesEntityExist",
-    "SetEntityCoords",
-    "NetworkGetEntityFromNetworkId",
-    "NetworkGetNetworkIdFromEntity",
-    "RequestModel",
-    "HasModelLoaded",
-    "IsModelValid",
-    "IsPlayerAceAllowed",
-    "GetNumPlayerIndices",
-    "GetPlayerPed",
-    "RefreshCommands",
-    "GetGameTimer",
-    "ShowError",
-    "ShowSuccess",
-    "RemoveAllPedWeapons",
-    "SetCurrentPedWeapon",
-    "SetPlayerRoutingBucket",
-    "GetPlayerPing",
-    "ExecuteCommand",
-    "vector2",
-    "vector3",
-    "vector4",
-    "vec3",
-    "print",
-    "json",
-    "joaat",
+    'LXRCore', 'LXRShared', 'LXRConfig', 'Config', 'Lang', 'Locale', 'T', 'json', 'source',
 }
 
--- Read-only globals
 read_globals = {
-    "table",
-    "string",
-    "math",
-    "os",
-    "io",
-    "pairs",
-    "ipairs",
-    "type",
-    "tonumber",
-    "tostring",
-    "pcall",
-    "xpcall",
-    "error",
-    "assert",
-    "select",
-    "unpack",
-    "rawget",
-    "rawset",
-    "setmetatable",
-    "getmetatable",
-    "next",
-    "require",
-    "collectgarbage",
-    "coroutine",
-    "debug",
-    "load",
-    "loadstring",
-    "dofile",
+    -- Cfx runtime
+    'exports', 'Citizen', 'CreateThread', 'Wait', 'SetTimeout', 'promise', 'RegisterNetEvent', 'RegisterServerEvent',
+    'AddEventHandler', 'TriggerEvent', 'TriggerServerEvent', 'TriggerClientEvent', 'CancelEvent', 'RegisterCommand',
+    'RegisterNUICallback', 'SendNUIMessage', 'SetNuiFocus', 'GetCurrentResourceName', 'GetInvokingResource',
+    'GetResourceState', 'GetResourceMetadata', 'LoadResourceFile', 'GetConvar', 'GetConvarInt', 'ExecuteCommand',
+    'IsDuplicityVersion', 'GetGameTimer', 'GetHashKey', 'joaat', 'vector2', 'vector3', 'vector4', 'vec3',
+    'GlobalState', 'LocalPlayer', 'Player', 'AddStateBagChangeHandler', 'MySQL',
+    -- server natives
+    'GetPlayerIdentifierByType', 'GetPlayerIdentifiers', 'GetPlayerName', 'GetPlayers', 'GetNumPlayerIndices',
+    'GetPlayerPed', 'GetPlayerPing', 'DropPlayer', 'IsPlayerAceAllowed', 'SetPlayerRoutingBucket', 'SetEntityRoutingBucket',
+    'GetEntityCoords', 'GetEntityHeading', 'GetAllObjects', 'GetAllVehicles', 'GetAllPeds', 'CreateVehicle', 'DoesEntityExist',
+    'TaskWarpPedIntoVehicle', 'NetworkGetNetworkIdFromEntity',
+    -- client natives
+    'PlayerPedId', 'PlayerId', 'GetPlayerServerId', 'GetPlayerFromServerId', 'GetActivePlayers', 'GetGamePool',
+    'SetEntityCoords', 'SetEntityCoordsNoOffset', 'GetGroundZAndNormalFor_3dCoord', 'GetHeightmapBottomZForPosition',
+    'IsWaypointActive', 'GetWaypointCoords', 'GetMount', 'IsModelInCdimage', 'IsModelValid', 'HasModelLoaded', 'RequestModel',
+    'SetModelAsNoLongerNeeded', 'HasAnimDictLoaded', 'RequestAnimDict', 'RemoveAnimDict', 'TaskPlayAnim', 'CreatePed',
+    'SetEntityAsMissionEntity', 'SetBlockingOfNonTemporaryEvents', 'FreezeEntityPosition', 'SetEntityInvincible', 'DeleteEntity',
+    'CreateObject', 'GetEntityBoneIndexByName', 'AttachEntityToEntity', 'SetNetworkIdCanMigrate', 'DeleteVehicle',
+    'GetVehiclePedIsIn', 'GetLabelText', 'GetDisplayNameFromVehicleModel', 'GetEntityModel', 'SetBlipSprite', 'SetBlipScale',
+    'RemoveBlip', 'ShutdownLoadingScreenNui', 'SetMinimapHideFow', 'SetRelationshipBetweenGroups', 'SetPedPromptName',
+    'RequestStreamedTextureDict', 'HasStreamedTextureDictLoaded', 'CreateVarString', 'SetTextScale', 'SetTextColor',
+    'SetTextCentre', 'SetTextFontForCurrentCommand', 'DisplayText', 'GetScreenCoordFromWorldCoord', 'GetGameplayCamCoord',
+    'GetGameplayCamFov', 'DrawMarker', 'GetRandomIntInRange', 'GetActiveScreenResolution', 'TaskLookAtEntity',
+    'PromptRegisterBegin', 'PromptSetControlAction', 'PromptSetText', 'PromptSetEnabled', 'PromptSetVisible',
+    'PromptSetStandardizedHoldMode', 'PromptSetStandardMode', 'PromptSetGroup', 'PromptRegisterEnd',
+    'PromptHasHoldModeCompleted', 'PromptHasStandardModeCompleted', 'PromptDelete', 'PromptSetActiveGroupThisFrame',
 }
 
--- Ignore certain warnings
-ignore = {
-    "211",  -- Unused local variable
-    "212",  -- Unused argument
-    "213",  -- Unused loop variable
-    "311",  -- Value assigned to local variable is unused
-    "631",  -- Line too long
-}
-
--- Exclude generated/vendor files
-exclude_files = {
-    "node_modules/",
-    ".git/",
-}
-
--- Max line length
-max_line_length = 200
+files['tests/**'] = { globals = { 'Shim', 'T', 'arg' }, ignore = { '111', '112', '113', '121', '122', '142', '143' } }
+files['tests/lib/fxshim.lua'] = { ignore = { '111', '112', '113', '121', '122', '131', '142', '143' } }

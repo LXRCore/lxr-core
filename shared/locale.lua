@@ -1,172 +1,114 @@
---[[
-    ██╗     ██╗  ██╗██████╗        ██████╗ ██████╗ ██████╗ ███████╗
-    ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝██╔═══██╗██╔══██╗██╔════╝
-    ██║      ╚███╔╝ ██████╔╝█████╗██║     ██║   ██║██████╔╝█████╗  
-    ██║      ██╔██╗ ██╔══██╗╚════╝██║     ██║   ██║██╔══██╗██╔══╝  
-    ███████╗██╔╝ ██╗██║  ██║      ╚██████╗╚██████╔╝██║  ██║███████╗
-    ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝       ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
-                                                                    
-    🐺 LXR Core - Localization System
-    
-    Multi-language locale system supporting Georgian (ka), English (en), and
-    other languages with string interpolation and dynamic substitution.
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    SERVER INFORMATION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Server:      The Land of Wolves 🐺
-    Developer:   iBoss21 / The Lux Empire
-    Website:     https://www.wolves.land
-    Discord:     https://discord.gg/CrKcWdfd3A
-    Store:       https://theluxempire.tebex.io
-    
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    Version: 2.0.0
-    
-    © 2026 iBoss21 / The Lux Empire | wolves.land | All Rights Reserved
-]]
+--[[ ═══════════════════════════════════════════════════════════════════════════
+     🐺 LXR-CORE — Locale Engine (shared)
+     ═══════════════════════════════════════════════════════════════════════════
+     Every player-facing string comes from locales/<lang>.lua. Locale files
+     call Locale.Register('en', { ... }); the active language is selected by
+     Config.Lang (falls back to 'en', then to the key itself so a missing
+     translation is visible instead of crashing).
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- 🐺 LXR CORE - LOCALIZATION SYSTEM
--- ═══════════════════════════════════════════════════════════════════════════════
+     Usage:  Lang:t('error.no_permission')           → string
+             Lang:t('info.paycheck', { value = 12 })  → placeholders %{value}
+     ═══════════════════════════════════════════════════════════════════════════
+     Developer   : iBoss21 | Brand : LXRCore | https://www.lxrcore.com
+     © 2026 iBoss21 / LXRCore — All Rights Reserved
+     ═══════════════════════════════════════════════════════════════════════════ ]]
 
---- @class Locale
-Locale = {}
-Locale.__index = Locale
+Locale = Locale or {}
+Locale.Bundles = Locale.Bundles or {}
+Locale.Fallback = 'en'
 
-local function translateKey(phrase, subs)
-    if type(phrase) ~= 'string' then
-        error('TypeError: translateKey function expects arg #1 to be a string')
-    end
-
-    -- Substituions
-    if not subs then
-        return phrase
-    end
-
-    -- We should be escaping gsub just in case of any
-    -- shenanigans with nested template patterns or injection
-
-    -- Create and copy our return string
-    local result = phrase
-
-    -- Initial Scan over result looking for substituions
-    for k, v in pairs(subs) do
-        local templateToFind = '%%{' .. k .. '}'
-        result = result:gsub(templateToFind, tostring(v)) -- string to allow all types
-    end
-
-    return result
-end
-
---- Constructor function for a new Locale class instance
---- @param opts table<string, any> - Constructor opts param
---- @return Locale
-function Locale:new(opts)
-    local self = {}
-    setmetatable(self, Locale)
-    self.warnOnMissing = opts.warnOnMissing or true
-
-    self.phrases = {}
-    self:extend(opts.phrases or {})
-
-    return self
-end
-
---- Method for extending an instances phrases map. This is also, used
---- internally for initial population of phrases field.
---- @param phrases table<string, string> - Table of phrase definitions
---- @param prefix string | nil - Optional prefix used for recursive calls
---- @return void
-function Locale:extend(phrases, prefix)
-    for key, phrase in pairs(phrases) do
-        local prefixKey = prefix and ('%s.%s'):format(prefix, key) or key
-        -- If this is a nested table, we need to go reeeeeeeeeeeecursive
-        if type(phrase) == 'table' then
-            self:extend(phrase, prefixKey)
+---Flatten { error = { no_perm = 'x' } } into { ['error.no_perm'] = 'x' }.
+local function flatten(tbl, prefix, out)
+    out = out or {}
+    for k, v in pairs(tbl) do
+        local key = prefix and (prefix .. '.' .. tostring(k)) or tostring(k)
+        if type(v) == 'table' then
+            flatten(v, key, out)
         else
-            self.phrases[prefixKey] = phrase
+            out[key] = v
         end
     end
+    return out
 end
 
-
---- Clear locale instance phrases
---- Might be useful for memory management of large phrase maps.
---- @return void
-function Locale:clear()
-    self.phrases = {}
-end
-
---- Clears all phrases and replaces it with the passed phrases table
---- @param phrases table<string, any>
-function Locale:replace(phrases)
-    phrases = phrases or {}
-    self.clear()
-    self.extend(phrases)
-end
-
---- Gets & Sets a locale depending on if an argument is passed
---- @param newLocale string - Optional new locale to set
---- @return string
-function Locale:locale(newLocale)
-    if (newLocale) then
-        self.currentLocale = newLocale
-    end
-    return self.currentLocale
-end
-
---- Primary translation method for a phrase of given key
---- @param key string - The phrase key to target
---- @param subs table<string, string>
---- @return string
-function Locale:t(key, subs)
-    local phrase, result
-    subs = subs or {}
-
-    -- See if the passed key resolves to a valid phrase string
-    if type(self.phrases[key]) == 'string' then
-        phrase = self.phrases[key]
-        -- At this point we know whether the phrase does not exist for this key
-    else
-        if self.warnOnMissing then
-            print(('^3Warning: Missing phrase for key: "%s"'):format(key))
-        end
-        result = key
-    end
-
-    if type(phrase) == 'string' then
-        result = translateKey(phrase, subs)
-    end
-
-    return result
-end
-
---- Check if a phrase key has already been defined within the Locale instance phrase maps.
---- @return boolean
-function Locale:has(key)
-    return self.phrases[key] ~= nil
-end
-
---- Will remove phrase keys from a Locale instance, using recursion/
---- @param phraseTarget string | table
---- @param prefix string
-function Locale:delete(phraseTarget, prefix)
-    -- If the target is a string, we know that this is the end
-    -- of nested table tree.
-    if type(phraseTarget) == 'string' then
-        self.phrases[phraseTarget] = nil
-    else
-        for key, phrase in pairs(phraseTarget) do
-            local prefixKey = prefix and prefix .. '.' .. key or key
-
-            if type(phrase) == 'table' then
-                self:delete(phrase, prefixKey)
-            else
-                self.phrases[prefixKey] = nil
-            end
-        end
+---Register (or extend) a language bundle. Later registrations override earlier
+---keys so servers can ship a `locales/custom_en.lua` overlay.
+---@param lang string
+---@param phrases table
+function Locale.Register(lang, phrases)
+    lang = tostring(lang):lower()
+    Locale.Bundles[lang] = Locale.Bundles[lang] or {}
+    local flat = flatten(phrases)
+    for k, v in pairs(flat) do
+        Locale.Bundles[lang][k] = v
     end
 end
+
+local function interpolate(str, vars)
+    if type(vars) ~= 'table' then return str end
+    return (string.gsub(str, '%%{([%w_]+)}', function(name)
+        local v = vars[name]
+        if v == nil then return '%{' .. name .. '}' end
+        return tostring(v)
+    end))
+end
+
+Lang = Lang or {}
+
+---Current language code (config-driven, safe before config loads).
+---@return string
+function Lang.current()
+    local cfg = rawget(_G, 'Config')
+    local lang = cfg and cfg.Lang
+    if type(lang) ~= 'string' or lang == '' then return Locale.Fallback end
+    return lang:lower()
+end
+
+---Translate `key` with optional `%{placeholders}`.
+---@param self table
+---@param key string
+---@param vars table|nil
+---@return string
+function Lang.t(self, key, vars)
+    -- support both Lang:t(key) and Lang.t(key)
+    if type(self) == 'string' then
+        vars = key
+        key = self
+    end
+    local lang = Lang.current()
+    local bundle = Locale.Bundles[lang]
+    local str = bundle and bundle[key]
+    if str == nil and lang ~= Locale.Fallback then
+        local fb = Locale.Bundles[Locale.Fallback]
+        str = fb and fb[key]
+    end
+    if str == nil then return key end
+    return interpolate(tostring(str), vars)
+end
+
+---True when a key exists in the active or fallback bundle.
+---@param key string
+---@return boolean
+function Lang.has(key)
+    local lang = Lang.current()
+    local b = Locale.Bundles[lang]
+    if b and b[key] ~= nil then return true end
+    local fb = Locale.Bundles[Locale.Fallback]
+    return fb ~= nil and fb[key] ~= nil
+end
+
+---Return the flattened bundle for NUI consumers (copy).
+---@param lang string|nil
+---@return table
+function Lang.bundle(lang)
+    lang = (lang or Lang.current()):lower()
+    local out = {}
+    local fb = Locale.Bundles[Locale.Fallback]
+    if fb then for k, v in pairs(fb) do out[k] = v end end
+    local b = Locale.Bundles[lang]
+    if b then for k, v in pairs(b) do out[k] = v end end
+    return out
+end
+
+LXRCore.Lang = Lang
+LXRCore.Locale = Locale
