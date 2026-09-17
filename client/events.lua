@@ -185,10 +185,13 @@ RegisterNetEvent('lxr:client:vehicle:delete', deleteVehicle)
 RegisterNetEvent('LXRCore:Command:DeleteVehicle', deleteVehicle) -- legacy name
 
 local function showMe(senderId, msg)
+    -- lxr-me renders /me through a NUI overlay (Georgian-capable font); the native text stays off then
+    local renderer = Config.Commands.meRenderer or 'auto'
+    if renderer == 'lxr-me' or (renderer == 'auto' and GetResourceState('lxr-me') == 'started') then return end
     local sender = GetPlayerFromServerId(senderId)
     if sender == -1 then return end
     CreateThread(function()
-        local until_ = GetGameTimer() + 10000
+        local until_ = GetGameTimer() + (Config.Commands.meDurationMs or 10000)
         while GetGameTimer() < until_ do
             local ped = GetPlayerPed(sender)
             if ped == 0 then return end

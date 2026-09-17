@@ -183,6 +183,8 @@ Config.Server = {
 Config.Commands = {
     oocColor = { 255, 151, 133 },
     meRange  = 12.0,   -- /me visibility radius (meters)
+    meDurationMs = 10000, -- How long a /me line floats above the player
+    meRenderer = 'auto', -- 'auto': lxr-me draws it when started (Georgian-capable NUI), else native 3D text; 'native' | 'lxr-me'
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████
