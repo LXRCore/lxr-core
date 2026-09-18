@@ -336,6 +336,7 @@ LXRShared.Prices = {
         cleaning_kit = 0.50,
         sewing_kit = 0.25,
         handcuffs = 1.75,
+        blindfold = 0.15,
         skinning_knife = 0.50,
         binoculars = 4,
         spyglass = 2,

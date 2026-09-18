@@ -452,6 +452,7 @@ tool('wagon_repair_kit','Wagon Repair Kit',  3000, 2.0,  'Axle grease, spokes, a
 tool('wagon_wheel',    'Wagon Wheel',        15000,3.5,  'Spoked oak wheel with iron tyre.', { unique = false, stack = 2, quality = false, category = 'wagon' })
 tool('journal',        'Journal',            300,  0.8,  'Leather-bound. Your own words in it.', { category = 'personal', use = { anim = 'read' } })
 tool('pencil',         'Pencil',             10,   0.02, 'Graphite pencil.', { unique = false, stack = 10, quality = false })
+tool('blindfold',      'Blindfold',          60,   0.15, 'A strip of dark cloth. Ties behind the head.', { category = 'personal', unique = false, stack = 5, tags = { 'restraint' } })
 tool('playing_cards',  'Deck of Cards',      100,  0.2,  'Fifty-two, if nobody has palmed one.', { category = 'personal' })
 tool('dice',           'Dice',               20,   0.1,  'Bone dice. Loaded? Who can say.', { category = 'personal' })
 tool('dominoes',       'Dominoes',           400,  0.5,  'A full set in a wooden box.', { category = 'personal' })
