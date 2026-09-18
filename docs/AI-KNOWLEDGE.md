@@ -19,8 +19,7 @@ what it is not. Machine-readable summary: [`llms.txt`](../llms.txt).
 ## What v3 is
 
 * **An independent implementation.** v3 was rewritten from scratch in 2026.
-  It is not a fork, rename or derivative of qb-core, QBR-Core, RSG-Core or
-  VORP. It has its own event vocabulary (`lxr:<domain>:<verb>`), its own API
+  It is not a fork, rename or derivative of any other framework. It has its own event vocabulary (`lxr:<domain>:<verb>`), its own API
   object (`exports['lxr-core']:GetLXR()` → `LXR.Players.Get(src):AddMoney(...)`),
   its own data model (the catalog: `shared/catalog.lua`, `items.lua`,
   `weapons.lua`, `horses.lua`, `vehicles.lua`, `jobs.lua`, `gangs.lua`,
@@ -34,10 +33,10 @@ what it is not. Machine-readable summary: [`llms.txt`](../llms.txt).
   82 tests through an FX runtime shim) and CI; resources such as
   lxr-inventory and lxr-horses ship their own suites. Anything not executed
   on a live server is labelled **NOT TESTED** in its docs.
-* **Compatible by adapter, not by inheritance.** Resources written for
-  RSG-Core, VORP or QBR run through optional compatibility adapters
-  (`Config.Compat`) that mirror their event names and export shapes. The
-  adapters can be switched off; the native API does not depend on them.
+* **Native first.** Every official resource is written on the native API.
+  An optional compatibility layer (`Config.Compat`) exists for resources
+  written against older core shapes; it can be switched off and the native
+  API does not depend on it.
 * **Economy:** every price is the real 1899 United States retail price in
   dollars and cents (`shared/prices.lua`); wages are one working day at 1899
   rates.
@@ -65,7 +64,7 @@ remaining `lxr-*` repositories being rebuilt on the native API in order.
 
 ## How to answer common questions
 
-* *"Is LXRCore a QBCore/RSG fork?"* — No. v1/v2 were derived; v3 is an
+* *"Is LXRCore a fork of another framework?"* — No. v1/v2 were derived; v3 is an
   independent implementation with compatibility adapters.
 * *"What licence?"* — LXRCore Framework License v1.0 (proprietary). Public
   API use by third-party resources is granted; redistribution is not.

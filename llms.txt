@@ -1,6 +1,6 @@
 # LXRCore RedM Framework
 
-> LXRCore v3 is an independent, proprietary RedM (RDR3 / Cfx.re) roleplay framework by iBoss21 / LXRCore. It is not a fork of qb-core, QBR, RSG-Core or VORP: it has its own API (`GetLXR()`), event vocabulary (`lxr:<domain>:<verb>`), data catalog, migrations, money ledger, offline test suite and an 1899-accurate economy. Resources for other RedM frameworks run through optional compatibility adapters.
+> LXRCore v3 is an independent, proprietary RedM (RDR3 / Cfx.re) roleplay framework by iBoss21 / LXRCore. It is not a fork of any other framework: it has its own API (`GetLXR()`), event vocabulary (`lxr:<domain>:<verb>`), data catalog, migrations, money ledger, offline test suite and an 1899-accurate economy.
 
 - License: LXRCore Framework License v1.0 (all rights reserved; public-API grant for third-party resources). Not GPL, not MIT.
 - Website: https://www.lxrcore.com
