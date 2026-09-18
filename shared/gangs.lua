@@ -133,7 +133,7 @@ G('pinkerton_agents', 'Pinkerton Field Office', { short = 'Pinkertons', type = '
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- 🐺 LXRCORE ORIGINALS
 -- ═══════════════════════════════════════════════════════════════════════════════
-G('wolves', 'The Wolves', { short = 'Wolves', type = 'outlaw', region = 'ambarino', hideout = 'Cotorra Springs', color = '#c4a574', maxMembers = 30, reputation = -30,
+G('wolves', 'The Wolves', { short = 'Wolves', type = 'outlaw', region = 'ambarino', hideout = 'Cotorra Springs', color = '#c21c37', maxMembers = 30, reputation = -30,
     description = 'The pack of the high country. They take from the railroad and the mining company, and leave the homesteads alone. The Land of Wolves is named for them.',
     rivals = { 'odriscoll', 'skinner' }, allies = { 'wapiti_traders' }, activities = { 'robbery', 'smuggling', 'bounty' },
     grades = { { 'Pup', {} }, { 'Wolf', { 'stash' } }, { 'Hunter', { 'stash', 'hideout', 'invite' } }, { 'Pack Leader', { 'stash', 'hideout', 'invite', 'kick', 'promote', 'war', 'treasury' } }, { 'Alpha', boss = true } } })

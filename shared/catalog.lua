@@ -67,7 +67,7 @@ LXRShared.Rarities = {
     uncommon  = { label = 'Uncommon',  tier = 2, color = '#8fb37a', priceMult = 1.25, lootWeight = 45 },
     rare      = { label = 'Rare',      tier = 3, color = '#6f9dc9', priceMult = 1.75, lootWeight = 15 },
     exquisite = { label = 'Exquisite', tier = 4, color = '#b487d6', priceMult = 2.50, lootWeight = 4 },
-    legendary = { label = 'Legendary', tier = 5, color = '#c4a574', priceMult = 4.00, lootWeight = 1 },
+    legendary = { label = 'Legendary', tier = 5, color = '#c21c37', priceMult = 4.00, lootWeight = 1 },
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════════

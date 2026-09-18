@@ -76,7 +76,7 @@ local function ensureLoop()
                     PromptSetEnabled(def.handle, true)
                     PromptSetVisible(def.handle, true)
                     if def.marker then
-                        DrawMarker(def.marker.type or 0x94FDAE17, def.coords.x, def.coords.y, def.coords.z, 0, 0, 0, 0, 0, 0, 0.6, 0.6, 0.6, 196, 165, 116, 120, false, false, 2, false, nil, nil, false)
+                        DrawMarker(def.marker.type or 0x94FDAE17, def.coords.x, def.coords.y, def.coords.z, 0, 0, 0, 0, 0, 0, 0.6, 0.6, 0.6, 244, 242, 238, 110, false, false, 2, false, nil, nil, false)
                     end
                     if completed(def.handle, def.holdMs) then
                         execute(def.options)
