@@ -70,7 +70,7 @@ Config.General = {
         intervalMin     = 10,      -- Minutes between paychecks; one paycheck is one working day at 1899 rates (shared/jobs.lua)
         account         = 'bank',  -- Account that receives the paycheck
         fromSociety     = false,   -- true: pay from the job society account through the banking resource below
-        societyResource = 'lxr-banking',
+        societyResource = 'lxr-bank',
         societyExports  = { balance = 'GetAccountBalance', remove = 'RemoveMoney' },
     },
 }
