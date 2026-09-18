@@ -472,6 +472,8 @@ tool('guitar',         'Guitar',             2500, 7.0,  'Six-string parlour gui
 tool('pipe',           'Smoking Pipe',       80,   0.5,  'Briar pipe.', { category = 'personal' })
 tool('flask',          'Hip Flask',          200,  1.0,  'Holds four drams (info.charges).', { category = 'personal', tags = { 'refillable' } })
 tool('umbrella',       'Umbrella',           600,  1.0,  'Black silk. Saint Denis weather.', { category = 'personal' })
+tool('shaving_kit',    'Shaving Kit',        600,  1.25, 'Razor, strop, brush and a tin of soap. A beard, anywhere. Dulls with use.', { category = 'personal', tags = { 'grooming' } })
+tool('vanity_case',    'Vanity Case',        900,  2.50, 'Mirror, powders and rouge in a lacquered box. Runs out.', { category = 'personal', tags = { 'grooming' } })
 tool('bedroll',        'Bedroll',            2500, 1.5,  'Wool blanket and canvas. Sleep anywhere.', { category = 'camp' })
 tool('tent',           'Tent',               9000, 6.0,  'Canvas wall tent for two.', { category = 'camp' })
 tool('campfire_kit',   'Campfire Kit',       1500, 0.5,  'Kindling, stones and a tripod.', { category = 'camp', unique = false, stack = 3 })
