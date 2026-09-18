@@ -425,6 +425,7 @@ tool('lockpick_fine',  'Locksmith\'s Picks', 150,  3.0,  'A proper set in a leat
 tool('pickaxe',        'Pickaxe',            2500, 1.5,  'Miner\'s pick.', { tags = { 'mining' } })
 tool('shovel',         'Shovel',             2000, 0.8,  'Digs graves, ditches and treasure.', {})
 tool('hoe',            'Hoe',                1800, 0.6,  'Breaks ground for planting.', { tags = { 'farming' } })
+tool('gold_pan',       'Gold Pan',           600,  0.5,  'Tin pan for the gravel bars. Patience sold separately.', { tags = { 'mining' } })
 tool('axe',            'Felling Axe',        2500, 1.5,  'Double-bit felling axe.', { tags = { 'forestry' } })
 tool('saw',            'Bucksaw',            1500, 1.2,  'Crosscut saw for planks.', { tags = { 'forestry' } })
 tool('hammer',         'Hammer',             800,  0.5,  'Claw hammer.', { tags = { 'building' } })

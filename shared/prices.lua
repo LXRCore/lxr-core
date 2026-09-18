@@ -333,6 +333,7 @@ LXRShared.Prices = {
         pickaxe = 0.75,
         shovel = 0.60,
         hoe = 0.45,
+        gold_pan = 0.35,
         axe = 1,
         saw = 0.75,
         hammer = 0.40,
