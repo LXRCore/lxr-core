@@ -426,6 +426,7 @@ tool('chisel',         'Chisel',             300,  0.4,  'Cold chisel.', { tags 
 tool('whetstone',      'Whetstone',          300,  0.3,  'Sharpens knives, axes and tempers.', { unique = false, stack = 5, tags = { 'weapon_care' } })
 tool('cleaning_kit',   'Gun Cleaning Kit',   600,  1.0,  'Rod, brushes, patches and oil. Restores weapon condition.', { tags = { 'weapon_care' }, use = { anim = 'craft', time = 6000 } })
 tool('sewing_kit',     'Sewing Kit',         200,  0.5,  'Needles, thread, thimble.', { tags = { 'tailoring' } })
+tool('handcuffs',      'Handcuffs',          400,  1.75, 'Iron nippers with a key. Bean's pattern.', { unique = false, stack = 2, tags = { 'law' } })
 tool('skinning_knife', 'Skinning Knife',     300,  1.0,  'Curved blade for hides. Not a weapon, technically.', { tags = { 'hunting' } })
 tool('binoculars',     'Binoculars',         500,  3.0,  'Field glasses.', {})
 tool('spyglass',       'Spyglass',           400,  2.5,  'Brass telescope.', {})
