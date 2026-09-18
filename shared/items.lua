@@ -400,6 +400,13 @@ mat('hops',          'Hops',              100,  0.1,  'Bitter cones for beer.', 
 mat('barley',        'Barley',            1000, 0.05, 'Malting barley.', { tags = { 'distilling' } })
 mat('hay_bale',      'Hay Bale',          8000, 0.2,  'For stables.', { stack = 5, tags = { 'horse_feed' } })
 mat('oats_sack',     'Sack of Oats',      5000, 0.3,  'Horse feed by the sack.', { stack = 5, tags = { 'horse_feed' } })
+-- seed packets: what lxr-farming plants (0.01–0.03 a packet in 1899; the crop is worth more than the seed)
+mat('seed_corn',     'Corn Seed',         100,  0.02, 'A paper packet of seed corn.', { stack = 50, tags = { 'seed' } })
+mat('seed_potato',   'Seed Potatoes',     400,  0.02, 'Sprouted eyes, ready to cut and plant.', { stack = 50, tags = { 'seed' } })
+mat('seed_carrot',   'Carrot Seed',       50,   0.01, 'Tiny seed in a paper packet.', { stack = 50, tags = { 'seed' } })
+mat('seed_tomato',   'Tomato Seed',       50,   0.02, 'Saved from the best fruit of last year.', { stack = 50, tags = { 'seed' } })
+mat('seed_tobacco',  'Tobacco Seed',      50,   0.03, 'Virginia leaf. Needs a long summer.', { stack = 50, tags = { 'seed' } })
+mat('seed_sugar_beet', 'Sugar Beet Seed', 100,  0.02, 'Lemoyne beet seed.', { stack = 50, tags = { 'seed' } })
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- 🔧 TOOLS — graded (durability) and mostly unique
@@ -417,6 +424,7 @@ tool('lockpick',       'Lockpick',           50,   0.5,  'Bent wire and patience
 tool('lockpick_fine',  'Locksmith\'s Picks', 150,  3.0,  'A proper set in a leather roll.', { rarity = 'uncommon', legal = false, tags = { 'contraband' } })
 tool('pickaxe',        'Pickaxe',            2500, 1.5,  'Miner\'s pick.', { tags = { 'mining' } })
 tool('shovel',         'Shovel',             2000, 0.8,  'Digs graves, ditches and treasure.', {})
+tool('hoe',            'Hoe',                1800, 0.6,  'Breaks ground for planting.', { tags = { 'farming' } })
 tool('axe',            'Felling Axe',        2500, 1.5,  'Double-bit felling axe.', { tags = { 'forestry' } })
 tool('saw',            'Bucksaw',            1500, 1.2,  'Crosscut saw for planks.', { tags = { 'forestry' } })
 tool('hammer',         'Hammer',             800,  0.5,  'Claw hammer.', { tags = { 'building' } })
