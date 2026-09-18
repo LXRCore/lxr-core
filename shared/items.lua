@@ -764,7 +764,7 @@ add(I('trinket',        'Trinket',            50,  { category = 'misc', value = 
 LXRShared.Items = Items
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 🎒 STARTER KITS — chosen at character creation (multicharacter shows them)
+-- 🎒 STARTER KITS — chosen at character creation (lxr-creator shows them)
 -- ═══════════════════════════════════════════════════════════════════════════════
 LXRShared.StarterKits = {
     drifter = {

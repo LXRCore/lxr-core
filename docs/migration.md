@@ -37,7 +37,7 @@ still run RSG resources, add `ensure rsg-core` pointing at
 (one row per VORP character, citizen id `VORP000123`). Because VORP keys by
 steam id, imported rows carry the steam id in `players.license`; the core
 re-links them to the real Rockstar license on the player's first login
-(`Config.Database.relinkImportedRows`). Multicharacter lists them by steam id
+(`Config.Database.relinkImportedRows`). lxr-creator lists them by licence
 until then.
 
 Items are **not** converted by the SQL script (VORP stores one row per stack

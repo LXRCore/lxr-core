@@ -14,7 +14,7 @@
 No other tables are created. Resources own their tables and register them:
 
 ```lua
-LXRCore.DB.RegisterMigration('lxr-stables', '0001_horses', [[
+LXRCore.DB.RegisterMigration('lxr-horses', '0001_horses', [[
 CREATE TABLE IF NOT EXISTS player_horses (...);
 ]])
 LXRCore.Player.RegisterCharacterTable('player_horses')   -- deleted with the character

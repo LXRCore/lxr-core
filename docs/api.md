@@ -47,7 +47,7 @@ local ids    = LXRCore.Functions.GetPlayers()                -- { source, … }
 local all    = LXRCore.Functions.GetLXRPlayers()             -- source → Player (alias GetRSGPlayers)
 local list, n = LXRCore.Functions.GetPlayersOnDuty('vallaw')
 local n      = LXRCore.Functions.GetDutyCount('vallaw')
-local rows   = LXRCore.Player.GetCharacters(sourceOrLicense) -- decoded DB rows for multicharacter
+local rows   = LXRCore.Player.GetCharacters(sourceOrLicense) -- decoded DB rows for lxr-creator's select screen
 local count  = LXRCore.Player.CountCharacters(license)
 ```
 

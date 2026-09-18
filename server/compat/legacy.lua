@@ -6,7 +6,7 @@
      which server/*.lua already register natively. This file adds the last
      pieces old resources touch directly:
        • QBRCore:* event names mirrored when a resource fires them
-       • exports required by lxr-inventory (legacy) and lxr-multicharacter
+       • exports required by resources written against the earlier export-style API
        • legacy XP API as server-side exports (old client events were exploitable)
      Disable with Config.Compat.legacy.enabled = false on a clean v3 ecosystem.
      ═══════════════════════════════════════════════════════════════════════════

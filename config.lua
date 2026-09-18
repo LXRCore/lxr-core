@@ -139,7 +139,7 @@ Config.Money = {
 -- ████████████████████████████████████████████████████████████████████████████████
 
 Config.Player = {
-    maxCharacters   = 5,         -- Default character slots per license (multicharacter reads this)
+    maxCharacters   = 5,         -- Default character slots per license (lxr-creator reads this)
     maxWeight       = 120000,    -- Default carry weight (grams) for the internal inventory provider
     maxSlots        = 41,        -- Default inventory slots for the internal inventory provider
     bloodTypes      = { 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-' },
@@ -219,7 +219,7 @@ Config.Catalog = {
     skills           = { 'gunslinging', 'marksman', 'cooking', 'crafting', 'horsemanship', 'trading' },
     -- Item decay: metadata.decayAt is stamped on pickup; the inventory turns the item into `decay.into` when it passes
     decay            = { enabled = true, tickMin = 10, realtimeHoursPerGameHour = 1.0 },
-    -- Starter kit offered at character creation when the multicharacter UI has no kit picker
+    -- Starter kit offered at character creation when the creator has no kit picker
     defaultStarterKit = 'drifter',
 }
 

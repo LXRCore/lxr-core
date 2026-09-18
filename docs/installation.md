@@ -52,7 +52,7 @@ add_principal identifier.license:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX lxrcor
 ## Start order
 
 ```
-oxmysql → lxr-core → [bridges] → inventory → multicharacter / spawn / appearance → everything else
+oxmysql → lxr-core → lxr-nui → lxr-mapcolor → lxr-interact → lxr-inventory → lxr-clothing → lxr-creator → lxr-barber → lxr-spawn → the rest (txAdminRecipe/docs/BOOT-ORDER.md)
 ```
 `lxr-core` re-detects the inventory provider when an inventory resource starts
 later, so a wrong order degrades to the core provider instead of failing.

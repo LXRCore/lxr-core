@@ -11,7 +11,7 @@
 | | `hidePlayerNames` | `true` | overhead names → `Stranger (id)` |
 | | `revealMap` | `true` | |
 | | `enablePVP` | `true` | |
-| | `paycheck.enabled/intervalMin/account/fromSociety/societyResource/societyExports` | `true / 10 / bank / false / lxr-banking` | society pay uses the two exports on the banking resource |
+| | `paycheck.enabled/intervalMin/account/fromSociety/societyResource/societyExports` | `true / 10 / bank / false / lxr-bank` | society pay uses the two exports on lxr-bank |
 | `Notify` | `backend` | `'native'` | `native` (RedM feed) / `ox_lib` / `event` |
 | | `duration` | `4000` | ms |
 | `Prompts` | `holdMs`, `distance` | `1000`, `1.5` | prompt defaults |

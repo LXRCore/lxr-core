@@ -14,7 +14,7 @@
       • persistent character — a row in `players`, keyed by citizenid
 
     Login / Logout / Save / Delete are serialised per source so character
-    switching, double-clicks in the multicharacter UI and disconnects during a
+    switching, double-clicks in the creator's select screen and disconnects during a
     save cannot corrupt state. Saves are dirty-tracked and batched.
 
     Developer:   iBoss21 / LXRCore
@@ -212,7 +212,7 @@ function PlayerAPI.Login(source, citizenid, newData)
             PlayerData = type(newData) == 'table' and newData or {}
             PlayerData.license = license
             if newData and newData.charinfo then
-                -- new character payload from multicharacter: only accept known keys
+                -- new character payload from lxr-creator: only accept known keys
                 local ci = {}
                 for _, k in ipairs({ 'firstname', 'lastname', 'birthdate', 'gender', 'nationality' }) do
                     if newData.charinfo[k] ~= nil then ci[k] = newData.charinfo[k] end
@@ -693,7 +693,7 @@ function PlayerAPI.GetOfflinePlayerByLicense(license)
 end
 PlayerAPI.GetPlayerByLicense = LXRCore.Functions.GetPlayerByLicense
 
----All characters for a license (multicharacter). Accepts a license string or a
+---All characters for a license (lxr-creator's select screen). Accepts a license string or a
 ---source (then imported VORP rows keyed by steam are included). Returns decoded rows.
 function PlayerAPI.GetCharacters(licenseOrSource)
     local license, steam = licenseOrSource, nil
