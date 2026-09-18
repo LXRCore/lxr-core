@@ -387,6 +387,7 @@ LXRShared.Prices = {
         camp_chair = 0.75,
         camp_table = 1.50,
         lockbox = 4,
+        safe_kit = 32,
         satchel_upgrade = 2.50,
         saddlebag_upgrade = 3,
         fishingrod = 1,

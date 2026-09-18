@@ -479,6 +479,7 @@ tool('camp_stove',     'Camp Stove',         6000, 4.0,  'Sheet-iron stove with 
 tool('camp_chair',     'Folding Chair',      3000, 1.0,  'Canvas and oak.', { category = 'camp' })
 tool('camp_table',     'Folding Table',      5000, 1.5,  'For maps and card games.', { category = 'camp' })
 tool('lockbox',        'Lockbox',            4000, 5.0,  'Iron strongbox. Opens with its own key (info.id).', { category = 'kit' })
+tool('safe_kit',       'Iron Safe',          45000, 32.0, 'A hundred pounds of iron with a dial. Stands where you put it.', { category = 'kit', tags = { 'placeable' } })
 tool('satchel_upgrade','Satchel Upgrade',    500,  8.0,  'Sturdier stitching, more pockets. +10 slots.', { category = 'kit', unique = false, stack = 1, quality = false })
 tool('saddlebag_upgrade','Saddlebag Upgrade',1500, 12.0, 'Deeper saddlebags. +weight on the horse.', { category = 'kit', unique = false, stack = 1, quality = false })
 
