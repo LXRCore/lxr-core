@@ -54,7 +54,7 @@ LXR.Player = {
     ---Tell the framework the character now stands in the world (spawn resources).
     Spawned = function()
         TriggerEvent('lxr:client:loaded')
-        TriggerServerEvent('lxr:player:spawned')
+        TriggerServerEvent('lxr:player:spawn')
     end,
 }
 

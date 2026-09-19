@@ -239,7 +239,7 @@ local function onSpawned()
     Player(src).state:set('isLoggedIn', true, true)
     LXRCore.Emit('lxr:player:spawned', { legacy = 'LXRCore:Server:PlayerSpawned' }, src, player)
 end
-RegisterNetEvent('lxr:player:spawned', onSpawned)
+RegisterNetEvent('lxr:player:spawn', onSpawned)          -- the wire request from LXR.Player.Spawned()
 RegisterNetEvent('LXRCore:Server:OnPlayerLoaded', onSpawned) -- legacy name
 
 -- Usable item from an inventory UI. Ownership is re-verified server-side in Items.Use.
