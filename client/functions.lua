@@ -165,7 +165,7 @@ function F.SpawnVehicle(model, cb, coords, isnetworked, teleportInto)
     SetModelAsNoLongerNeeded(hash)
     if isnetworked ~= false then
         local netId = NetworkGetNetworkIdFromEntity(veh)
-        SetNetworkIdCanMigrate(netId, true)
+        Citizen.InvokeNative(0xE05E81A888FA63C8, netId, true)   -- SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES (migration is on by default; SetNetworkIdCanMigrate is GTA V only)
         SetEntityAsMissionEntity(veh, true, true)
     end
     if teleportInto then TaskWarpPedIntoVehicle(ped, veh, -1) end
@@ -186,7 +186,9 @@ end
 
 function F.GetVehicleLabel(vehicle)
     if not vehicle or vehicle == 0 then return nil end
-    return GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+    -- RDR3 has no GetDisplayNameFromVehicleModel: the wagon's label is the model's text key when one exists
+    local label = GetLabelText(('%d'):format(GetEntityModel(vehicle)))
+    return label ~= 'NULL' and label or nil
 end
 
 -- ═══════════════════════════════════════════════════════════════════════════════

@@ -49,7 +49,7 @@ Core.instancePlayers = function(set)
     TriggerServerEvent('LXRCore:Server:RequestInstance', set)
 end
 Core.AddWebhook = function() end
-Core.Utils = { ScreenResolution = function() local w, h = GetActiveScreenResolution() return w, h end }
+Core.Utils = { ScreenResolution = function() return Citizen.InvokeNative(0x66773C92835D0909, Citizen.PointerValueInt(), Citizen.PointerValueInt()) end }   -- GET_SCREEN_RESOLUTION (no GetActiveScreenResolution in RDR3)
 
 -- Server-originated VORP notification events
 RegisterNetEvent('vorp:Tip', function(text) n(text) end)

@@ -3,6 +3,11 @@
 All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
+## 3.0.2 — 2026-09-19
+* Fix: notifications through lxr-nui showed as an empty black bar — the toast was handed `opts.text` (the legacy field) instead of `opts.title`; the description is passed too.
+* RDR3 natives only: `SetNetworkIdCanMigrate` (GTA V) → `SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES` on vehicle spawn; `GetDisplayNameFromVehicleModel` (GTA V) → label from the model's text key or nil; the VORP compat `Utils.ScreenResolution` uses `GET_SCREEN_RESOLUTION`.
+* `tools/native_check.py` (workspace): every client/shared native call is checked against the RedM runtime's own Lua global list — GTA V-only natives no longer reach a live server.
+
 ## 3.0.1 — 2026-09-19
 * `Player(src).state.isLoggedIn` flips on `lxr:player:spawned` (the character stands in the world), not on login; `hasCharacter` marks the login. The HUD no longer paints over the creator's spawn page.
 * Client: `LXRCore.Notify(msg, kind)` is the same name as on the server (alias of `LXRCore.Functions.Notify`) — a dozen client scripts already called it.
