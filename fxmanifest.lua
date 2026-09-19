@@ -131,6 +131,7 @@ server_scripts {
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 files {
+    'shared/import.lua',
     'shared/main.lua',
     'shared/catalog.lua',
     'shared/items.lua',
