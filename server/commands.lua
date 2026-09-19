@@ -32,7 +32,7 @@ end
 ---@param callback fun(source: integer, args: string[], raw: string)
 ---@param permission string|nil
 function Commands.Add(name, help, arguments, argsRequired, callback, permission, ...)
-    if type(name) ~= 'string' or type(callback) ~= 'function' then
+    if type(name) ~= 'string' or not LXRShared.IsCallable(callback) then
         LXRCore.Log.error('command', 'Commands.Add: invalid arguments', { name = name })
         return false
     end

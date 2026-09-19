@@ -125,6 +125,23 @@ server_scripts {
     'server/boot.lua',
 }
 
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 📁 FILES — the shared catalog is readable by every resource that imports it
+--    (shared_scripts { '@lxr-core/shared/import.lua', … } — see shared/import.lua)
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+files {
+    'shared/main.lua',
+    'shared/catalog.lua',
+    'shared/items.lua',
+    'shared/jobs.lua',
+    'shared/gangs.lua',
+    'shared/weapons.lua',
+    'shared/horses.lua',
+    'shared/vehicles.lua',
+    'shared/prices.lua',
+}
+
 dependencies {
     '/server:7290',
     '/onesync',

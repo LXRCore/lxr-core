@@ -31,7 +31,31 @@ local readyCallbacks = {}
 -- 🔧 QUERY WRAPPERS (timing + slow log)
 -- ═══════════════════════════════════════════════════════════════════════════════
 
+-- Every public query waits for the schema: the connection, the core migrations and every
+-- migration registered before the flip. Resources never have to gate their own boot reads.
+-- (The migrator itself uses the raw wrappers below.)
+local function untilReady()
+    if DB.Ready then return true end
+    local waited = 0
+    while not DB.Ready do
+        if DB.Failed then return false end
+        Wait(50)
+        waited = waited + 50
+        if waited % 10000 == 0 then LXRCore.Log.warn('db', ('a query is waiting for the database to be ready (%ds)'):format(waited // 1000)) end
+    end
+    return true
+end
+
 local function timed(kind, query, fn, ...)
+    if not untilReady() then
+        LXRCore.Log.error('db', ('%s refused: the database failed to boot'):format(kind), { query = tostring(query):sub(1, 160) })
+        return nil, 'database not ready'
+    end
+    return DB.Raw(kind, query, fn, ...)
+end
+
+---The wrapper without the ready gate — the migrator and the boot sequence only.
+function DB.Raw(kind, query, fn, ...)
     local started = GetGameTimer()
     local ok, result = pcall(fn, ...)
     local elapsed = GetGameTimer() - started
@@ -142,10 +166,13 @@ function DB.RegisterMigration(resource, name, sql)
     end
     local entry = { resource = resource, name = resource .. ':' .. name, sql = sql }
     if DB.Ready then
-        CreateThread(function() DB.ApplyMigration(entry) end)
-    else
-        pendingExternal[#pendingExternal + 1] = entry
+        -- the usual case (the resource starts after the core booted): apply now, in the caller's
+        -- coroutine, so the table exists by the time RegisterMigration returns
+        local applied, err = DB.ApplyMigration(entry)
+        return err == nil
     end
+    -- before the flip: queued; DB.Migrate drains the queue before any public query may run
+    pendingExternal[#pendingExternal + 1] = entry
     return true
 end
 
@@ -163,7 +190,7 @@ end
 ---@return boolean applied
 function DB.ApplyMigration(entry)
     local checksum = DB.Checksum(entry.sql)
-    local existing = DB.Single('SELECT checksum FROM lxr_migrations WHERE name = ?', { entry.name })
+    local existing = DB.Raw('single', 'migration lookup', MySQL.single.await, 'SELECT checksum FROM lxr_migrations WHERE name = ?', { entry.name })
     if existing then
         if existing.checksum ~= checksum then
             LXRCore.Log.warn('db', 'migration already applied but file changed; create a new migration instead', { name = entry.name })
@@ -173,20 +200,20 @@ function DB.ApplyMigration(entry)
     local statements = DB.SplitStatements(entry.sql)
     local started = GetGameTimer()
     for idx, stmt in ipairs(statements) do
-        local _, err = DB.Query(stmt)
+        local _, err = DB.Raw('query', stmt, MySQL.query.await, stmt)
         if err then
             LXRCore.Log.error('db', ('migration %s failed at statement %d — boot halted'):format(entry.name, idx), { error = tostring(err) })
             return false, err
         end
     end
-    DB.Insert('INSERT INTO lxr_migrations (name, resource, checksum) VALUES (?, ?, ?)', { entry.name, entry.resource, checksum })
+    DB.Raw('insert', 'migration record', MySQL.insert.await, 'INSERT INTO lxr_migrations (name, resource, checksum) VALUES (?, ?, ?)', { entry.name, entry.resource, checksum })
     LXRCore.Log.info('db', ('applied migration %s (%d statements, %dms)'):format(entry.name, #statements, GetGameTimer() - started))
     return true
 end
 
 ---Run every migration in order. Returns true on success.
 function DB.Migrate()
-    DB.Query([[CREATE TABLE IF NOT EXISTS `lxr_migrations` (
+    DB.Raw('query', 'lxr_migrations', MySQL.query.await, [[CREATE TABLE IF NOT EXISTS `lxr_migrations` (
         `name` VARCHAR(191) NOT NULL,
         `resource` VARCHAR(100) NOT NULL,
         `checksum` CHAR(8) NOT NULL,
@@ -241,6 +268,7 @@ function DB.Boot()
     if Config.Database.autoMigrate then
         local ok = DB.Migrate()
         if not ok then
+            DB.Failed = true
             LXRCore.Log.error('db', 'migrations failed; LXRCore will not accept players until the database is fixed')
             return false
         end

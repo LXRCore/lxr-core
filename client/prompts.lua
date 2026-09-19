@@ -52,7 +52,7 @@ local function execute(options)
     local args = options.args or {}
     if options.type == 'client' then
         TriggerEvent(options.event, table.unpack(args))
-    elseif options.type == 'callback' and type(options.event) == 'function' then
+    elseif options.type == 'callback' and LXRShared.IsCallable(options.event) then
         options.event(table.unpack(args))
     elseif options.type == 'server' or options.type == nil then
         TriggerServerEvent(options.event, table.unpack(args))

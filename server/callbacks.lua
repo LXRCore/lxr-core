@@ -45,7 +45,7 @@ end
 ---@param name string
 ---@param fn fun(source: integer, ...): ...
 function Callback.Register(name, fn)
-    if type(name) ~= 'string' or type(fn) ~= 'function' then
+    if type(name) ~= 'string' or not LXRShared.IsCallable(fn) then
         LXRCore.Log.error('callback', 'Register: invalid arguments', { name = name })
         return false
     end
@@ -62,7 +62,7 @@ end
 ---@param name string
 ---@param fn fun(source: integer, cb: function, ...)
 function Callback.RegisterLegacy(name, fn)
-    if type(name) ~= 'string' or type(fn) ~= 'function' then return false end
+    if type(name) ~= 'string' or not LXRShared.IsCallable(fn) then return false end
     registry[name] = { fn = fn, legacy = true, resource = LXRCore.Invoker() }
     LXRCore.ServerCallbacks[name] = fn
     return true

@@ -281,7 +281,7 @@ end)
 
 -- deprecated VORP acquisition event still used by very old scripts
 AddEventHandler('getCore', function(cb)
-    if type(cb) == 'function' then cb(Core) end
+    if LXRShared.IsCallable(cb) then cb(Core) end
 end)
 
 exports('GetVorpCore', function() return Core end)

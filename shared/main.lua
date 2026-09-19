@@ -67,6 +67,16 @@ local DIGITS = '0123456789'
 ---Random alphabetic string of `length` characters.
 ---@param length integer
 ---@return string
+---True for a Lua function and for a function reference handed across resources
+---(exports and events deliver those as a callable table/userdata, never as type 'function').
+---@param v any
+---@return boolean
+function LXRShared.IsCallable(v)
+    if type(v) == 'function' then return true end
+    local mt = getmetatable(v)
+    return mt ~= nil and mt.__call ~= nil
+end
+
 function LXRShared.RandomStr(length)
     length = tonumber(length) or 0
     if length <= 0 then return '' end

@@ -92,7 +92,7 @@ end
 
 ---Register a server-side handler: fn(source, item, ...) — `item` is the slot table.
 function Items.RegisterUsable(name, fn)
-    if type(name) ~= 'string' or type(fn) ~= 'function' then return false end
+    if type(name) ~= 'string' or not LXRShared.IsCallable(fn) then return false end
     LXRCore.UsableItems[name:lower()] = fn
     return true
 end

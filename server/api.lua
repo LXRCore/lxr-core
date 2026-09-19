@@ -273,7 +273,7 @@ LXR.Inventory = Inventory
 LXR.Commands = {
     ---Register({ name, help, args = { { name, help } }, required = bool, permission = 'admin', handler = fn(source, args, raw) })
     Register = function(def)
-        if type(def) ~= 'table' or type(def.name) ~= 'string' or type(def.handler) ~= 'function' then return false end
+        if type(def) ~= 'table' or type(def.name) ~= 'string' or not LXRShared.IsCallable(def.handler) then return false end
         return LXRCore.Commands.Add(def.name, def.help or '', def.args or {}, def.required == true, def.handler, def.permission or 'user', table.unpack(def.extraGroups or {}))
     end,
     Refresh = LXRCore.Commands.Refresh,

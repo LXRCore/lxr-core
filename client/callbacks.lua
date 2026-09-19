@@ -72,7 +72,7 @@ end)
 -- ── Server → client requests ─────────────────────────────────────────────────
 
 function Callback.Register(name, fn)
-    if type(name) ~= 'string' or type(fn) ~= 'function' then return false end
+    if type(name) ~= 'string' or not LXRShared.IsCallable(fn) then return false end
     registry[name] = { fn = fn, legacy = false }
     LXRCore.ClientCallbacks[name] = fn
     return true
@@ -80,7 +80,7 @@ end
 
 ---RSG style: fn(cb, ...) must call cb(...)
 function Callback.RegisterLegacy(name, fn)
-    if type(name) ~= 'string' or type(fn) ~= 'function' then return false end
+    if type(name) ~= 'string' or not LXRShared.IsCallable(fn) then return false end
     registry[name] = { fn = fn, legacy = true }
     LXRCore.ClientCallbacks[name] = fn
     return true
