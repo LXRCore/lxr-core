@@ -73,6 +73,8 @@ LXR.UI = {
     DrawText = F.DrawText,
     DrawText3D = F.DrawText3D,
     Progress = F.Progressbar,
+    Door = F.Door,             -- LXR.UI.Door(id, coords, { label, action, key, distance }, fn): the interact card, or the native prompt without lxr-interact
+    DoorRemove = F.DoorRemove,
 }
 
 LXR.World = {

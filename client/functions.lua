@@ -249,6 +249,27 @@ end
 -- ⏳ PROGRESS BAR (delegates to the progressbar resource when present)
 -- ═══════════════════════════════════════════════════════════════════════════════
 
+---A door: a place the player walks up to and opens something. The lxr-interact card (the framework's look)
+---when that resource runs — its own thread, so `fn` may yield — and the native prompt as the fallback.
+---@param id string  unique, e.g. 'lxr-barber:valentine'
+---@param coords vector3|table
+---@param opts { label: string, action: string, key: string?, distance: number?, marker: boolean? }
+---@param fn function
+function F.Door(id, coords, opts, fn)
+    opts = opts or {}
+    if GetResourceState('lxr-interact') == 'started' then
+        exports['lxr-interact']:AddPoint(id, coords, { label = opts.label, distance = opts.distance, marker = opts.marker,
+            options = { { label = opts.action or opts.label, key = opts.key or 'E', onSelect = function() fn() end } } })
+        return true
+    end
+    LXRCore.Prompts.Create(id, coords, opts.control or 0xCEFD9220, opts.label, { type = 'callback', event = fn }, opts.distance or 1.5, nil, 0)
+    return false
+end
+function F.DoorRemove(id)
+    if GetResourceState('lxr-interact') == 'started' then pcall(function() exports['lxr-interact']:Remove(id) end) end
+    LXRCore.Prompts.Delete(id)
+end
+
 function F.Progressbar(name, label, duration, useWhileDead, canCancel, disableControls, animation, prop, propTwo, onFinish, onCancel)
     if GetResourceState('progressbar') == 'started' then
         exports['progressbar']:Progress({

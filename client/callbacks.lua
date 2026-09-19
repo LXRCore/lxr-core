@@ -107,9 +107,13 @@ local function invoke(name, respond, ...)
 end
 
 RegisterNetEvent('lxr:rpc:ask', function(name, reqId, ...)
-    invoke(name, function(...)
-        TriggerServerEvent('lxr:rpc:answer', reqId, ...)
-    end, ...)
+    -- the answering function belongs to another resource: its own thread, so it may yield on the way to its answer
+    local args = table.pack(...)
+    CreateThread(function()
+        invoke(name, function(...)
+            TriggerServerEvent('lxr:rpc:answer', reqId, ...)
+        end, table.unpack(args, 1, args.n))
+    end)
 end)
 
 -- Legacy v2 protocol (name-keyed) — answered so older servers/resources still work

@@ -53,7 +53,13 @@ local function execute(options)
     if options.type == 'client' then
         TriggerEvent(options.event, table.unpack(args))
     elseif options.type == 'callback' and LXRShared.IsCallable(options.event) then
-        options.event(table.unpack(args))
+        -- another resource's function: give it its own thread. Called straight from our loop it cannot yield
+        -- (an RPC, a Wait) — "Execution of function reference in script host failed / error object is not a string"
+        local fn, n = options.event, #args
+        CreateThread(function()
+            local ok, err = pcall(fn, table.unpack(args, 1, n))
+            if not ok then print(('^1[LXRCore]^7 prompt callback failed: %s'):format(type(err) == 'table' and json.encode(err) or tostring(err))) end
+        end)
     elseif options.type == 'server' or options.type == nil then
         TriggerServerEvent(options.event, table.unpack(args))
     end
