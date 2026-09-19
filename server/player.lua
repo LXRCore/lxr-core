@@ -254,6 +254,7 @@ function PlayerAPI.Logout(source, switching)
 
     local state = Player(source).state
     state:set('isLoggedIn', false, true)
+    state:set('hasCharacter', false, true)
     state:set('citizenid', nil, true)
     state:set('job', nil, true)
     if not switching then LXRCore.Callback.CleanupSource(source) end
@@ -475,7 +476,9 @@ function PlayerAPI.CreatePlayer(PlayerData, Offline)
             if self.PlayerData.metadata[k] ~= nil then state:set(k, self.PlayerData.metadata[k], true) end
         end
         local j = self.PlayerData.job
-        state:set('isLoggedIn', true, true)
+        -- `isLoggedIn` flips on lxr:player:spawned (the character stands in the world); until then the
+        -- HUD and everything that waits on it stay down while the creator's last page is up
+        state:set('hasCharacter', true, true)
         state:set('citizenid', self.PlayerData.citizenid, true)
         state:set('job', { name = j.name, grade = j.grade.level, onduty = j.onduty, type = j.type }, true)
     end

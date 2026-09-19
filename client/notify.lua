@@ -111,3 +111,6 @@ if GetResourceState('ox_lib') ~= 'started' then
 end
 
 exports('Notify', LXRCore.Functions.Notify)
+
+-- the same name on both sides: server resources call LXRCore.Notify(src, msg, kind); client ones LXRCore.Notify(msg, kind)
+LXRCore.Notify = LXRCore.Functions.Notify

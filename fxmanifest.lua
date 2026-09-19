@@ -57,7 +57,7 @@ lua54 'yes'
 name 'lxr-core'
 author 'iBoss21 / LXRCore'
 description 'LXRCore v3 — production RedM framework core with RSG / VORP / QBR compatibility adapters'
-version '3.0.0'
+version '3.0.1'
 repository 'https://github.com/LXRCore/lxr-core'
 lxr_core_api '3'
 

@@ -77,7 +77,8 @@ Deprecated and **disabled** (logged as exploit attempts): `LXRCore:Server:AddIte
 
 | Bag | Key | Value |
 |---|---|---|
-| `Player(src).state` | `isLoggedIn` | bool |
+| `Player(src).state` | `hasCharacter` | bool — a character is loaded (the creator's spawn step may still be up) |
+| | `isLoggedIn` | bool — the character stands in the world (`lxr:player:spawned`); the HUD and everything that waits on a player key on this |
 | | `citizenid` | string |
 | | `job` | `{ name, grade, onduty, type }` |
 | | `hunger`, `thirst`, `cleanliness`, `stress`, `health` | numbers (persisted back on save) |

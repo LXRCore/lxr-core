@@ -3,6 +3,11 @@
 All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
+## 3.0.1 — 2026-09-19
+* `Player(src).state.isLoggedIn` flips on `lxr:player:spawned` (the character stands in the world), not on login; `hasCharacter` marks the login. The HUD no longer paints over the creator's spawn page.
+* Client: `LXRCore.Notify(msg, kind)` is the same name as on the server (alias of `LXRCore.Functions.Notify`) — a dozen client scripts already called it.
+* Boot banner and brand table carry the framework Discord.
+
 ## [3.1.0] — 2026-09-17
 
 ### Added
