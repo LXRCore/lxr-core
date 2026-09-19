@@ -2,7 +2,7 @@
      🐺 LXR-CORE — LXRCore — Locale: Georgian (ქართული) — 1:1 mirror of en.lua
      ═══════════════════════════════════════════════════════════════════════════
      Developer   : iBoss21 | Brand : LXRCore
-     https://www.lxrcore.com | https://discord.gg/ZHMKVYyhBa
+     https://www.lxrcore.com | https://discord.gg/GAhk8cgXe9
      ═══════════════════════════════════════════════════════════════════════════
      © 2026 iBoss21 / LXRCore — All Rights Reserved
      ═══════════════════════════════════════════════════════════════════════════ ]]

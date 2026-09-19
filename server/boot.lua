@@ -52,7 +52,7 @@ local function banner()
     print(('   ^3Language:^7 ^6%s^7   ^3Inventory:^7 ^6%s^7   ^3Save every:^7 ^6%d min^7'):format(Config.Lang, inv, Config.General.saveInterval))
     print(('   ^3Accounts:^7 ^6%s^7'):format(accountList()))
     print(('   ^3Compat:^7 RSG %s  VORP %s  Legacy %s   ^3Ledger:^7 %s'):format(on(Config.Compat.rsg.enabled), on(Config.Compat.vorp.enabled), on(Config.Compat.legacy.enabled), on(Config.Money.Ledger.enabled)))
-    print('   ^3Website:^7 ^6https://www.lxrcore.com^7   ^3Discord:^7 ^6https://discord.gg/ZHMKVYyhBa^7')
+    print('   ^3Website:^7 ^6https://www.lxrcore.com^7   ^3Discord:^7 ^6https://discord.gg/GAhk8cgXe9^7')
     print('^5═══════════════════════════════════════════════════════════════════════════════^7')
 end
 

@@ -34,7 +34,7 @@ every lifecycle event is also emitted under the equivalent `RSGCore:*` name.
 
 | Event | Arguments | Notes |
 |---|---|---|
-| `LXRCore:Client:OnPlayerLoaded` | – | fired by lxr-creator / lxr-spawn; sets `LocalPlayer.state.isLoggedIn` |
+| `LXRCore:Client:OnPlayerLoaded` | – | fired by lxr-creator (its spawn step); sets `LocalPlayer.state.isLoggedIn` |
 | `LXRCore:Client:OnPlayerUnload` | – | |
 | `LXRCore:Player:SetPlayerData` | `PlayerData` | replicated data (`LXRCore.PlayerData`) |
 | `LXRCore:Client:OnPlayerDataUpdate` | `PlayerData` | local echo after replication |

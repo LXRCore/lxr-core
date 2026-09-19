@@ -58,7 +58,7 @@ ownership, distance and rate on the server; clients only send intents.
 
 ## Official resources (v3 generation)
 
-lxr-core, lxr-creator, lxr-spawn, lxr-inventory, lxr-horses,
+lxr-core, lxr-creator, lxr-inventory, lxr-horses,
 lxr-trains, lxr-me, lxr-mapcolor, txAdminRecipe (one-click deploy), with the
 remaining `lxr-*` repositories being rebuilt on the native API in order.
 

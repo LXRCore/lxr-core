@@ -130,7 +130,7 @@ it, read these first:
 | | |
 |---|---|
 | Website | [lxrcore.com](https://www.lxrcore.com) |
-| Dev Discord | [discord.gg/ZHMKVYyhBa](https://discord.gg/ZHMKVYyhBa) |
+| Dev Discord | [discord.gg/ZHMKVYyhBa](https://discord.gg/GAhk8cgXe9) |
 | Community | [discord.gg/wolvesland](https://discord.gg/wolvesland) |
 | GitHub | [github.com/LXRCore](https://github.com/LXRCore) |
 

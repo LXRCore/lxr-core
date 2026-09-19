@@ -2,7 +2,7 @@
      🐺 LXR-CORE — LXRCore — Locale: English (canonical)
      ═══════════════════════════════════════════════════════════════════════════
      Developer   : iBoss21 | Brand : LXRCore
-     https://www.lxrcore.com | https://discord.gg/ZHMKVYyhBa
+     https://www.lxrcore.com | https://discord.gg/GAhk8cgXe9
      ═══════════════════════════════════════════════════════════════════════════
      © 2026 iBoss21 / LXRCore — All Rights Reserved
      ═══════════════════════════════════════════════════════════════════════════ ]]

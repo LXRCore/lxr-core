@@ -39,7 +39,7 @@ LXRCore.Brand = {
     tagline    = convar('lxr_tagline', 'მგლების მიწა - რჩეულთა ადგილი!'),
     website    = 'https://www.lxrcore.com',
     discord    = convar('lxr_discord', 'https://discord.gg/wolvesland'),
-    devDiscord = 'https://discord.gg/ZHMKVYyhBa',
+    devDiscord = 'https://discord.gg/GAhk8cgXe9',
     github     = 'https://github.com/LXRCore',
     theme      = convar('lxr_theme', 'night'),  -- refined from Config.UI.theme once config.lua has loaded
 }
