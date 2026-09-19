@@ -93,6 +93,7 @@ client_scripts {
     'client/prompts.lua',
     'client/drawtext.lua',
     'client/events.lua',
+    'client/gameevents.lua',
     'client/api.lua',
     'client/compat/rsg.lua',
     'client/compat/vorp.lua',

@@ -119,4 +119,10 @@ LXR.Commands = {
     Run = function(name, args) TriggerServerEvent('lxr:command:call', name, args or {}) end,
 }
 
+---RDR3 script events (EVENT_PED_CREATED …) polled once by the core — see client/gameevents.lua
+LXR.Game = {
+    On = function(name, size, fn) return LXRCore.GameEvents.On(name, size, fn) end,
+    Off = function(handle) return LXRCore.GameEvents.Off(handle) end,
+}
+
 exports('GetLXR', function() return LXR end)
