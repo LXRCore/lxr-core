@@ -58,6 +58,7 @@ Locale.Register('en', {
         saved                   = 'Character saved',
     },
     info = {
+        papers                  = 'Papers: %{name} · born %{born} · %{nation}',
         received_paycheck       = 'You received your paycheck of $%{value}',
         job_info                = 'Job: %{value} | Grade: %{value2} | Duty: %{value3}',
         gang_info               = 'Gang: %{value} | Grade: %{value2}',

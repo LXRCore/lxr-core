@@ -597,3 +597,26 @@ exports('RemovePlayerItem', Inventory.RemoveItem)
 exports('GetPlayerItem', Inventory.GetItem)
 exports('GetPlayerItems', Inventory.GetItems)
 exports('GetPlayerItemCount', Inventory.GetItemCount)
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 🪪 BUILT-IN USABLES — the catalog's own papers
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- usable: id_card — the character shows their papers to everyone within a few metres (and reads them)
+CreateThread(function()
+    Wait(0)
+    Items.RegisterUsable('id_card', function(source)
+        local player = LXRCore.Functions.GetPlayer(source)
+        if not player then return end
+        local c = player.PlayerData.charinfo or {}
+        local text = Lang:t('info.papers', { name = ((c.firstname or '') .. ' ' .. (c.lastname or '')):gsub('%s+$', ''), born = c.birthdate or '?', nation = c.nationality or '?' })
+        local ped = GetPlayerPed(source)
+        local at = ped ~= 0 and GetEntityCoords(ped) or nil
+        for _, id in ipairs(GetPlayers()) do
+            local n = tonumber(id)
+            local p = GetPlayerPed(n)
+            if n == source or (at and p ~= 0 and #(GetEntityCoords(p) - at) <= 4.0) then
+                LXRCore.Notify(n, text, 'info', 8000)
+            end
+        end
+    end)
+end)

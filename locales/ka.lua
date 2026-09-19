@@ -58,6 +58,7 @@ Locale.Register('ka', {
         saved                   = 'პერსონაჟი შენახულია',
     },
     info = {
+        papers                  = 'საბუთები: %{name} · დაბ. %{born} · %{nation}',
         received_paycheck       = 'მიიღეთ ხელფასი $%{value}',
         job_info                = 'სამუშაო: %{value} | რანგი: %{value2} | მორიგეობა: %{value3}',
         gang_info               = 'ბანდა: %{value} | რანგი: %{value2}',
