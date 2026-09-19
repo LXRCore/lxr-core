@@ -3,6 +3,9 @@
 All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
+## 3.0.0 — 2026-09-19
+* LXRCore v3 release line: every resource ships as 3.0.0 from here (the entries below are the road to it).
+
 ## 3.0.2 — 2026-09-19
 * Fix: notifications through lxr-nui showed as an empty black bar — the toast was handed `opts.text` (the legacy field) instead of `opts.title`; the description is passed too.
 * RDR3 natives only: `SetNetworkIdCanMigrate` (GTA V) → `SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES` on vehicle spawn; `GetDisplayNameFromVehicleModel` (GTA V) → label from the model's text key or nil; the VORP compat `Utils.ScreenResolution` uses `GET_SCREEN_RESOLUTION`.
