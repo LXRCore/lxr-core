@@ -111,7 +111,9 @@ local function onPlayerConnecting(name, setKickReason, deferrals)
     connecting[license] = true
     local function finish(msg)
         connecting[license] = nil
-        deferrals.done(msg)
+        -- done() with NO argument accepts; done(nil) travels as an explicit value and the server
+        -- treats it as a rejection with an empty reason ("Unknown error")
+        if msg then deferrals.done(msg) else deferrals.done() end
     end
 
     if Config.Server.requireDiscord and not GetPlayerIdentifierByType(src, 'discord') then
