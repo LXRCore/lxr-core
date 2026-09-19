@@ -78,6 +78,8 @@ LXRShared.Animations = {
     eat        = { dict = 'mech_inventory@eating@multi_bite@sphere_d8-2_sandwich', name = 'quick_right_hand', flag = 31, duration = 3000 },
     drink      = { dict = 'mech_inventory@drinking@multi_sip@sphere_d8-2_sandwich', name = 'quick_right_hand', flag = 31, duration = 3000 },
     drink_bottle = { dict = 'amb_rest_drunk@world_human_drinking@male_a@idle_a', name = 'idle_a', flag = 31, duration = 3500 },
+    canteen    = { dict = 'amb_rest_drunk@world_human_drinking@female_a@idle_a', name = 'idle_a', flag = 31, duration = 3000 },   -- the canteen in the right hand (lxr-hud attaches the prop)
+    eat_canned = { dict = 'mech_inventory@eating@canned_food@cylinder@d8-2_h10-5', name = 'left_hand', flag = 31, duration = 3500 },
     smoke      = { dict = 'amb_rest@world_human_smoke_cigar@male_a@idle_a', name = 'idle_a', flag = 31, duration = 6000 },
     heal       = { dict = 'mech_inventory@item@fallbacks@medical', name = 'base', flag = 31, duration = 4000 },
     inject     = { dict = 'mech_inventory@item@fallbacks@medical', name = 'base', flag = 31, duration = 5000 },

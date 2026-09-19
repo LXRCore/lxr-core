@@ -165,7 +165,7 @@ fish('fish_lake_sturgeon',   'Lake Sturgeon',      12000,4.5,  'exquisite','lake
 -- 🥃 DRINK — water, hot drinks, soft drinks
 -- ═══════════════════════════════════════════════════════════════════════════════
 add(D('water',        'Bottle of Water',     500, { thirst = 30 },                 { value = 0.02, use = { prop = 'bottle_jar' }, description = 'Clean well water.' }))
-add(I('canteen',      'Canteen',             400, { category = 'tool', value = 1.5, quality = true, useable = true, use = { time = 3000, anim = 'drink', prop = 'canteen', consume = false }, effects = { thirst = 25 }, tags = { 'refillable' }, description = 'Tin canteen. Refill at any river, well or trough. Holds 5 draughts (info.charges).' }))
+add(I('canteen',      'Canteen',             400, { category = 'tool', value = 1.5, quality = true, useable = true, use = { time = 3000, anim = 'canteen', consume = false }, effects = { thirst = 25 }, tags = { 'refillable' }, description = 'Tin canteen. Refill at any river, well or trough. Holds 5 draughts (info.charges).' }))
 add(D('coffee',       'Cup of Coffee',       250, { thirst = 15, stamina = 15, stress = -3 }, { value = 0.05, use = { prop = 'mug' }, description = 'Black, hot and strong.' }))
 add(D('tea',          'Cup of Tea',          250, { thirst = 18, stress = -6 },    { value = 0.05, use = { prop = 'cup_tea' }, description = 'Black tea with a slice of lemon, Saint Denis style.' }))
 add(D('milk',         'Bottle of Milk',      500, { thirst = 20, hunger = 8 },     { value = 0.05, use = { prop = 'bottle_jar' }, decay = { hours = 48, into = 'spoiled_food' }, description = 'Fresh from the dairy wagon.' }))

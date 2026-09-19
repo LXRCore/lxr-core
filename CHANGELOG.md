@@ -4,6 +4,7 @@ All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
 ## 3.0.0 — 2026-09-19
+* Catalogue animations `canteen` and `eat_canned`; the canteen item drinks with `canteen`.
 * Cross-resource callbacks run in their own thread: prompt callbacks and server→client callback answers may now yield (an RPC, a Wait) — called straight from the loop they threw "Execution of function reference in script host failed / error object is not a string" (the tailor door, the revive). `LXRCore.Functions.Door` / `LXR.UI.Door`: one helper for every walk-up door — the lxr-interact card when it runs, the native prompt otherwise.
 * LXRCore v3 release line: every resource ships as 3.0.0 from here (the entries below are the road to it).
 
