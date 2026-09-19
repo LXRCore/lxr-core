@@ -180,8 +180,10 @@ add(D('broth',        'Bone Broth',          300, { thirst = 15, hunger = 12, co
 -- ═══════════════════════════════════════════════════════════════════════════════
 local function booze(name, label, w, fx, value, opts)
     opts = opts or {}; opts.category = 'alcohol'; opts.value = value; opts.effects = fx
+    opts.use = opts.use or {}; opts.use.gives = opts.use.gives or 'bottle_empty'   -- the bottle stays in the satchel
     add(I(name, label, w, opts))
 end
+add(I('bottle_empty', 'Empty Bottle', 300, { category = 'misc', value = 0.02, useable = false, stack = 20, description = 'Rinse it and it holds water, moonshine or a message.' }))
 booze('beer',          'Bottle of Beer',      500, { thirst = 20, drunk = 8, stress = -5 },   0.05, { use = { prop = 'bottle_beer' }, description = 'Lager from the Valentine brewery.' })
 booze('whiskey',       'Whiskey',             500, { thirst = 5, drunk = 25, stress = -10, warmth = 10 }, 0.25, { use = { prop = 'bottle_whiskey' }, description = 'Rye whiskey. Rough but honest.' })
 booze('whiskey_fine',  'Fine Whiskey',        500, { thirst = 5, drunk = 22, stress = -15, core_health = 5 }, 1.5, { rarity = 'uncommon', use = { prop = 'bottle_whiskey' }, description = 'Kentucky bourbon, twelve years in the barrel.' })

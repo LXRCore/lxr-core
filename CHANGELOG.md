@@ -4,6 +4,7 @@ All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
 ## 3.0.0 — 2026-09-19
+* Catalog: `bottle_empty`; spirits give it back when drunk (`use.gives`).
 * Console commands work: source 0 holds every permission (`Perms.Has` / `Perms.Group`), `LXRCore.Notify(0, …)` prints to the console and `EmitClient` never calls the native with no player (`revive 1` from the txAdmin console threw "Argument at index 1 was null").
 * Catalogue animations `canteen` and `eat_canned`; the canteen item drinks with `canteen`.
 * Cross-resource callbacks run in their own thread: prompt callbacks and server→client callback answers may now yield (an RPC, a Wait) — called straight from the loop they threw "Execution of function reference in script host failed / error object is not a string" (the tailor door, the revive). `LXRCore.Functions.Door` / `LXR.UI.Door`: one helper for every walk-up door — the lxr-interact card when it runs, the native prompt otherwise.

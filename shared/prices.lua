@@ -610,7 +610,7 @@ LXRShared.Prices = {
         soap = 0.05,
         towel = 0.15,
         bottle_perfume = 1,
-        empty_sack = 0.05,
+        empty_sack = 0.05, bottle_empty = 0.02,
         crate = 0.25,
         parcel = 0,
         trinket = 0.10,
