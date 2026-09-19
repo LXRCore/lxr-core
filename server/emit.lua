@@ -32,6 +32,11 @@ end
 
 ---Fire a native client event (target -1 = everyone) and its compat mirrors.
 function LXRCore.EmitClient(target, name, map, ...)
+    target = tonumber(target)
+    if not target or target == 0 then   -- the console (0) or a gone player: nothing to send to, never a native error
+        if name ~= 'lxr:client:notify' then LXRCore.Log.warn('emit', ('EmitClient %s: no player target (%s)'):format(name, tostring(target))) end
+        return
+    end
     TriggerClientEvent(name, target, ...)
     for _, alias in ipairs(mirrors(map)) do TriggerClientEvent(alias, target, ...) end
 end
@@ -42,6 +47,11 @@ end
 ---@param kind string|nil  'inform' | 'success' | 'error' | 'warning'
 ---@param duration integer|nil ms
 function LXRCore.Notify(target, message, kind, duration)
+    if tonumber(target) == 0 then   -- a console command's answer goes to the console
+        local m = type(message) == 'table' and (message.description or message.text or message.title or '') or tostring(message)
+        print(('^3[%s]^7 %s'):format(kind or 'inform', m))
+        return
+    end
     LXRCore.EmitClient(target, 'lxr:client:notify', { legacy = 'LXRCore:Notify' }, message, kind, duration)
 end
 

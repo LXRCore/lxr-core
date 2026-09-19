@@ -45,6 +45,7 @@ end
 ---@param permission string|string[]
 ---@return boolean
 function Perms.Has(source, permission)
+    if tonumber(source) == 0 then return true end   -- the server console may do anything
     source = LXRCore.ToSource(source)
     if not source then return false end
     if type(permission) == 'table' then
@@ -97,6 +98,7 @@ end
 ---Highest configured group (order of Config.Server.permissions), 'user' when none.
 ---@return string
 function Perms.Group(source)
+    if tonumber(source) == 0 then return groups()[1] or 'user' end   -- the console holds the highest group
     source = LXRCore.ToSource(source)
     if not source then return 'user' end
     for _, p in ipairs(groups()) do
