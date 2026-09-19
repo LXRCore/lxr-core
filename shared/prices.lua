@@ -426,7 +426,7 @@ LXRShared.Prices = {
         bridle_fine = 3.50,
         horse_lantern = 0.60,
         horse_bedroll = 1.50,
-        horse_deed = 0,
+        horse_deed = 0, receipt = 0,
         horse_brand = 1.50,
         lasso = 2,
         lasso_reinforced = 4,

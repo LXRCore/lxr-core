@@ -549,6 +549,7 @@ tack('bridle_fine',      'Fine Bridle',          800,  12,  'bridle',   { handli
 tack('horse_lantern',    'Saddle Lantern',       700,  2,   'lantern',  {},                                         'Hooks on the saddle horn.')
 tack('horse_bedroll',    'Saddle Bedroll',       2500, 2,   'bedroll',  {},                                         'Rolled behind the cantle.')
 add(I('horse_deed',      'Horse Ownership Papers', 20, { category = 'document', value = 0, description = 'Bill of sale and brand registration for one horse (info.horseId).', tags = { 'deed' } }))
+add(I('receipt',         'Receipt',             10, { category = 'document', value = 0, useable = true, unique = true, description = 'A bill you could not pay on the spot (info.amount, info.job). Use it to settle.', tags = { 'bill' } }))
 add(I('horse_brand',     'Branding Iron',      1500,{ category = 'tool', value = 4, description = 'Your mark, in iron.', tags = { 'ranch' } }))
 add(I('lasso',           'Lasso',              700, { category = 'tool', value = 1.5, description = 'Forty feet of braided rawhide.', tags = { 'ranch' } }))
 add(I('lasso_reinforced','Reinforced Lasso',   900, { category = 'tool', value = 4.0, rarity = 'uncommon', description = 'Wire-cored. Holds a bull.', tags = { 'ranch' } }))

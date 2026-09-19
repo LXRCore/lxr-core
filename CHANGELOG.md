@@ -4,6 +4,7 @@ All notable changes to this resource are documented here. Versions follow
 semantic versioning; the `lxr_core_api` manifest field tracks API level.
 
 ## 3.0.0 — 2026-09-19
+* Catalog: `receipt` (a bill to settle later).
 * Catalog: armadillo shell, javelina hide, iguana skin, lion pelt, turtle shell; songbird / condor / vulture / crane / seabird / quail feathers, bat wing, gila venom gland (priced).
 * Catalog: `bottle_empty`; spirits give it back when drunk (`use.gives`).
 * Console commands work: source 0 holds every permission (`Perms.Has` / `Perms.Group`), `LXRCore.Notify(0, …)` prints to the console and `EmitClient` never calls the native with no player (`revive 1` from the txAdmin console threw "Argument at index 1 was null").
